@@ -7,7 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT_PATH}/bin)
 
 file(GLOB_RECURSE SRC ${PROJECT_ROOT_PATH}/src/*.cpp)
 
-# 
+
 set(SDL2_DIR "${PROJECT_ROOT_PATH}/extern/SDL2/lib/cmake/SDL2")
 set(SDL2_ttf_DIR "${PROJECT_ROOT_PATH}/extern/SDL2_ttf/lib/cmake/SDL2_ttf")
 set(SDL2_image_DIR "${PROJECT_ROOT_PATH}/extern/SDL2_image/lib/cmake/SDL2_image")
