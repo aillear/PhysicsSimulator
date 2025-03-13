@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.30)
 
 project(PhysicsSimulator)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECT_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT_PATH}/bin)
@@ -8,6 +10,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT_PATH}/bin)
 file(GLOB SRC 
     ${PROJECT_ROOT_PATH}/src/*.cpp
     ${PROJECT_ROOT_PATH}/src/utils/*.cpp
+    ${PROJECT_ROOT_PATH}/src/physics/*.cpp
+    ${PROJECT_ROOT_PATH}/src/renderer/*.cpp
+
 )
 
 # package
@@ -27,6 +32,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
     ${PROJECT_ROOT_PATH}/include/utils
     ${PROJECT_ROOT_PATH}/include/physics
+    ${PROJECT_ROOT_PATH}/include/renderer
 )
 
 target_link_libraries(${PROJECT_NAME} 

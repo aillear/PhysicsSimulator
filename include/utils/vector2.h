@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include <utility>
 
 template <typename T> class Vector2 {
   public:
@@ -7,6 +8,8 @@ template <typename T> class Vector2 {
     T y;
 
     Vector2(T _x, T _y) : x(_x), y(_y) { ; }
+    Vector2(std::pair<T, T>& p) : x(p.first), y(p.second) {;}
+    operator std::pair<T, T>() const;
 
     T getNorm();
 

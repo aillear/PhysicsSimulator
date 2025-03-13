@@ -1,19 +1,21 @@
-#include <stdio.h>
 #include <SDL.h>
 #include <SDL2_gfxPrimitives.h>
 #include <SDL2_framerate.h>
+#include "logger.h"
 
 #define SCREEN_WIDTH  1000
 #define SCREEN_HEIGHT 800
 
 int main(int argc, char* argv[]) {
+    Logger::Instance().Init();
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
     FPSmanager fpsmgr;
-
+    
+    // LOG_INFO("the program is begin to run.");
     // 初始化 SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        fprintf(stderr, "SDL_Init Error: %s\n", SDL_GetError());
+   //     LOG_ERROR("error in init.");
         return 1;
     }
 
@@ -26,7 +28,7 @@ int main(int argc, char* argv[]) {
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (!window || !renderer) {
-        fprintf(stderr, "Window/Renderer creation failed: %s\n", SDL_GetError());
+    //    LOG_ERROR("error in building window or renderer.");
         SDL_Quit();
         return 1;
     }
@@ -54,17 +56,14 @@ int main(int argc, char* argv[]) {
         filledCircleColor(renderer, 100, 100, 50, 0xFF0000FF);      // 红色实心圆
         aacircleColor(renderer, 200, 100, 80, 0xFF00FF00);          // 绿色抗锯齿圆环
         thickLineColor(renderer, 300, 100, 500, 300, 5, 0xFFFF0000);// 蓝色粗线
-        roundedRectangleColor(renderer, 400, 400, 600, 500, 20, 0xFFFFFF00); // 黄色圆角矩形
+        roundedRectangleColor(renderer, 400, 400, 600, 500, 20, 0xFF00FFFF); // 黄色圆角矩形
 
-        // 更新显示
         SDL_RenderPresent(renderer);
         
-        // 控制帧率
         SDL_framerateDelay(&fpsmgr);
         angle += 1.0f;
     }
 
-    // 清理资源
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

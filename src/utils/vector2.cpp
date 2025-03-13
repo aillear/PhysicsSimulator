@@ -1,13 +1,17 @@
 #include "vector2.h"
 #include <cmath>
 #include <ostream>
-#include <valarray>
+#include <utility>
+
+template<typename T>
+Vector2<T>::operator std::pair<T, T>() const {
+    return std::pair(x, y);
+}
 
 template<typename T>
 T Vector2<T>::getNorm() {
     return std::sqrt(x*x + y*y);
 }
-
 
 template<typename T>
 Vector2<T>& Vector2<T>::operator*=(double n) {
