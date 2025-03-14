@@ -9,8 +9,7 @@ class RenderSystem {
   private:
     bool Init();
 
-
+    
     SDL_Window* window;
     SDL_Renderer* renderer;
-
 };

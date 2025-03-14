@@ -1,71 +1,86 @@
 #include <SDL.h>
-#include <SDL2_gfxPrimitives.h>
-#include <SDL2_framerate.h>
-#include "logger.h"
-
-#define SCREEN_WIDTH  1000
-#define SCREEN_HEIGHT 800
+#include <SDL_image.h>
+#include <stdio.h>
 
 int main(int argc, char* argv[]) {
-    Logger::Instance().Init();
-    SDL_Window* window = NULL;
-    SDL_Renderer* renderer = NULL;
-    FPSmanager fpsmgr;
-    
-    // LOG_INFO("the program is begin to run.");
-    // 初始化 SDL
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-   //     LOG_ERROR("error in init.");
+    // 初始化SDL
+    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL初始化失败: %s\n", SDL_GetError());
         return 1;
     }
 
-    // 创建窗口和渲染器
-    window = SDL_CreateWindow("SDL2_gfx Minimal Demo",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    
-    renderer = SDL_CreateRenderer(window, -1, 
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    if (!window || !renderer) {
-    //    LOG_ERROR("error in building window or renderer.");
+    // 初始化SDL_image（支持PNG格式）
+    int imgFlags = IMG_INIT_PNG;
+    if(!(IMG_Init(imgFlags) & imgFlags)) {
+        printf("SDL_image初始化失败: %s\n", IMG_GetError());
         SDL_Quit();
-        return 1;
+        return 2;
     }
 
-    // 初始化帧率控制器
-    SDL_initFramerate(&fpsmgr);
-    SDL_setFramerate(&fpsmgr, 60);
+    // 创建窗口
+    SDL_Window* window = SDL_CreateWindow("SDL2_image测试", 
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600, SDL_WINDOW_SHOWN);
+    if(!window) {
+        printf("窗口创建失败: %s\n", SDL_GetError());
+        IMG_Quit();
+        SDL_Quit();
+        return 3;
+    }
 
-    int quit = 0;
-    float angle = 0.0f;
+    // 创建硬件加速渲染器
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if(!renderer) {
+        printf("渲染器创建失败: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 4;
+    }
+
+    // 加载PNG图片
+    SDL_Surface* imageSurface = IMG_Load("../assets/test.png");
+    if(!imageSurface) {
+        printf("图片加载失败: %s\n", IMG_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 5;
+    }
+
+    // 转换为纹理
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, imageSurface);
+    SDL_FreeSurface(imageSurface);
+    if(!texture) {
+        printf("纹理创建失败: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 6;
+    }
+
+    // 主循环
     SDL_Event e;
-
-    while (!quit) {
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                quit = 1;
-            }
+    int quit = 0;
+    while(!quit) {
+        while(SDL_PollEvent(&e)) {
+            if(e.type == SDL_QUIT) quit = 1;
         }
 
-        // 清屏
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        // 渲染流程
         SDL_RenderClear(renderer);
-
-        // 绘制多种基础图形（验证 SDL2_gfx 工作）
-        filledCircleColor(renderer, 100, 100, 50, 0xFF0000FF);      // 红色实心圆
-        aacircleColor(renderer, 200, 100, 80, 0xFF00FF00);          // 绿色抗锯齿圆环
-        thickLineColor(renderer, 300, 100, 500, 300, 5, 0xFFFF0000);// 蓝色粗线
-        roundedRectangleColor(renderer, 400, 400, 600, 500, 20, 0xFF00FFFF); // 黄色圆角矩形
-
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
-        
-        SDL_framerateDelay(&fpsmgr);
-        angle += 1.0f;
     }
 
+    // 清理资源
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
 
     return 0;
