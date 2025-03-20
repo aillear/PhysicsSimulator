@@ -1,6 +1,7 @@
 #include "logger.h"
 #include <chrono>
 #include <fstream>
+#include <ostream>
 
 Logger& Logger::Instance() {
     static Logger instance;
@@ -8,9 +9,11 @@ Logger& Logger::Instance() {
 }
 
 void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush) {
-    
     mutex_.lock();
     logFile_.open(logName, std::ios::app);
+    if (!logFile_.is_open()) {
+        return;
+    }
     currentLevel_ = level;
     instantFlush_ = instantFlush;
     mutex_.unlock();
@@ -64,8 +67,7 @@ Logger::~Logger() {
     if (!logFile_.is_open()) return;
     
     Info("exit.");
-    logFile_ << "\n";
-    logFile_.flush();
+    logFile_ << std::endl;
     logFile_.close();
 }
 

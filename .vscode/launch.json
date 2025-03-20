@@ -10,7 +10,7 @@
             "name": "Debug",
             "program": "D:\\MYTHING\\code\\c_program\\PhysicsSimulator\\bin\\PhysicsSimulator.exe",
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}\\bin"
         }
     ]
 }
