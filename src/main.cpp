@@ -1,7 +1,8 @@
 #include "vector2.h"
-#include <SDL.h>
-#include <format>
 #include "logger.h"
+#include <SDL.h>
+#include <string>
+
 
 int main(int argc, char* argv[]) {
 
@@ -12,7 +13,10 @@ int main(int argc, char* argv[]) {
         
         Vector2d c(20231.23,3.3231434);
         Vector2i ddd(1,3);
-        LOG_INFO(std::format("vector a is: {}, {:.4f}, {}", b, c, ddd));
+        LOG_INFO("!231231");
+        F_LOG_INFO("vector a is: {}, {:.4f}, {}", b, c, ddd);
+        std::string str = "I want an ERROR, so there is an ERROR";
+        F_LOG_ERROR("Error Occur:  {}", str);
     }
 
     return 0;

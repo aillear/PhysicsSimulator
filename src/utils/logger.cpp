@@ -1,7 +1,9 @@
 #include "logger.h"
 #include <chrono>
+#include <format>
 #include <fstream>
 #include <ostream>
+#include <utility>
 
 Logger& Logger::Instance() {
     static Logger instance;
