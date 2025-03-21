@@ -16,3 +16,4 @@ _deps
 /docs
 /bin/*.exe
 /*.zip
+/logs

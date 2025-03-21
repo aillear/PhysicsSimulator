@@ -1,9 +1,9 @@
 #include "logger.h"
+#include "pathMgr.h"
 #include <chrono>
-#include <format>
+#include <filesystem>
 #include <fstream>
-#include <ostream>
-#include <utility>
+#include <iostream>
 
 Logger& Logger::Instance() {
     static Logger instance;
@@ -12,14 +12,34 @@ Logger& Logger::Instance() {
 
 void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush) {
     mutex_.lock();
-    logFile_.open(logName, std::ios::app);
+
+    auto path = GET_PATH("logs", logName);
+    auto logDir = path.parent_path();
+    bool logDirCreated = false;
+
+    // check is log dir exist, if not, create log dir;
+    if (!fs::exists(logDir)) {
+        logDirCreated = fs::create_directories(logDir);
+        if (!logDirCreated) {
+            std::cerr << "Fail to create log directory!" << logDir << std::endl;
+            mutex_.unlock();
+            return;
+        }
+    }
+
+    // try to open log
+    logFile_.open(path, std::ios::app);
     if (!logFile_.is_open()) {
+        std::cerr << "Fail to open log file!" << std::endl;
+        mutex_.unlock();
         return;
     }
+
     currentLevel_ = level;
     instantFlush_ = instantFlush;
     mutex_.unlock();
-    Info("program start");
+    if (logDirCreated) Warning("Log directory has been created automatically: path=`{}`", logDir.string());
+    Info("Logger Initialized: level=`{}`, file=`{}`.", LevelToStr(level), path.string());
 }
 
 void Logger::SetLogLevel(LogLevel level) {
@@ -68,8 +88,8 @@ void Logger::Error(const std::string& msg) {
 Logger::~Logger() {
     if (!logFile_.is_open()) return;
     
-    Info("exit.");
-    logFile_ << std::endl;
+    Info("Program exited.");
+    logFile_ << '\n' << std::endl;
     logFile_.close();
 }
 
