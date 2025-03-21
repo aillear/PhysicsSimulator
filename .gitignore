@@ -17,3 +17,4 @@ _deps
 /bin/*.exe
 /*.zip
 /logs
+/.vscode
