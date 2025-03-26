@@ -1,6 +1,5 @@
 #include "vector2.h"
 #include <cmath>
-#include <format>
 #include <ostream>
 #include <utility>
 

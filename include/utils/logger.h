@@ -71,21 +71,22 @@ class Logger {
 //////////////////////////////////////////////////////////////////
 // 日志宏定义（供外部调用）
 //////////////////////////////////////////////////////////////////
+# define GET_Logger Logger::Instance()
 
-#define LOG_DEBUG(msg) \
+# define LOG_DEBUG(msg) \
     Logger::Instance().Debug(msg)
-#define LOG_INFO(msg)  \
+# define LOG_INFO(msg)  \
     Logger::Instance().Info(msg)
-#define LOG_WARN(msg)  \
+# define LOG_WARN(msg)  \
     Logger::Instance().Warning(msg)
-#define LOG_ERROR(msg) \
+# define LOG_ERROR(msg) \
     Logger::Instance().Error(msg)
 
-#define F_LOG_DEBUG(...) \
+# define F_LOG_DEBUG(...) \
     Logger::Instance().Debug(__VA_ARGS__)
-#define F_LOG_INFO(...) \
+# define F_LOG_INFO(...) \
     Logger::Instance().Info(__VA_ARGS__)
-#define F_LOG_WARNING(...) \
+# define F_LOG_WARNING(...) \
     Logger::Instance().Warning(__VA_ARGS__)
-#define F_LOG_ERROR(...) \
+# define F_LOG_ERROR(...) \
     Logger::Instance().Error(__VA_ARGS__)

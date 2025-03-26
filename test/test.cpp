@@ -1,5 +1,4 @@
 #include <SDL.h>
-#include <iostream>
 #include "vector2.h"
 int WINDOW_WIDTH = 800;
 int WINDOW_HEIGHT = 600;

@@ -13,8 +13,9 @@ file(GLOB SRC
     ${PROJECT_ROOT_PATH}/src/*.cpp
     ${PROJECT_ROOT_PATH}/src/utils/*.cpp
     ${PROJECT_ROOT_PATH}/src/physics/*.cpp
-    ${PROJECT_ROOT_PATH}/src/renderer/*.cpp
-
+    ${PROJECT_ROOT_PATH}/src/objects/*.cpp
+    ${PROJECT_ROOT_PATH}/src/systems/*.cpp
+    ${PROJECT_ROOT_PATH}/src/core/*.cpp
 )
 
 # package
@@ -34,7 +35,9 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
     ${PROJECT_ROOT_PATH}/include/utils
     ${PROJECT_ROOT_PATH}/include/physics
-    ${PROJECT_ROOT_PATH}/include/renderer
+    ${PROJECT_ROOT_PATH}/include/objects
+    ${PROJECT_ROOT_PATH}/include/systems
+    ${PROJECT_ROOT_PATH}/include/core
 )
 
 target_link_libraries(${PROJECT_NAME} 

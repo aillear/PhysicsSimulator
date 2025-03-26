@@ -9,6 +9,7 @@ class PathMgr {
 
     void Init();
 
+    // you can use this function to get resources's path.
     template <typename... Args>
     fs::path GetPath(Args&&... args) {
       return (path_ / ... / fs::path(std::forward<Args>(args)));
@@ -22,5 +23,6 @@ class PathMgr {
     fs::path path_;
 };
 
+# define GET_PathMgr PathMgr::Instance()
 # define GET_PATH(...) \
     PathMgr::Instance().GetPath(__VA_ARGS__)

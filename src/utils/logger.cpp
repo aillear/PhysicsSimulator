@@ -38,8 +38,8 @@ void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush)
     currentLevel_ = level;
     instantFlush_ = instantFlush;
     mutex_.unlock();
-    if (logDirCreated) Warning("Log directory has been created automatically: path=`{}`", logDir.string());
-    Info("Logger Initialized: level=`{}`, file=`{}`.", LevelToStr(level), path.string());
+    if (logDirCreated) Warning("Log directory has been created automatically: path={}", logDir.string());
+    Info("Logger Initialized: level=`{}`, file={}.", LevelToStr(level), path.string());
 }
 
 void Logger::SetLogLevel(LogLevel level) {

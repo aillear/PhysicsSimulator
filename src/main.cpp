@@ -1,18 +1,16 @@
-#include "initialization.h"
+#include "app.h"
+#include "vector2.h"
 #include <SDL.h>
-#include <string>
 #include "logger.h"
 
+int WINDOW_WIDTH = 800;
+int WINDOW_HEIGHT = 600;
+int GRID_SIZE = 50;
+const int MIN_GRID_SIZE = 10;
+const int MAX_GRID_SIZE = 200;
 
-
-int main(int argc, char* argv[]) {
-
-    {
-        Initialization();
-        std::string str = "I want an ERROR, so there is an ERROR";
-        F_LOG_ERROR("Error Occur:  {}", str);
-    }
-
-    
-    return 0;
+int main(int argc, char *argv[]) {
+    App::Instance().Init(argc, argv);
+    Vector2f a{1,3};
+    F_LOG_INFO("aaa {}", a);
 }

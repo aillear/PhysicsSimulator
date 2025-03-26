@@ -2,7 +2,6 @@
 #include <format>
 #include <ostream>
 
-
 template <typename T> struct Vector2 {
   public:
     T x;
@@ -12,29 +11,29 @@ template <typename T> struct Vector2 {
     Vector2(std::pair<T, T> &p) : x(p.first), y(p.second) { ; }
     operator std::pair<T, T>() const;
 
-    inline T Length();
+    T Length();
     // Normalize only work correctly in float or double.
-    inline Vector2<T> &Normalize();
+    Vector2<T> &Normalize();
 
-    inline Vector2<T> &operator*=(double);
-    inline Vector2<T> &operator/=(double);
-    inline Vector2<T> &operator+=(const Vector2<T> &);
-    inline Vector2<T> &operator-=(const Vector2<T> &);
+    Vector2<T> &operator*=(double);
+    Vector2<T> &operator/=(double);
+    Vector2<T> &operator+=(const Vector2<T> &);
+    Vector2<T> &operator-=(const Vector2<T> &);
 
-    inline double operator*(const Vector2<T> &);
-    inline double operator%(const Vector2<T> &);
-    inline Vector2<T> operator/(double);
-    inline Vector2<T> operator+(const Vector2<T> &);
-    inline Vector2<T> operator-(const Vector2<T> &);
+    double operator*(const Vector2<T> &);
+    double operator%(const Vector2<T> &);
+    Vector2<T> operator/(double);
+    Vector2<T> operator+(const Vector2<T> &);
+    Vector2<T> operator-(const Vector2<T> &);
 
-    inline bool operator==(const Vector2<T> &);
+    bool operator==(const Vector2<T> &);
 
     template <typename U>
-    inline friend Vector2<U> operator*(const Vector2<U> &, double);
+    friend Vector2<U> operator*(const Vector2<U> &, double);
     template <typename U>
-    inline friend Vector2<U> operator*(double, const Vector2<U> &);
+    friend Vector2<U> operator*(double, const Vector2<U> &);
     template <typename U>
-    inline friend std::ostream &operator<<(std::ostream &, const Vector2<U> &);
+    friend std::ostream &operator<<(std::ostream &, const Vector2<U> &);
 };
 
 using Vector2i = Vector2<int>;
