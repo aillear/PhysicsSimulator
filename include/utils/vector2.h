@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL_rect.h>
 #include <format>
 #include <ostream>
 
@@ -8,8 +9,12 @@ template <typename T> struct Vector2 {
     T y;
 
     Vector2(T _x, T _y) : x(_x), y(_y) { ; }
+    Vector2(SDL_Point& p) : x(p.x), y(p.y) {;}
+    Vector2(SDL_FPoint& p) : x(p.x), y(p.y) {;}
     Vector2(std::pair<T, T> &p) : x(p.first), y(p.second) { ; }
     operator std::pair<T, T>() const;
+    operator SDL_Point() const;
+    operator SDL_FPoint() const;
 
     T Length();
     // Normalize only work correctly in float or double.

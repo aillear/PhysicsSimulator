@@ -8,16 +8,26 @@ App& App::Instance() {
     static App instance;
     return instance;
 }
+App::App() : running(false) {
+    ;
+}
 
 void App::Init(int argc, char* argv[]) {
     // set running to true.
     running = true;
     // utils initialize
-    PathMgr::Instance().Init();
-    Logger::Instance().Init(Logger::INFO, "app.log", false);
+    GET_PathMgr.Init();
+    GET_Logger.Init(Logger::INFO, "app.log", false);
 
     // system initialize
-    RenderSystem::Instance().Init();
+    GET_RenderSystem.Init();
+    GET_EventSystem.Init();
+
+    // add event listener
+    // quit event
+    GET_EventSystem.AddEventListener(SDL_QUIT, [this](SDL_Event& event) {
+        this->running = false;
+    });
 }
 
 void App::Run() {

@@ -7,6 +7,14 @@ template <typename T> Vector2<T>::operator std::pair<T, T>() const {
     return std::pair(x, y);
 }
 
+template<typename T> Vector2<T>::operator SDL_Point() const {
+    return {(int)x, (int)y};
+}
+
+template<typename T> Vector2<T>::operator SDL_FPoint() const {
+    return {(float)x, (float)y};
+}
+
 template <typename T> T Vector2<T>::Length() {
     return std::sqrt(x * x + y * y);
 }

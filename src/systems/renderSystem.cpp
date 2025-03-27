@@ -1,18 +1,21 @@
 #include "renderSystem.h"
+#include "eventSystem.h"
 #include "logger.h"
-#include "vector2.h"
 #include <SDL.h>
 #include <SDL_error.h>
+#include <SDL_events.h>
 #include <SDL_keycode.h>
-#include <SDL_render.h>
-#include <SDL_video.h>
 
-RenderSystem &RenderSystem::Instance() {
+RenderSystem& RenderSystem::Instance() {
     static RenderSystem instance;
     return instance;
 }
 
-RenderSystem::RenderSystem() : window(nullptr), renderer(nullptr), windowSize(0, 0) {;}
+RenderSystem::RenderSystem()
+    : window(nullptr), renderer(nullptr), windowSize(0, 0),
+      camera({0.0f, 0.0f}, 1) {
+    ;
+}
 
 RenderSystem::~RenderSystem() {
     SDL_DestroyRenderer(renderer);
@@ -49,10 +52,30 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     }
 
     LOG_INFO("SDL renderer created successfully.");
+
+    GET_EventSystem.AddEventListener(SDL_WINDOWEVENT, [this](SDL_Event &event) {
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            this->SetWindowSize({event.window.data1, event.window.data2});
+        }
+    });
     return true;
 }
 
 void RenderSystem::SetWindowSize(Vector2i size) {
     windowSize = size;
     F_LOG_INFO("resize window to: {}.", windowSize);
+}
+
+Vector2i RenderSystem::PosWorld2Screen(Vector2f worldPos) {
+    Vector2f offset(camera.scale*windowSize.x, camera.scale*windowSize.y);
+    Vector2f temp = worldPos - camera.position + offset;
+    return Vector2i(temp.x, temp.y);
+}
+
+
+void RenderSystem::Render() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_RenderPresent(renderer);
 }
