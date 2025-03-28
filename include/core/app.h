@@ -1,5 +1,7 @@
 #pragma once
-
+#include "FPScounter.h"
+#include <SDL.h>
+#include <SDL2_framerate.h>
 class App {
   public:
     static App& Instance();
@@ -10,6 +12,8 @@ class App {
   private:
     App();
     void Destory();
+    FPSmanager fpsm;
+    FPSCounter fpsc;
 };
 
 

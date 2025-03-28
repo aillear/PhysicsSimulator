@@ -3,13 +3,14 @@
 #include "logger.h"
 #include "eventSystem.h"
 #include "renderSystem.h"
+#include <SDL2_framerate.h>
 
 App& App::Instance() {
     static App instance;
     return instance;
 }
 App::App() : running(false) {
-    ;
+    ;   
 }
 
 void App::Init(int argc, char* argv[]) {
@@ -23,6 +24,9 @@ void App::Init(int argc, char* argv[]) {
     GET_RenderSystem.Init(800, 600, "physics demo");
     GET_EventSystem.Init();
 
+    SDL_initFramerate(&fpsm);
+    SDL_setFramerate(&fpsm, 60);
+
     // add event listener
     // quit event
     GET_EventSystem.AddEventListener(SDL_QUIT, [this](SDL_Event& event) {
@@ -35,8 +39,11 @@ void App::Init(int argc, char* argv[]) {
 void App::Run() {
 
     while (running) {
+        fpsc.StartFrame();
+        SDL_framerateDelay(&fpsm);
         GET_EventSystem.HandleEvent();
         GET_RenderSystem.Render();
+        fpsc.EndFrame();
     }
 }
 
