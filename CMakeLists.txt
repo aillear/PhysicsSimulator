@@ -11,6 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT_PATH}/bin)
 
 file(GLOB SRC 
     ${PROJECT_ROOT_PATH}/src/*.cpp
+    ${PROJECT_ROOT_PATH}/src/UI/*.cpp
     ${PROJECT_ROOT_PATH}/src/core/*.cpp
     ${PROJECT_ROOT_PATH}/src/utils/*.cpp
     ${PROJECT_ROOT_PATH}/src/physics/*.cpp
@@ -33,6 +34,7 @@ add_executable(${PROJECT_NAME} ${SRC})
 
 target_include_directories(${PROJECT_NAME} 
     PRIVATE
+    ${PROJECT_ROOT_PATH}/include/UI
     ${PROJECT_ROOT_PATH}/include/core
     ${PROJECT_ROOT_PATH}/include/utils
     ${PROJECT_ROOT_PATH}/include/physics

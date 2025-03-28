@@ -1,5 +1,5 @@
 #pragma once
-#include "FPScounter.h"
+#include "FPSCounter.h"
 #include <SDL.h>
 #include <SDL2_framerate.h>
 class App {
@@ -8,12 +8,12 @@ class App {
     void Init(int argc, char* argv[]);
     void Run();
     bool running;
-
+    FPSCounter fpsc;
   private:
     App();
     void Destory();
     FPSmanager fpsm;
-    FPSCounter fpsc;
+    
 };
 
 
