@@ -1,11 +1,14 @@
 #include "renderSystem.h"
 #include "eventSystem.h"
 #include "logger.h"
+#include "vector2.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_events.h>
 #include <SDL_keycode.h>
+#include <SDL_video.h>
 
+// singleton
 RenderSystem& RenderSystem::Instance() {
     static RenderSystem instance;
     return instance;
@@ -25,6 +28,9 @@ RenderSystem::~RenderSystem() {
     LOG_INFO("SDL quit");
 }
 
+// init SDL
+// create window and renderer
+// add event listener for window resize event
 bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         F_LOG_ERROR("Fail to init SDL: {}", SDL_GetError());
@@ -42,6 +48,10 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     F_LOG_INFO("SDL window {} created successfully.", windowName);
     windowSize = {width, height};
     F_LOG_INFO("window size: {}.", windowSize);
+    
+    int h, w;
+    SDL_GetWindowSize(window, &w, &h);
+    F_LOG_INFO("window size From SDL: {}.", Vector2i(w, h));
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
@@ -53,11 +63,13 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
 
     LOG_INFO("SDL renderer created successfully.");
 
+
     GET_EventSystem.AddEventListener(SDL_WINDOWEVENT, [this](SDL_Event &event) {
         if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
             this->SetWindowSize({event.window.data1, event.window.data2});
         }
     });
+    LOG_INFO("add window resize event listener successfully.");
     return true;
 }
 
@@ -70,6 +82,11 @@ Vector2i RenderSystem::PosWorld2Screen(Vector2f worldPos) {
     Vector2f offset(camera.scale*windowSize.x, camera.scale*windowSize.y);
     Vector2f temp = worldPos - camera.position + offset;
     return Vector2i(temp.x, temp.y);
+}
+
+Vector2f RenderSystem::PosScreen2World(Vector2i windowPos) {
+    Vector2f offset(-1*camera.scale*windowSize.x, -1*camera.scale*windowSize.y);
+    return camera.position + offset + Vector2f(windowPos.x, windowPos.y);
 }
 
 

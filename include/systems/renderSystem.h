@@ -28,6 +28,7 @@ class RenderSystem {
     RenderSystem();
     ~RenderSystem();
     Vector2i PosWorld2Screen(const Vector2f worldPos);
+    Vector2f PosScreen2World(const Vector2i windowPos);
 
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -36,3 +37,5 @@ class RenderSystem {
 };
 
 #define GET_RenderSystem RenderSystem::Instance()
+#define WORLD2SCREEN(pos) RenderSystem::Instance().PosWorld2Screen(pos)
+#define SCREEN2WORLD(pos) RenderSystem::Instance().PosScreen2World(pos)

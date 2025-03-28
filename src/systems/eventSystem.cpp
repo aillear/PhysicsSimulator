@@ -1,28 +1,33 @@
 #include "eventSystem.h"
 #include <SDL_events.h>
 
+
 EventSystem &EventSystem::Instance() {
     static EventSystem instance;
     return instance;
 }
 
 bool EventSystem::RemoveEventListener(SDL_EventType type, EventHandlerID id) {
+    // write lock
+    std::unique_lock lock(mutex_);
     auto it = eventMap_.find(type);
     if (it == eventMap_.end())
         return false;
 
     auto &handlers = it->second;
     handlers.erase(std::remove_if(handlers.begin(), handlers.end(),
-        [id](const EventCallback &callback) {
-                    return reinterpret_cast<EventHandlerID>(&callback) == id;}),
+        [id](const CallBackWrapper &callback) {
+                    return callback.id == id;}),
         handlers.end());
     return true;
 }
 
 void EventSystem::EventDispatcher(SDL_Event &event) {
+    // read lock
+    std::shared_lock lock(mutex_);
     auto& delegate = eventMap_[static_cast<SDL_EventType>(event.type)];
     for (auto& handler : delegate) {
-        handler(event);
+        handler.callback(event);
     }
 }
 
