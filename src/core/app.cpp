@@ -41,12 +41,12 @@ void App::Run() {
         SDL_framerateDelay(&fpsm);
         GET_EventSystem.HandleEvent();
         // test here
-        GET_RenderSystem.drawCommands.emplace_back(DrawCommand
+        GET_RenderSystem.AddUIDrawCommand(DrawCommand
             {true,
              0,
              DrawCommand::ShapeType::RECT,
              Transform({100, 100}, 100),
-             {Vector2f(100, 100), Vector2f(200, 200)},
+             {Vector2f(100, 100), Vector2f(800, 200)},
              nullptr,
              {255, 255, 0, 255}});
 

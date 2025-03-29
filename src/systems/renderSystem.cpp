@@ -8,6 +8,7 @@
 #include <SDL_events.h>
 #include <SDL_keycode.h>
 #include <SDL_video.h>
+#include <utility>
 
 // singleton
 RenderSystem &RenderSystem::Instance() {
@@ -18,6 +19,7 @@ RenderSystem &RenderSystem::Instance() {
 RenderSystem::RenderSystem()
     : window(nullptr), renderer(nullptr), windowSize(0, 0),
       camera({0.0f, 0.0f}, 1) {
+        UIdrawCommands.reserve(1000); // reserve 1000 draw commands
     ;
 }
 
@@ -29,9 +31,15 @@ RenderSystem::~RenderSystem() {
     LOG_INFO("SDL quit");
 }
 
-// init SDL
-// create window and renderer
-// add event listener for window resize event
+/**
+ * @brief initialize SDL and create window and renderer.
+ * 
+ * @param width width of the window
+ * @param height height of the window
+ * @param windowName window display name
+ * @return true initialized successfully
+ * @return false fail to initialize
+ */
 bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     // init SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -50,11 +58,8 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     }
     F_LOG_INFO("SDL window {} created successfully.", windowName);
     windowSize = {width, height};
+    camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
     F_LOG_INFO("window size: {}.", windowSize);
-
-    // int h, w;
-    // SDL_GetWindowSize(window, &w, &h);
-    // F_LOG_INFO("window size From SDL: {}.", Vector2i(w, h));
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
@@ -70,15 +75,16 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     GET_EventSystem.AddEventListener(SDL_WINDOWEVENT, [this](SDL_Event &event) {
         if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
             this->SetWindowSize({event.window.data1, event.window.data2});
+            this->camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
         }
     });
-    LOG_INFO("add window resize event listener successfully.");
+    LOG_INFO("Add window resize event listener successfully.");
     return true;
 }
 
 void RenderSystem::SetWindowSize(Vector2i size) {
     windowSize = size;
-    F_LOG_INFO("resize window to: {}.", windowSize);
+    F_LOG_INFO("Resize window to: {}.", windowSize);
 }
 
 Vector2i RenderSystem::PosWorld2Screen(Vector2f worldPos) {
@@ -98,7 +104,7 @@ void RenderSystem::Render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    for (auto &cmd : drawCommands) {
+    for (auto &cmd : UIdrawCommands) {
         switch (cmd.shapeType) {
         case DrawCommand::ShapeType::LINE:
             DrawLine(cmd);
@@ -119,9 +125,17 @@ void RenderSystem::Render() {
             break;
         }
     }
-    drawCommands.clear();
+    UIdrawCommands.clear();
     SDL_RenderPresent(renderer);
 }
+
+void RenderSystem::AddUIDrawCommand(DrawCommand&& cmd) {
+    UIdrawCommands.emplace_back(std::forward<DrawCommand>(cmd));
+}
+
+
+
+
 
 // all are untested.
 
@@ -150,7 +164,7 @@ void RenderSystem::DrawTriangle(DrawCommand &cmd) {
 }
 
 /**
- * @brief 
+ * @brief Draw rectangle. if isFilled is true, draw a filled rectangle.
  *
  * @param cmd
  */

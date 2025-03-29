@@ -51,9 +51,9 @@ class RenderSystem {
     bool Init(int width = 1800, int height = 900,
               const std::string &windowName = "physics demo");
     void SetWindowSize(Vector2i size);
-    
+    void AddUIDrawCommand(DrawCommand&& cmd);
     void Render();
-    std::vector<DrawCommand> drawCommands;
+    
   private:
     RenderSystem();
     ~RenderSystem();
@@ -70,6 +70,7 @@ class RenderSystem {
     SDL_Renderer *renderer;
     Vector2i windowSize;
     Camera camera;
+    std::vector<DrawCommand> UIdrawCommands;
     
 };
 
