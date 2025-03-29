@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "pathMgr.h"
 #include "renderSystem.h"
-#include <SDL2_framerate.h>
+#include <SDL3_framerate.h>
 
 App &App::Instance() {
     static App instance;
@@ -29,7 +29,7 @@ void App::Init(int argc, char *argv[]) {
     // add event listener
     // quit event
     GET_EventSystem.AddEventListener(
-        SDL_QUIT, [this](SDL_Event &event) { this->running = false; });
+        SDL_EVENT_QUIT, [this](SDL_Event &event) { this->running = false; });
     LOG_INFO("QUIT event listener added.");
     LOG_INFO("App initialized.");
 }

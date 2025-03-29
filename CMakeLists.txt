@@ -11,7 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT_PATH}/bin)
 
 file(GLOB SRC 
     ${PROJECT_ROOT_PATH}/src/*.cpp
-    ${PROJECT_ROOT_PATH}/src/UI/*.cpp
+    # ${PROJECT_ROOT_PATH}/src/UI/*.cpp
     ${PROJECT_ROOT_PATH}/src/core/*.cpp
     ${PROJECT_ROOT_PATH}/src/utils/*.cpp
     ${PROJECT_ROOT_PATH}/src/physics/*.cpp
@@ -20,15 +20,15 @@ file(GLOB SRC
 )
 
 # package
-set(SDL2_DIR "${PROJECT_ROOT_PATH}/extern/SDL2/lib/cmake/SDL2")
-set(SDL2_ttf_DIR "${PROJECT_ROOT_PATH}/extern/SDL2_ttf/lib/cmake/SDL2_ttf")
-set(SDL2_image_DIR "${PROJECT_ROOT_PATH}/extern/SDL2_image/lib/cmake/SDL2_image")
-set(SDL2_gfx_DIR "${PROJECT_ROOT_PATH}/extern/SDL2_gfx/lib/cmake/SDL2_gfx")
+set(SDL3_DIR "${PROJECT_ROOT_PATH}/extern/SDL3/lib/cmake/SDL3")
+set(SDL3_ttf_DIR "${PROJECT_ROOT_PATH}/extern/SDL3_ttf/lib/cmake/SDL3_ttf")
+set(SDL3_gfx_DIR "${PROJECT_ROOT_PATH}/extern/SDL3_gfx/lib/cmake/SDL3_gfx")
+set(SDL3_image_DIR "${PROJECT_ROOT_PATH}/extern/SDL3_image/lib/cmake/SDL3_image")
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_gfx REQUIRED)
+find_package(SDL3 REQUIRED)
+find_package(SDL3_ttf REQUIRED)
+find_package(SDL3_gfx REQUIRED)
+find_package(SDL3_image REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SRC})
 
@@ -44,11 +44,10 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE
-    SDL2::SDL2 
-    SDL2::SDL2main 
-    SDL2_ttf::SDL2_ttf 
-    SDL2_image::SDL2_image
-    SDL2_gfx::SDL2_gfx
+    SDL3::SDL3
+    SDL3_ttf::SDL3_ttf
+    SDL3_gfx::SDL3_gfx
+    SDL3_image::SDL3_image
 )
 
 # add_subdirectory(test)

@@ -2,9 +2,9 @@
 
 #include "vector2.h"
 #include "transform.h"
-#include <SDL_pixels.h>
-#include <SDL_render.h>
-#include <SDL_video.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_video.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -57,8 +57,8 @@ class RenderSystem {
   private:
     RenderSystem();
     ~RenderSystem();
-    Vector2i PosWorld2Screen(const Vector2f worldPos);
-    Vector2f PosScreen2World(const Vector2i windowPos);
+    Vector2f PosWorld2Screen(const Vector2f worldPos);
+    Vector2f PosScreen2World(const Vector2f windowPos);
 
     inline void DrawLine(DrawCommand& cmd);
     inline void DrawTriangle(DrawCommand& cmd);

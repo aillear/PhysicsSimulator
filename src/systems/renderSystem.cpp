@@ -1,13 +1,15 @@
 #include "renderSystem.h"
+#include "SDL3/SDL_render.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "vector2.h"
-#include <SDL.h>
-#include <SDL2_gfxPrimitives.h>
-#include <SDL_error.h>
-#include <SDL_events.h>
-#include <SDL_keycode.h>
-#include <SDL_video.h>
+#include <SDL3./SDL.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_video.h>
+#include <SDL3_gfxPrimitives.h>
+#include <cstddef>
 #include <utility>
 
 // singleton
@@ -19,7 +21,7 @@ RenderSystem &RenderSystem::Instance() {
 RenderSystem::RenderSystem()
     : window(nullptr), renderer(nullptr), windowSize(0, 0),
       camera({0.0f, 0.0f}, 1) {
-        UIdrawCommands.reserve(1000); // reserve 1000 draw commands
+    UIdrawCommands.reserve(1000); // reserve 1000 draw commands
     ;
 }
 
@@ -33,7 +35,7 @@ RenderSystem::~RenderSystem() {
 
 /**
  * @brief initialize SDL and create window and renderer.
- * 
+ *
  * @param width width of the window
  * @param height height of the window
  * @param windowName window display name
@@ -42,15 +44,14 @@ RenderSystem::~RenderSystem() {
  */
 bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     // init SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         F_LOG_ERROR("Fail to init SDL: {}", SDL_GetError());
         return false;
     }
     LOG_INFO("SDL initialized");
 
     // create window and renderer
-    window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED, width, height,
+    window = SDL_CreateWindow(windowName.c_str(), width, height,
                               SDL_WINDOW_RESIZABLE);
     if (window == nullptr) {
         F_LOG_ERROR("Fail to create SDL window: {}", SDL_GetError());
@@ -61,7 +62,7 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
     F_LOG_INFO("window size: {}.", windowSize);
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         F_LOG_ERROR("Fail to create SDL renderer: {}", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -72,12 +73,11 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     LOG_INFO("SDL renderer created successfully.");
 
     // add window resize event listener
-    GET_EventSystem.AddEventListener(SDL_WINDOWEVENT, [this](SDL_Event &event) {
-        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+    GET_EventSystem.AddEventListener(
+        SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
             this->SetWindowSize({event.window.data1, event.window.data2});
             this->camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
-        }
-    });
+        });
     LOG_INFO("Add window resize event listener successfully.");
     return true;
 }
@@ -87,16 +87,16 @@ void RenderSystem::SetWindowSize(Vector2i size) {
     F_LOG_INFO("Resize window to: {}.", windowSize);
 }
 
-Vector2i RenderSystem::PosWorld2Screen(Vector2f worldPos) {
-    Vector2f offset(camera.scale * windowSize.x * 0.5, camera.scale * windowSize.y * 0.5);
-    Vector2f temp = worldPos - camera.position + offset;
-    return Vector2i(temp.x, temp.y);
+Vector2f RenderSystem::PosWorld2Screen(Vector2f worldPos) {
+    Vector2f offset(camera.scale * windowSize.x * 0.5,
+                    camera.scale * windowSize.y * 0.5);
+    return worldPos - camera.position + offset;
 }
 
-Vector2f RenderSystem::PosScreen2World(Vector2i windowPos) {
+Vector2f RenderSystem::PosScreen2World(Vector2f windowPos) {
     Vector2f offset(-0.5 * camera.scale * windowSize.x,
                     -0.5 * camera.scale * windowSize.y);
-    return camera.position + offset + Vector2f(windowPos.x, windowPos.y);
+    return camera.position + offset + windowPos;
 }
 
 void RenderSystem::Render() {
@@ -129,22 +129,18 @@ void RenderSystem::Render() {
     SDL_RenderPresent(renderer);
 }
 
-void RenderSystem::AddUIDrawCommand(DrawCommand&& cmd) {
+void RenderSystem::AddUIDrawCommand(DrawCommand &&cmd) {
     UIdrawCommands.emplace_back(std::forward<DrawCommand>(cmd));
 }
-
-
-
-
 
 // all are untested.
 
 void RenderSystem::DrawLine(DrawCommand &cmd) {
-    Vector2i start = PosWorld2Screen(cmd.line.start);
-    Vector2i end = PosWorld2Screen(cmd.line.end);
+    Vector2f start = PosWorld2Screen(cmd.line.start);
+    Vector2f end = PosWorld2Screen(cmd.line.end);
     SDL_SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b,
                            cmd.color.a);
-    SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
+    SDL_RenderLine(renderer, start.x, start.y, end.x, end.y);
 }
 
 /**
@@ -153,14 +149,13 @@ void RenderSystem::DrawLine(DrawCommand &cmd) {
  * @param cmd drawCommand
  */
 void RenderSystem::DrawTriangle(DrawCommand &cmd) {
-    Vector2i p1 = PosWorld2Screen(cmd.triangle.p1);
-    Vector2i p2 = PosWorld2Screen(cmd.triangle.p2);
-    Vector2i p3 = PosWorld2Screen(cmd.triangle.p3);
+    Vector2f p1 = PosWorld2Screen(cmd.triangle.p1);
+    Vector2f p2 = PosWorld2Screen(cmd.triangle.p2);
+    Vector2f p3 = PosWorld2Screen(cmd.triangle.p3);
     SDL_SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b,
                            cmd.color.a);
-    SDL_Point points[4] = {
-        {p1.x, p1.y}, {p2.x, p2.y}, {p3.x, p3.y}, {p1.x, p1.y}};
-    SDL_RenderDrawLines(renderer, points, 4);
+    SDL_FPoint points[4] = {p1, p2, p3, p1};
+    SDL_RenderLines(renderer, points, 4);
 }
 
 /**
@@ -169,8 +164,8 @@ void RenderSystem::DrawTriangle(DrawCommand &cmd) {
  * @param cmd
  */
 void RenderSystem::DrawRect(DrawCommand &cmd) {
-    Vector2i topLeft = PosWorld2Screen(cmd.rect.topLeft);
-    Vector2i buttomRight = PosWorld2Screen(cmd.rect.buttomRigt);
+    Vector2f topLeft = PosWorld2Screen(cmd.rect.topLeft);
+    Vector2f buttomRight = PosWorld2Screen(cmd.rect.buttomRigt);
 
     if (cmd.isFilled)
         boxRGBA(renderer, topLeft.x, topLeft.y, buttomRight.x, buttomRight.y,

@@ -1,0 +1,11 @@
+prefix=/install
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/SDL3
+
+Name: SDL3_gfx
+Description: Drawing primitives library for SDL3
+Version: 1.0.1
+Requires: sdl3 >= 3.0.0
+Libs: -L${libdir} -lSDL3_gfx
+Cflags: -I${includedir}

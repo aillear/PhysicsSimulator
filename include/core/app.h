@@ -1,7 +1,7 @@
 #pragma once
 #include "FPSCounter.h"
-#include <SDL.h>
-#include <SDL2_framerate.h>
+#include <SDL3/SDL.h>
+#include <SDL3_framerate.h>
 class App {
   public:
     static App& Instance();
