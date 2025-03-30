@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL_rect.h>
 #include <format>
+#include <glm/ext/vector_float2.hpp>
 #include <ostream>
 
 template <typename T> struct Vector2 {
@@ -12,7 +13,9 @@ template <typename T> struct Vector2 {
     Vector2(SDL_Point& p) : x(p.x), y(p.y) {;}
     Vector2(SDL_FPoint& p) : x(p.x), y(p.y) {;}
     Vector2(std::pair<T, T> &p) : x(p.first), y(p.second) { ; }
+    Vector2(glm::vec <2, T> &p) : x(p.x), y(p.y) { ; }
     operator std::pair<T, T>() const;
+    operator glm::vec<2, T>() const;
     operator SDL_Point() const;
     operator SDL_FPoint() const;
 

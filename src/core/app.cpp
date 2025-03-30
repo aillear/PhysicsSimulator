@@ -4,7 +4,9 @@
 #include "pathMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
-
+#include <glm/ext/vector_float2.hpp>
+#include <glm/vec2.hpp>
+#include "vector2.h"
 App &App::Instance() {
     static App instance;
     return instance;
@@ -46,7 +48,7 @@ void App::Run() {
              0,
              DrawCommand::ShapeType::RECT,
              Transform({100, 100}, 100),
-             {Vector2f(100, 100), Vector2f(800, 200)},
+             {glm::vec2(100, 100), glm::vec2(800, 200)},
              nullptr,
              {255, 255, 0, 255}});
 

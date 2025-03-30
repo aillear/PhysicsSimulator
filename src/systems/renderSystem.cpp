@@ -10,6 +10,7 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3_gfxPrimitives.h>
 #include <cstddef>
+#include <glm/ext/vector_int2.hpp>
 #include <utility>
 
 // singleton
@@ -60,7 +61,7 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     F_LOG_INFO("SDL window {} created successfully.", windowName);
     windowSize = {width, height};
     camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
-    F_LOG_INFO("window size: {}.", windowSize);
+    F_LOG_INFO("window size: {}.", Vector2i(windowSize));
 
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
@@ -71,37 +72,39 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
     }
 
     LOG_INFO("SDL renderer created successfully.");
-
+    // set background color
+    backgroundColor = {44, 49, 60, 255};
     // add window resize event listener
     GET_EventSystem.AddEventListener(
         SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
             this->SetWindowSize({event.window.data1, event.window.data2});
             this->camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
         });
-    LOG_INFO("Add window resize event listener successfully.");
     return true;
 }
 
-void RenderSystem::SetWindowSize(Vector2i size) {
+void RenderSystem::SetWindowSize(glm::ivec2 size) {
     windowSize = size;
-    F_LOG_INFO("Resize window to: {}.", windowSize);
+    F_LOG_INFO("Resize window to: {}.", (Vector2i)windowSize);
 }
 
-Vector2f RenderSystem::PosWorld2Screen(Vector2f worldPos) {
-    Vector2f offset(camera.scale * windowSize.x * 0.5,
+glm::vec2 RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
+    glm::vec2 offset(camera.scale * windowSize.x * 0.5,
                     camera.scale * windowSize.y * 0.5);
     return worldPos - camera.position + offset;
 }
 
-Vector2f RenderSystem::PosScreen2World(Vector2f windowPos) {
-    Vector2f offset(-0.5 * camera.scale * windowSize.x,
+glm::vec2 RenderSystem::PosScreen2World(glm::vec2 windowPos) {
+    glm::vec2 offset(-0.5 * camera.scale * windowSize.x,
                     -0.5 * camera.scale * windowSize.y);
     return camera.position + offset + windowPos;
 }
 
 void RenderSystem::Render() {
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
+                           backgroundColor.b, backgroundColor.a);
+                           
     SDL_RenderClear(renderer);
 
     for (auto &cmd : UIdrawCommands) {
@@ -136,8 +139,8 @@ void RenderSystem::AddUIDrawCommand(DrawCommand &&cmd) {
 // all are untested.
 
 void RenderSystem::DrawLine(DrawCommand &cmd) {
-    Vector2f start = PosWorld2Screen(cmd.line.start);
-    Vector2f end = PosWorld2Screen(cmd.line.end);
+    glm::vec2 start = PosWorld2Screen(cmd.line.start);
+    glm::vec2 end = PosWorld2Screen(cmd.line.end);
     SDL_SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b,
                            cmd.color.a);
     SDL_RenderLine(renderer, start.x, start.y, end.x, end.y);
@@ -149,12 +152,13 @@ void RenderSystem::DrawLine(DrawCommand &cmd) {
  * @param cmd drawCommand
  */
 void RenderSystem::DrawTriangle(DrawCommand &cmd) {
-    Vector2f p1 = PosWorld2Screen(cmd.triangle.p1);
-    Vector2f p2 = PosWorld2Screen(cmd.triangle.p2);
-    Vector2f p3 = PosWorld2Screen(cmd.triangle.p3);
+    glm::vec2 p1 = PosWorld2Screen(cmd.triangle.p1);
+    glm::vec2 p2 = PosWorld2Screen(cmd.triangle.p2);
+    glm::vec2 p3 = PosWorld2Screen(cmd.triangle.p3);
     SDL_SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b,
                            cmd.color.a);
-    SDL_FPoint points[4] = {p1, p2, p3, p1};
+    SDL_FPoint points[4] = {{p1.x, p1.y}, {p2.x, p2.y}, {p3.x, p3.y},
+                            {p1.x, p1.y}};
     SDL_RenderLines(renderer, points, 4);
 }
 
@@ -164,8 +168,8 @@ void RenderSystem::DrawTriangle(DrawCommand &cmd) {
  * @param cmd
  */
 void RenderSystem::DrawRect(DrawCommand &cmd) {
-    Vector2f topLeft = PosWorld2Screen(cmd.rect.topLeft);
-    Vector2f buttomRight = PosWorld2Screen(cmd.rect.buttomRigt);
+    glm::vec2 topLeft = PosWorld2Screen(cmd.rect.topLeft);
+    glm::vec2 buttomRight = PosWorld2Screen(cmd.rect.buttomRigt);
 
     if (cmd.isFilled)
         boxRGBA(renderer, topLeft.x, topLeft.y, buttomRight.x, buttomRight.y,

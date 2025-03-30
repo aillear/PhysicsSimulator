@@ -5,6 +5,8 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,9 +31,9 @@ struct DrawCommand {
     
     Transform transform;
     union {
-        struct {Vector2f start, end;} line;
-        struct {Vector2f p1, p2, p3;} triangle;
-        struct {Vector2f topLeft, buttomRigt;} rect;
+        struct {glm::vec2 start, end;} line;
+        struct {glm::vec2 p1, p2, p3;} triangle;
+        struct {glm::vec2 topLeft, buttomRigt;} rect;
         struct {float radius;} circle;
     };
     std::shared_ptr<std::string> text;
@@ -40,7 +42,7 @@ struct DrawCommand {
 
 struct Camera {
     // pos in world
-    Vector2f position;
+    glm::vec2 position;
     float scale;
 };
 
@@ -50,15 +52,15 @@ class RenderSystem {
     static RenderSystem &Instance();
     bool Init(int width = 1800, int height = 900,
               const std::string &windowName = "physics demo");
-    void SetWindowSize(Vector2i size);
+    void SetWindowSize(glm::ivec2 size);
     void AddUIDrawCommand(DrawCommand&& cmd);
     void Render();
     
   private:
     RenderSystem();
     ~RenderSystem();
-    Vector2f PosWorld2Screen(const Vector2f worldPos);
-    Vector2f PosScreen2World(const Vector2f windowPos);
+    glm::vec2 PosWorld2Screen(const glm::vec2 worldPos);
+    glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 
     inline void DrawLine(DrawCommand& cmd);
     inline void DrawTriangle(DrawCommand& cmd);
@@ -68,8 +70,9 @@ class RenderSystem {
 
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Vector2i windowSize;
+    glm::ivec2 windowSize;
     Camera camera;
+    SDL_Color backgroundColor;
     std::vector<DrawCommand> UIdrawCommands;
     
 };

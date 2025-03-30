@@ -8,7 +8,7 @@
 class UIComponent {
   public:
     virtual ~UIComponent() = default;
-    virtual void draw() = 0;
+    virtual void render() = 0;
     virtual void update() = 0;
     virtual void handleEvent(SDL_Event &event) = 0;
     bool enabled;

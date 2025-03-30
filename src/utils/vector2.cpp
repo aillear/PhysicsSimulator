@@ -15,6 +15,10 @@ template<typename T> Vector2<T>::operator SDL_FPoint() const {
     return {(float)x, (float)y};
 }
 
+template <typename T> Vector2<T>::operator glm::vec<2, T>() const {
+    return glm::vec<2, T>(x, y);
+}
+
 template <typename T> T Vector2<T>::Length() {
     return std::sqrt(x * x + y * y);
 }

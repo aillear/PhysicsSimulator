@@ -1,8 +1,9 @@
 # pragma once
 
 #include "vector2.h"
+#include <glm/ext/vector_float2.hpp>
 struct Transform {
-    Vector2f position;
+    glm::vec2 position;
     float rotation;
 
 };
