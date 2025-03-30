@@ -10,12 +10,12 @@ template <typename T> struct Vector2 {
     T y;
 
     Vector2(T _x, T _y) : x(_x), y(_y) { ; }
-    Vector2(SDL_Point& p) : x(p.x), y(p.y) {;}
-    Vector2(SDL_FPoint& p) : x(p.x), y(p.y) {;}
-    Vector2(std::pair<T, T> &p) : x(p.first), y(p.second) { ; }
-    Vector2(glm::vec <2, T> &p) : x(p.x), y(p.y) { ; }
+    Vector2(const SDL_Point& p) : x(p.x), y(p.y) {;}
+    Vector2(const SDL_FPoint& p) : x(p.x), y(p.y) {;}
+    Vector2(const std::pair<T, T> &p) : x(p.first), y(p.second) { ; }
+    Vector2(const glm::vec <2, T, glm::defaultp> &p) : x(p.x), y(p.y) { ; }
     operator std::pair<T, T>() const;
-    operator glm::vec<2, T>() const;
+    operator glm::vec<2, T, glm::defaultp>() const;
     operator SDL_Point() const;
     operator SDL_FPoint() const;
 

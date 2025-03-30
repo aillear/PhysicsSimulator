@@ -1,17 +1,18 @@
-#include "renderSystem.h"
-#include "SDL3/SDL_render.h"
-#include "eventSystem.h"
-#include "logger.h"
 #include "vector2.h"
+#include "logger.h"
+#include "eventSystem.h"
+#include "renderSystem.h"
+#include <cstddef>
+#include <glm/ext/vector_float2.hpp>
+#include <utility>
 #include <SDL3./SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
-#include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_keycode.h>
 #include <SDL3_gfxPrimitives.h>
-#include <cstddef>
 #include <glm/ext/vector_int2.hpp>
-#include <utility>
 
 // singleton
 RenderSystem &RenderSystem::Instance() {
@@ -20,9 +21,9 @@ RenderSystem &RenderSystem::Instance() {
 }
 
 RenderSystem::RenderSystem()
-    : window(nullptr), renderer(nullptr), windowSize(0, 0),
+    : window(nullptr), renderer(nullptr), halfWindowSize(0, 0),
       camera({0.0f, 0.0f}, 1) {
-    UIdrawCommands.reserve(1000); // reserve 1000 draw commands
+    UIdrawCommands.reserve(10000); // reserve 10000 draw commands
     ;
 }
 
@@ -43,14 +44,14 @@ RenderSystem::~RenderSystem() {
  * @return true initialized successfully
  * @return false fail to initialize
  */
-bool RenderSystem::Init(int width, int height, const std::string &windowName) {
+bool RenderSystem::Init(int vertexBufferSize, int width, int height, const std::string &windowName) {
+    LOG_INFO("Render system initializing...");
+
     // init SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         F_LOG_ERROR("Fail to init SDL: {}", SDL_GetError());
         return false;
     }
-    LOG_INFO("SDL initialized");
-
     // create window and renderer
     window = SDL_CreateWindow(windowName.c_str(), width, height,
                               SDL_WINDOW_RESIZABLE);
@@ -58,11 +59,8 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
         F_LOG_ERROR("Fail to create SDL window: {}", SDL_GetError());
         return false;
     }
-    F_LOG_INFO("SDL window {} created successfully.", windowName);
-    windowSize = {width, height};
-    camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
-    F_LOG_INFO("window size: {}.", Vector2i(windowSize));
-
+    halfWindowSize = {0.5f * width, 0.5f * height};
+    F_LOG_INFO("Window size :{}", Vector2f(halfWindowSize));
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         F_LOG_ERROR("Fail to create SDL renderer: {}", SDL_GetError());
@@ -71,40 +69,55 @@ bool RenderSystem::Init(int width, int height, const std::string &windowName) {
         return false;
     }
 
-    LOG_INFO("SDL renderer created successfully.");
     // set background color
     backgroundColor = {44, 49, 60, 255};
     // add window resize event listener
+    camera.setPosition(0.5f * halfWindowSize.x, 0.5f * halfWindowSize.y);
+    camera.Init();
     GET_EventSystem.AddEventListener(
         SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
+            glm::vec2 oldCenter = halfWindowSize;
             this->SetWindowSize({event.window.data1, event.window.data2});
-            this->camera.position = {0.5f * windowSize.x, windowSize.y * 0.5f};
+            this->camera.setPosition(camera.getPosition() + halfWindowSize - oldCenter);
         });
+
+    // set buffer size
+    if (vertexBufferSize <= 0) {
+        F_LOG_ERROR("Vertex buffer size must be greater than 0, current is {}.", vertexBufferSize);
+        return false;
+    }
+    else if (vertexBufferSize < 10'000) {
+        F_LOG_WARNING("Vertex buffer size {} is too small. may cause some problem.", vertexBufferSize);
+    }
+    maxVertexBufferSize = vertexBufferSize;
+    maxIndicesSize = vertexBufferSize * 3; // 3 indices for each vertex
+    vertexBuffer = std::make_unique<SDL_Vertex[]>(maxVertexBufferSize);
+    indices = std::make_unique<int[]>(maxIndicesSize);
+    F_LOG_INFO("Vertex buffer size: {}.", maxVertexBufferSize);
+    F_LOG_INFO("Indices buffer size: {}.", maxIndicesSize);
+
+    LOG_INFO("Render system initialized successfully.");
     return true;
 }
 
-void RenderSystem::SetWindowSize(glm::ivec2 size) {
-    windowSize = size;
-    F_LOG_INFO("Resize window to: {}.", (Vector2i)windowSize);
+void RenderSystem::SetWindowSize(glm::vec2 size) {
+    halfWindowSize = 0.5f * size;
+    F_LOG_INFO("Resize window to: {}.", (Vector2f)halfWindowSize * 2.0f);
 }
 
 glm::vec2 RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
-    glm::vec2 offset(camera.scale * windowSize.x * 0.5,
-                    camera.scale * windowSize.y * 0.5);
-    return worldPos - camera.position + offset;
+    return (worldPos - camera.getPosition()) * camera.getZoom() + halfWindowSize;
 }
 
-glm::vec2 RenderSystem::PosScreen2World(glm::vec2 windowPos) {
-    glm::vec2 offset(-0.5 * camera.scale * windowSize.x,
-                    -0.5 * camera.scale * windowSize.y);
-    return camera.position + offset + windowPos;
+glm::vec2 RenderSystem::PosScreen2World(glm::vec2 screenPos) {
+    return (screenPos - halfWindowSize) * camera.getZoomR() + camera.getPosition();
 }
 
 void RenderSystem::Render() {
 
     SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                            backgroundColor.b, backgroundColor.a);
-                           
+
     SDL_RenderClear(renderer);
 
     for (auto &cmd : UIdrawCommands) {
@@ -118,12 +131,6 @@ void RenderSystem::Render() {
         case DrawCommand::ShapeType::RECT:
             DrawRect(cmd);
             break;
-        // case DrawCommand::ShapeType::CIRCLE:
-        //     DrawCircle(cmd);
-        //     break;
-        // case DrawCommand::ShapeType::TEXT:
-        //     DrawText(cmd);
-        //     break;
         default:
             break;
         }
@@ -157,8 +164,8 @@ void RenderSystem::DrawTriangle(DrawCommand &cmd) {
     glm::vec2 p3 = PosWorld2Screen(cmd.triangle.p3);
     SDL_SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b,
                            cmd.color.a);
-    SDL_FPoint points[4] = {{p1.x, p1.y}, {p2.x, p2.y}, {p3.x, p3.y},
-                            {p1.x, p1.y}};
+    SDL_FPoint points[4] = {
+        {p1.x, p1.y}, {p2.x, p2.y}, {p3.x, p3.y}, {p1.x, p1.y}};
     SDL_RenderLines(renderer, points, 4);
 }
 
@@ -170,13 +177,6 @@ void RenderSystem::DrawTriangle(DrawCommand &cmd) {
 void RenderSystem::DrawRect(DrawCommand &cmd) {
     glm::vec2 topLeft = PosWorld2Screen(cmd.rect.topLeft);
     glm::vec2 buttomRight = PosWorld2Screen(cmd.rect.buttomRigt);
-
-    if (cmd.isFilled)
-        boxRGBA(renderer, topLeft.x, topLeft.y, buttomRight.x, buttomRight.y,
-                cmd.color.r, cmd.color.g, cmd.color.b, cmd.color.a);
-
-    else
-        rectangleRGBA(renderer, topLeft.x, topLeft.y, buttomRight.x,
-                      buttomRight.y, cmd.color.r, cmd.color.g, cmd.color.b,
-                      cmd.color.a);
+    rectangleRGBA(renderer, topLeft.x, topLeft.y, buttomRight.x, buttomRight.y,
+                  cmd.color.r, cmd.color.g, cmd.color.b, cmd.color.a);
 }

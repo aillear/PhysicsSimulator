@@ -6,7 +6,8 @@
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
-#include "vector2.h"
+
+
 App &App::Instance() {
     static App instance;
     return instance;
@@ -18,15 +19,15 @@ void App::Init(int argc, char *argv[]) {
     running = true;
     // utils initialize
     GET_PathMgr.Init(); // PathMgr should be initialized first
-    GET_Logger.Init(Logger::INFO, "app.log",
+    GET_Logger.Init(Logger::DEBUG, "app.log",
                     false); // when this is done, the logger will be usable
 
     // system initialize
-    GET_RenderSystem.Init(800, 600, "physics demo");
+    GET_RenderSystem.Init(1'000'000, 800, 600, "physics demo");
     GET_EventSystem.Init();
 
     SDL_initFramerate(&fpsm);
-    SDL_setFramerate(&fpsm, 60);
+    SDL_setFramerate(&fpsm, 120);
 
     // add event listener
     // quit event
@@ -34,6 +35,8 @@ void App::Init(int argc, char *argv[]) {
         SDL_EVENT_QUIT, [this](SDL_Event &event) { this->running = false; });
     LOG_INFO("QUIT event listener added.");
     LOG_INFO("App initialized.");
+    LOG_INFO("Running...");
+
 }
 
 void App::Run() {
@@ -44,11 +47,11 @@ void App::Run() {
         GET_EventSystem.HandleEvent();
         // test here
         GET_RenderSystem.AddUIDrawCommand(DrawCommand
-            {true,
+            {
              0,
              DrawCommand::ShapeType::RECT,
              Transform({100, 100}, 100),
-             {glm::vec2(100, 100), glm::vec2(800, 200)},
+             {glm::vec2(100, 100), glm::vec2(200, 200)},
              nullptr,
              {255, 255, 0, 255}});
 

@@ -1,6 +1,5 @@
 #pragma once
 #include "UIComponent.h"
-#include "vector2.h"
 #include <glm/ext/vector_int2.hpp>
 
 class UIButton : public UIComponent {
@@ -8,9 +7,9 @@ class UIButton : public UIComponent {
     UIButton(glm::ivec2 leftTop, glm::ivec2 rightBottom, SDL_Color color,
              SDL_Color colorHover, SDL_Color colorPressed);
     ~UIButton() override = default;
-    void render() override;
-    void update() override;
-    void handleEvent(SDL_Event &event) override;
+    void Render() override;
+    void Update(float dt) override;
+    void HandleEvent(SDL_Event &event) override;
 
   private:
     SDL_Color colorHover;
