@@ -131,7 +131,7 @@ void RenderSystem::Render() {
                            backgroundColor.b, backgroundColor.a);
     SDL_RenderClear(renderer);
 
-    HandleUIDrawCommand( );
+    HandleUIDrawCommand();
     
     SDL_RenderPresent(renderer);
 
@@ -164,21 +164,34 @@ void RenderSystem::HandleUIDrawCommand() {
             isLastText = true;
             break;
         }
+
     }
     if (vertexBufferSize > 0) {
-        auto before = std::chrono::high_resolution_clock::now();
         SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
-                           vertexBufferSize, indices.get(), indicesSize);
-        auto after = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-            after - before);
-        F_LOG_INFO("Render geometry time: {} ms", duration.count());
+        vertexBufferSize, indices.get(), indicesSize);
     }
+    UIdrawCommands.clear();
 }
 
 void RenderSystem::LineCommand(DrawCommand &cmd) {
-    SDL_FPoint p1 = PosWorld2Screen(cmd.rect.p1);
-    SDL_FPoint p2 = PosWorld2Screen(cmd.rect.p2);
+    int vertexBegin = vertexBufferSize;
+    SDL_Vertex *buffer = vertexBuffer.get();
+    SDL_FColor color = cmd.color;
+    SDL_FPoint p[4] = {};
+    p[0] = PosWorld2Screen(cmd.rect.p1);
+    p[1] = PosWorld2Screen(cmd.rect.p2);
+    p[2] = p[1];
+
+    for (int i = 0; i < 3; i++) {
+        buffer[vertexBufferSize].position = p[i];
+        buffer[vertexBufferSize].color = color;
+        buffer[vertexBufferSize].tex_coord = {0, 0};
+        vertexBufferSize++;
+    }
+
+    indices[indicesSize++] = vertexBegin + 0;
+    indices[indicesSize++] = vertexBegin + 1;
+    indices[indicesSize++] = vertexBegin + 2;
 }
 
 void RenderSystem::RectCommand(DrawCommand &cmd) {
@@ -214,5 +227,9 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
                      color.b, color.a);
 }
 
-void RenderSystem::PolygonCommand(DrawCommand &cmd) {}
-void RenderSystem::TextCommand(DrawCommand &cmd) {}
+void RenderSystem::PolygonCommand(DrawCommand &cmd) {
+
+}
+void RenderSystem::TextCommand(DrawCommand &cmd) {
+
+}
