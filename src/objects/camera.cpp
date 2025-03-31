@@ -1,9 +1,7 @@
 #include "camera.h"
 #include "SDL3/SDL_mouse.h"
 #include "eventSystem.h"
-#include "logger.h"
 #include "renderSystem.h"
-#include "vector2.h"
 #include <glm/ext/vector_float2.hpp>
 
 constexpr float MIN_ZOOM = 0.25;

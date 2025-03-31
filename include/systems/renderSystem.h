@@ -1,15 +1,15 @@
 #pragma once
 
-#include "transform.h"
-#include <glm/detail/qualifier.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 #include <camera.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
 #include <glm/ext/vector_int2.hpp>
+#include <glm/detail/qualifier.hpp>
 #include <glm/ext/vector_float2.hpp>
 
 /**
@@ -26,16 +26,15 @@
  */
 struct DrawCommand {
     int layer;
-    enum class ShapeType { LINE, TRIANGLE, RECT, CIRCLE, TEXT } shapeType;
+    enum class ShapeType { LINE, RECT, CIRCLE, POLYGON, TEXT } shapeType;
     
     union {
-        struct {glm::vec2 start, end;} line;
-        struct {glm::vec2 p1, p2, p3;} triangle;
-        struct {glm::vec2 center, size;} rect;
+        struct {glm::vec2 p1, p2;} rect;
         struct {glm::vec2 center; float radius;} circle;
     };
+    std::vector<SDL_Vertex> vertices;
     std::shared_ptr<std::string> text;
-    SDL_Color color;
+    SDL_FColor color;
 };
 
 
@@ -55,15 +54,17 @@ class RenderSystem {
   private:
     RenderSystem();
     ~RenderSystem();
-    glm::vec2 PosWorld2Screen(const glm::vec2 worldPos);
+    SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
     glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 
-    inline void DrawLine(DrawCommand& cmd);
-    inline void DrawTriangle(DrawCommand& cmd);
-    inline void DrawRect(DrawCommand& cmd);
-    inline void DrawCircle(DrawCommand& cmd);
-    inline void DrawText(DrawCommand& cmd);
+    void HandleUIDrawCommand();
     
+    void LineCommand(DrawCommand &cmd);
+    void RectCommand(DrawCommand &cmd);
+    void CircleCommand(DrawCommand &cmd);
+    void PolygonCommand(DrawCommand &cmd);
+    void TextCommand(DrawCommand &cmd);
+
     int vertexBufferSize;
     int indicesSize;
     int maxVertexBufferSize;
