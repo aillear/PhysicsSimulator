@@ -2,7 +2,7 @@
 # include "renderSystem.h"
 # include "eventSystem.h"
 
-void UIButton::render() {
+void UIButton::Render() {
     // Check if the button is enabled before rendering
     if (!enabled) return;
 

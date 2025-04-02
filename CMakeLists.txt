@@ -18,12 +18,13 @@ set(TARGET ${PROJECT_NAME}-${CMAKE_SYSTEM_NAME})
 
 file(GLOB SRC 
     ${PROJECT_ROOT_PATH}/src/*.cpp
-    # ${PROJECT_ROOT_PATH}/src/UI/*.cpp
+    ${PROJECT_ROOT_PATH}/src/UI/*.cpp
     ${PROJECT_ROOT_PATH}/src/core/*.cpp
     ${PROJECT_ROOT_PATH}/src/utils/*.cpp
     ${PROJECT_ROOT_PATH}/src/physics/*.cpp
     ${PROJECT_ROOT_PATH}/src/objects/*.cpp
     ${PROJECT_ROOT_PATH}/src/systems/*.cpp
+    ${PROJECT_ROOT_PATH}/src/UI/element/*.cpp
 )
 
 # package
@@ -49,6 +50,7 @@ target_include_directories(${TARGET}
     ${PROJECT_ROOT_PATH}/include/physics
     ${PROJECT_ROOT_PATH}/include/objects
     ${PROJECT_ROOT_PATH}/include/systems
+    ${PROJECT_ROOT_PATH}/include/UI/element
 )
 
 target_link_libraries(${TARGET}
