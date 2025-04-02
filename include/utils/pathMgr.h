@@ -7,7 +7,12 @@ class PathMgr {
   public:
     static PathMgr &Instance();
 
-    void Init();
+    /**
+     * @brief get project root folder.
+     * 
+     * @param rootCount parent's count from exe path to root path
+     */
+    void Init(int rootCount = 2);
 
     // you can use this function to get resources's path.
     template <typename... Args> fs::path GetPath(Args &&...args) {

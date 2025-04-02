@@ -1,9 +1,9 @@
 #include "app.h"
+#include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "pathMgr.h"
 #include "renderSystem.h"
-#include <random>
 #include <glm/vec2.hpp>
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
@@ -46,15 +46,12 @@ void App::Run() {
         GET_EventSystem.HandleEvent();
 
         for (int i = 0; i < 100; i++) {
+            DrawCommand cmd(ShapeType::CIRCLE, false);
+            cmd.GetBase().circle.center = {500, 500};
+            cmd.GetBase().circle.radius = 100;
+            cmd.GetBase().color = {255, 0, 0, 255};
             // test here
-            GET_RenderSystem.AddUIDrawCommand({
-                0,
-                DrawCommand::ShapeType::RECT,
-                {glm::vec2(i*10, i*10), glm::vec2(i*20, 20*i)},
-                {},
-                nullptr,
-                {1, 0, 0, 1},
-            });
+            GET_RenderSystem.AddUIDrawCommand(std::move(cmd));
         }
 
         GET_RenderSystem.Render();

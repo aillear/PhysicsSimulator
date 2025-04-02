@@ -1,9 +1,9 @@
 # pragma once
-#include "vector2.h"
 
+#include <glm/ext/vector_float2.hpp>
 class RigidBody {
-    Vector2f position;
-    Vector2f velocity;
+    glm::vec2 position;
+    glm::vec2 velocity;
 
     float rotation;
     float angularVelocity;

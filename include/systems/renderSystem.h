@@ -1,7 +1,10 @@
 #pragma once
 
+#include <array>
+#include <cmath>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 #include <camera.h>
 #include <SDL3/SDL_rect.h>
@@ -12,31 +15,100 @@
 #include <glm/detail/qualifier.hpp>
 #include <glm/ext/vector_float2.hpp>
 
-/**
- * @brief
- * layer: render layer of the object
- * ShapeType: shape type
- * transform: transform of the object
- * line: line start and end
- * triangle: triangle three points
- * rect: rectangle top left and buttom right
- * circle: circle radius
- * text: text content
- * color: color of the object
- */
-struct DrawCommand {
-    int layer;
-    enum class ShapeType { LINE, RECT, CIRCLE, POLYGON, TEXT } shapeType;
-    
+struct GlmRect { glm::vec2 p1, p2; };
+struct GlmCircle { glm::vec2 center; float radius; };
+enum class ShapeType { POLYGON = 0, TEXT, LINE, RECT, CIRCLE };
+struct BasicCommand {
     union {
-        struct {glm::vec2 p1, p2;} rect;
-        struct {glm::vec2 center; float radius;} circle;
-    };
-    std::vector<SDL_Vertex> vertices;
-    std::shared_ptr<std::string> text;
+        GlmRect rect;
+        GlmCircle circle;
+     };
     SDL_FColor color;
 };
 
+/**
+ * @brief ComplexCommand is a union of SDL_Vertex and std::string.
+ *  aabb is the bounding box of the command.
+ *  The SDL_Vertex is used to draw the polygon.
+ *  when it comes to be string, aabb is the size of the text.
+ */
+struct ComplexCommand {
+    std::variant<
+        std::vector<SDL_Vertex>,
+        std::string
+    > data;
+    SDL_FRect aabb;
+
+    /**
+     * @brief Get the Vertexs object
+     *        this function is unsafe.
+     * 
+     * @return std::vector<SDL_Vertex>& 
+     */
+    std::vector<SDL_Vertex> &GetVertexs() {
+        return std::get<std::vector<SDL_Vertex>>(data);
+    }
+
+    /**
+     * @brief Get the Text object
+     *        this function is unsafe. 
+     *
+     * @return std::string& 
+     */
+    std::string &GetText() {
+        return std::get<std::string>(data);
+    }
+
+    
+};
+
+struct DrawCommand {
+    bool UIMode_;
+    ShapeType shapeType;
+    std::variant<BasicCommand, ComplexCommand> cmd;
+
+    DrawCommand(ShapeType type, bool UIMode) : shapeType(type), UIMode_(UIMode) {
+        switch (type) {
+            case ShapeType::POLYGON: {
+                auto cmdt = ComplexCommand();
+                cmdt.data = std::vector<SDL_Vertex>();
+                cmdt.aabb = {0, 0, 0, 0};
+                cmd = cmdt;
+                break;
+            }
+            case ShapeType::TEXT: {
+                auto cmdt = ComplexCommand();
+                cmdt.data = std::string();
+                cmdt.aabb = {0, 0, 0, 0};
+                cmd = cmdt;
+                break;
+            }
+            default:
+                cmd = BasicCommand{};
+                break;
+        }
+    }
+
+    /**
+     * @brief Get the Base object
+     *       this function is unsafe.
+     * 
+     * @return BasicCommand& 
+     */
+    BasicCommand& GetBase() {
+        return std::get<BasicCommand>(cmd);
+    }
+
+    /**
+     * @brief Get the Complex object
+     *       this function is unsafe.
+     * 
+     * @return ComplexCommand& 
+     */
+    ComplexCommand& GetComplex() {
+        return std::get<ComplexCommand>(cmd);
+    }
+};
 
 
 class RenderSystem {
@@ -83,3 +155,19 @@ class RenderSystem {
 #define GET_RenderSystem RenderSystem::Instance()
 #define WORLD2SCREEN(pos) RenderSystem::Instance().PosWorld2Screen(pos)
 #define SCREEN2WORLD(pos) RenderSystem::Instance().PosScreen2World(pos)
+
+template <int LOD>
+struct CircleLodCache {
+    static const std::array<std::pair<float, float>, 64>& getVertices() {
+        static const auto cache = []() {
+            std::array<std::pair<float, float>, 64> arr{};
+            float angle_step = 2 * M_PI / LOD;
+            for (int i = 0; i < LOD; ++i) {
+                float theta = i * angle_step;
+                arr[i] = {std::cos(theta), std::sin(theta)};
+            }
+            return arr;
+        }();
+        return cache;
+    }
+};

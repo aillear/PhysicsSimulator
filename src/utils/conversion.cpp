@@ -1,5 +1,6 @@
-#include "vector2.h"
+#include "conversion.h"
 #include <cmath>
+#include <glm/ext/vector_float2.hpp>
 #include <ostream>
 #include <utility>
 

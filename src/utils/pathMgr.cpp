@@ -19,7 +19,7 @@ PathMgr& PathMgr::Instance() {
 }
 
 // cross platform support
-void PathMgr::Init() {
+void PathMgr::Init(int rootCount) {
     std::string raw_path;
 
     #ifdef _WIN32
@@ -46,6 +46,8 @@ void PathMgr::Init() {
     }
 
     path_ = fs::path(raw_path);
-    path_ = path_.parent_path();
-    path_ = path_.parent_path();
+    while (rootCount > 0) {
+        path_ = path_.parent_path();
+        rootCount--;
+    }
 }

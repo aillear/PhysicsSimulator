@@ -22,7 +22,6 @@ void Camera::Init() {
                 const glm::vec2 newMousePos = {event.motion.x, event.motion.y};
                 position_ += (lastPosition - newMousePos) * zoomR;
                 lastPosition = newMousePos;
-
             }
         });
 
@@ -39,10 +38,11 @@ void Camera::Init() {
             SDL_GetMouseState(&mouseScreenPos.x, &mouseScreenPos.y);
             glm::vec2 windowCenter = GET_RenderSystem.GetWindowCenter();
             glm::vec2 mouseOffsetZoomed = (mouseScreenPos - windowCenter) * zoomR;
-            glm::vec2 worldPosBeforeZoom = mouseOffsetZoomed+ position_;
-            const float zoomFactor = (event.wheel.y > 0) ? 1.05f : 0.952381f;
-            zoom *= zoomFactor;
-            zoomR = 1 / zoom;
+            glm::vec2 worldPosBeforeZoom = mouseOffsetZoomed + position_;
+            constexpr float zoomFactor[2] =  {1.05f, 0.952381f};
+            int index = (event.wheel.y > 0) ? 0 : 1; // 0: zoom in, 1: zoom out
+            zoom *= zoomFactor[index];
+            zoomR *= zoomFactor[(index + 1) & 1];
             position_ = worldPosBeforeZoom - mouseOffsetZoomed;
         });
 }
