@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL3/SDL_events.h"
+#include "SDL3/SDL_stdinc.h"
 #include <glm/ext/vector_float2.hpp>
 #include <string>
 #include <vector>
@@ -13,6 +14,9 @@ class Object {
   public:
     Object() : objectID(objectCount++) { ; };
     virtual ~Object() = default;
+    void UpdateWrapper(float dt);
+    void RenderWrapper();
+    void HandleEventWrapper(SDL_Event &event);
     // live cycle interface
     virtual void Init() = 0;
     virtual void Render() = 0;
@@ -28,7 +32,9 @@ class Object {
 
     bool GetEnabled() const { return enabled; }
     void SetEnabled(bool enabled) { this->enabled = enabled; }
-
+    void SetName(const std::string &name) { this->name = name; }
+    const std::string &GetName() const { return name; }
+    Uint32 GetID() const { return objectID; }
 
     // child management
     void AddChild(std::shared_ptr<Object> child);

@@ -1,4 +1,32 @@
 # include "object.h"
+#include "SDL3/SDL_events.h"
+
+void Object::UpdateWrapper(float dt) {
+    if (enabled) {
+        Update(dt);
+        for (auto &child : children) {
+            child->UpdateWrapper(dt);
+        }
+    }
+}
+
+void Object::RenderWrapper() {
+    if (!enabled) return;
+    // first draw self, then draw children
+    // this is important, because children may cover self
+    Render();
+    for (auto &child : children) {
+        child->RenderWrapper();
+    }
+}
+
+void Object::HandleEventWrapper(SDL_Event &event) {
+    if (!enabled) return;
+    for (auto &child : children) {
+        child->HandleEventWrapper(event);
+    }
+    HandleEvent(event);
+}
 
 void Object::AddChild(std::shared_ptr<Object> child) {
     if (child->GetParent() != nullptr) {

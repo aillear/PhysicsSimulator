@@ -7,6 +7,15 @@
 
 class UIComponent : public Object {
   public:
+    // UIComponent does not have a fixed update function, so I delete it
+    void fixedUpdate(float dt) = delete;
+    void Render() override = 0;
+    void Update(float dt) override = 0;
+    void HandleEvent(SDL_Event& event) override = 0;
+    void Init() override { ; }
+    void Destroy() override { ; }
+    
+
     bool GetZIndex() const { return zIndex; }
     void SetZIndex(bool zIndex) { this->zIndex = zIndex; }
 
