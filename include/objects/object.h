@@ -8,6 +8,8 @@
 
 /**
  * @brief base class for all objects in the game.
+ *    provide basic init, update, render, destroy virtual functions.
+ *    provide unique id for each object automatically.
  *
  */
 class Object {
@@ -15,6 +17,7 @@ class Object {
     Object() : objectID(objectCount++) { ; };
     virtual ~Object() = default;
     void UpdateWrapper(float dt);
+    void PhysicsUpdateWrapper(float dt);
     void RenderWrapper();
     void HandleEventWrapper(SDL_Event &event);
     // live cycle interface
@@ -26,9 +29,9 @@ class Object {
     virtual void Destroy() = 0;
 
     // event handle interface
-    virtual void OnMouseMove(const glm::vec2 &MousePos) { ; }
-    virtual void OnMouseDown(Uint8 button) { ; }
-    virtual void OnMouseUp(Uint8 button) { ; }
+    virtual void OnMouseMove(SDL_Event &event) = 0;
+    virtual void OnMouseDown(SDL_Event &event) = 0;
+    virtual void OnMouseUp(SDL_Event &event) = 0;
 
     bool GetEnabled() const { return enabled; }
     void SetEnabled(bool enabled) { this->enabled = enabled; }

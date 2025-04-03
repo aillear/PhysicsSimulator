@@ -1,10 +1,11 @@
 #include "FPSCounter.h"
+#include <chrono>
 
 void FPSCounter::StartFrame() {
     auto now = std::chrono::steady_clock::now();
     frameStartTime_ = now;
 
-    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(
+    auto delta = std::chrono::duration_cast<std::chrono::microseconds>(
                      now - lastSecondTime_)
                      .count();
 
@@ -19,9 +20,9 @@ void FPSCounter::StartFrame() {
 
 void FPSCounter::EndFrame() {
     auto now = std::chrono::steady_clock::now();
-    auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+    auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>(
         now - frameStartTime_
     ).count();  
 
-    lastFrameTime_ = static_cast<int>(frameTime);
+    lastFrameTime_ = (frameTime) * 0.001f;
 }

@@ -1,6 +1,7 @@
 # include "UIMgr.h"
 #include "SDL3/SDL_events.h"
 #include "UIComponent.h"
+#include "logger.h"
 #include <string>
 
 
@@ -24,6 +25,9 @@ void UIMgr::Init() {
         SDL_EVENT_MOUSE_BUTTON_UP,
         [this](SDL_Event& event) {HandleSDLEvents(event);}
     );
+
+    F_LOG_INFO("UIMgr initialized, event listeners' id: {}, {}, {}", 
+        eventHandler_1, eventHandler_2, eventHandler_3);
 }
 
 void UIMgr::Destroy() {
@@ -37,13 +41,25 @@ void UIMgr::Update(float dt) {
     // add new UIComponents
     for (auto& comp : uiComponentsToAdd) {
         comp->Init();
-        comp->GetParent()->AddChild(comp);
+        auto parent = comp->GetParent();
+        if (parent == nullptr) {
+            uiComponents.emplace_back(comp);
+        }
+        else parent->AddChild(comp);
     }
     uiComponentsToAdd.clear();
 
     // remove UIComponents
     for (auto& comp : uiComponentsToRemove) {
-        comp->GetParent()->RemoveChild(comp);
+        auto parent =  comp->GetParent();
+        if (parent == nullptr) {
+            auto it = std::remove(uiComponents.begin(), uiComponents.end(), comp);
+            if (it != uiComponents.end()) {
+                uiComponents.erase(it, uiComponents.end());
+            }
+        }
+        else comp->GetParent()->RemoveChild(comp);
+        
         comp->Destroy();
     }
     uiComponentsToRemove.clear();
@@ -103,8 +119,8 @@ void UIMgr::RemoveUIComponent(Uint32 componentID) {
                                  return comp->GetID() == componentID;
                              });
     if (it != uiComponents.end()) {
+        uiComponentsToRemove.emplace_back(*it);
         uiComponents.erase(it, uiComponents.end());
-        uiComponentsToRemove.push_back(*it);
     }
 }
 
@@ -114,15 +130,15 @@ void UIMgr::RemoveUIComponent(std::string componentName) {
                                  return comp->GetName() == componentName;
                              });
     if (it != uiComponents.end()) {
-        uiComponents.erase(it, uiComponents.end());
         uiComponentsToRemove.push_back(*it);
+        uiComponents.erase(it, uiComponents.end());
     }
 }
 
 void UIMgr::HandleSDLEvents(SDL_Event& event) {
-    for (auto& comp : uiComponents) {
-        if (comp->GetEnabled()) {
-            comp->HandleEvent(event);
+    for (auto it = uiComponents.rbegin(); it != uiComponents.rend(); it++) {
+        if (it->get()->GetEnabled()) {
+            it->get()->HandleEventWrapper(event);
         }
     }
 }

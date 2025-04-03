@@ -1,11 +1,22 @@
 # include "object.h"
 #include "SDL3/SDL_events.h"
 
+Uint32 Object::objectCount = 0;
+
 void Object::UpdateWrapper(float dt) {
     if (enabled) {
         Update(dt);
         for (auto &child : children) {
             child->UpdateWrapper(dt);
+        }
+    }
+}
+
+void Object::PhysicsUpdateWrapper(float dt) {
+    if (enabled) {
+        Update(dt);
+        for (auto &child : children) {
+            child->PhysicsUpdateWrapper(dt);
         }
     }
 }

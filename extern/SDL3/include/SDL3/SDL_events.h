@@ -453,7 +453,7 @@ typedef struct SDL_MouseMotionEvent
     float y;            /**< Y coordinate, relative to window */
     float xrel;         /**< The relative motion in the X direction */
     float yrel;         /**< The relative motion in the Y direction */
-} SDL_MouseMotionEvent;
+}   SDL_MouseMotionEvent;
 
 /**
  * Mouse button event structure (event.button.*)
