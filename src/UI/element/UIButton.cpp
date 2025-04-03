@@ -1,19 +1,26 @@
 # include "UIBotton.h"
 # include "renderSystem.h"
-# include "eventSystem.h"
 
 void UIButton::Render() {
     // Check if the button is enabled before rendering
     if (!enabled) return;
 
-    // Draw the button based on its state
-    if (isPressed) {
-        
+    DrawCommand cmd(ShapeType::RECT, true);
+    glm::vec2 p1 = GetWorldPos();
+    cmd.GetBase().rect = {p1, p1 + widthHeight};
+    
+    // Set the color based on the button state
+    switch (state) {
+        case ButtonState::NORMAL:
+            cmd.GetBase().color = color;
+            break;
+        case ButtonState::HOVER:
+            cmd.GetBase().color = colorHover;
+            break;
+        case ButtonState::PRESSED:
+            cmd.GetBase().color = colorPressed;
+            break;
     }
-    else if (isHovering) {
-
-    }
-    else {
-
-    }
+    GET_RenderSystem.AddUIDrawCommand(std::move(cmd));
 }
+

@@ -18,6 +18,7 @@ class Camera : public ObjectWorld {
     float getZoomR() const { return zoomR; }
     void setZoomR(float zoomR) { this->zoomR = zoomR; this->zoom = 1 / zoomR; }
 
+
   private:
     bool isDragging = false;
     float zoom;

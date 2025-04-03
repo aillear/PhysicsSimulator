@@ -3,32 +3,30 @@
 #include "object.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_rect.h>
-#include <memory>
-#include <vector>
+#include <glm/ext/vector_float2.hpp>
 
 class UIComponent : public Object {
   public:
-    bool GetEnabled() const { return enabled; }
-    void SetEnabled(bool enabled) { this->enabled = enabled; }
     bool GetZIndex() const { return zIndex; }
     void SetZIndex(bool zIndex) { this->zIndex = zIndex; }
-    SDL_Color GetColor() const { return color; }
-    void SetColor(SDL_Color color) { this->color = color; }
-    void AddChild(std::shared_ptr<UIComponent> child) {
-        children.emplace_back(child);
-    }
-    void RemoveChild(std::shared_ptr<UIComponent> child) {
-        children.erase(std::remove(children.begin(), children.end(), child),
-                       children.end());
-    }
-    void ClearChildren() { children.clear(); }
-    std::vector<std::shared_ptr<UIComponent>> GetChildren() const {
-        return children;
-    }
+
+    SDL_FColor GetColor() const { return color; }
+    void SetColor(SDL_FColor color) { this->color = color; }
+
+    glm::vec2 GetRelativePos() const { return leftTopPos; }
+    glm::vec2 GetWorldPos() const;
+
+    virtual bool HitTest(glm::vec2 MousePos);
+
+    UIComponent(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
+                SDL_FColor color = {0, 0, 0, 0})
+        : leftTopPos(leftTop), widthHeight(widthHeight), color(color) {}
 
   protected:
-    bool enabled;
     bool zIndex;
-    SDL_Color color;
-    std::vector<std::shared_ptr<UIComponent>> children;
+    // this rect is screen pos!!!
+    glm::vec2 leftTopPos;
+    glm::vec2 widthHeight;
+    SDL_FColor color;
+    
 };
