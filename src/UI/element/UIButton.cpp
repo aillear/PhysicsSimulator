@@ -1,6 +1,5 @@
 #include "SDL3/SDL_events.h"
 # include "UIBotton.h"
-#include "eventSystem.h"
 # include "renderSystem.h"
 
 void UIButton::Render() {
@@ -8,7 +7,7 @@ void UIButton::Render() {
     if (!enabled) return;
 
     DrawCommand cmd(ShapeType::RECT, true);
-    glm::vec2 p1 = GetWorldPos();
+    glm::vec2 p1 = GetScreenPos();
     cmd.GetBase().rect = {p1, p1 + widthHeight};
     
     // Set the color based on the button state

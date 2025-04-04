@@ -115,7 +115,7 @@ class RenderSystem {
   public:
 
     static RenderSystem &Instance();
-    bool Init(int vertexsBufferSize = 1'000'000, int width = 1800, int height = 900,
+    bool Init(int vertexsBufferSize = 1'000'000, int width = 1800, int height = 900, SDL_Color bgColor = {0, 0, 0, 255},
               const std::string &windowName = "physics demo");
     glm::vec2 GetWindowSize() const { return halfWindowSize * 2.0f; }
     glm::vec2 GetWindowCenter() const { return halfWindowSize; }

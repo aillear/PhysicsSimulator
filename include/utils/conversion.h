@@ -59,32 +59,40 @@ inline SDL_Vertex MakeVertex(const SDL_FPoint &&p,
                                      0.0f,
                                  },
                              const SDL_FPoint &&uv = {0.0f, 0.0f}) {
-    SDL_Vertex v;
-    v.position = p;
-    v.color = c;
-    v.tex_coord = {0, 0};
-    return v;
+    ;
+    return SDL_Vertex{p, c, uv};
 }
 
 inline SDL_Vertex MakeVertex(const SDL_FPoint &p,
-    const SDL_FColor &c =
-        {
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
-        },
-    const SDL_FPoint &uv = {0.0f, 0.0f}) {
-SDL_Vertex v;
-v.position = p;
-v.color = c;
-v.tex_coord = {0, 0};
-return v;
+                             const SDL_FColor &c =
+                                 {
+                                     0.0f,
+                                     0.0f,
+                                     0.0f,
+                                     0.0f,
+                                 },
+                             const SDL_FPoint &uv = {0.0f, 0.0f}) {
+    return SDL_Vertex{p, c, uv};
 }
 
 // conversion functions
 inline glm::vec2 ToGlmVec2(const SDL_FPoint &v) { return glm::vec2(v.x, v.y); }
 inline SDL_FPoint ToFPoint(const glm::vec2 &v) { return SDL_FPoint{v.x, v.y}; }
+
+constexpr float FColorToColorFactor = 255.0f;
+constexpr float ColorToFColorFactor = 1.0f / FColorToColorFactor;
+
+inline SDL_FColor ToFColor(const SDL_Color &c) {
+    return SDL_FColor{c.r * ColorToFColorFactor, c.g * ColorToFColorFactor,
+                      c.b * ColorToFColorFactor, c.a * ColorToFColorFactor};
+}
+
+inline SDL_Color ToColor(const SDL_FColor &c) {
+    return SDL_Color{static_cast<Uint8>(c.r * FColorToColorFactor),
+                     static_cast<Uint8>(c.g * FColorToColorFactor),
+                     static_cast<Uint8>(c.b * FColorToColorFactor),
+                     static_cast<Uint8>(c.a * FColorToColorFactor)};
+}
 
 // reload operators of SDL_FPoint
 inline SDL_FPoint operator+(const SDL_FPoint &a, const SDL_FPoint &b) {
@@ -110,7 +118,6 @@ inline SDL_FPoint &operator-=(SDL_FPoint &a, const SDL_FPoint &b) {
     a.y -= b.y;
     return a;
 }
-
 
 // format support for glm::vec2 SDL_FPoint, SDL_Point
 template <typename T, typename _CharT>

@@ -69,7 +69,7 @@ RenderSystem::~RenderSystem() {
  * @return true initialized successfully
  * @return false fail to initialize
  */
-bool RenderSystem::Init(int vertexBufferSize, int width, int height,
+bool RenderSystem::Init(int vertexBufferSize, int width, int height, SDL_Color bgColor,
                         const std::string &windowName) {
     LOG_INFO("Render system initializing...");
 
@@ -97,7 +97,7 @@ bool RenderSystem::Init(int vertexBufferSize, int width, int height,
     }
 
     // set background color
-    backgroundColor = {44, 49, 60, 255};
+    backgroundColor = bgColor;
     // add window resize event listener
     camera.setPosition(0.5f * halfWindowSize.x, 0.5f * halfWindowSize.y);
     camera.Init();

@@ -12,6 +12,12 @@
  *    it's in screen coordinate system.
  *    you can get absolute position in screen by GetWorldPos(), it will
  * recursionly get all the parents' position and add them up.
+ *
+ *   live cycle:
+ *
+ *  Init(when first added to the UIMgr) -> Update -> Render -> Destroy(when removed from the UIMgr)
+ *
+ *
  */
 class UIComponent : public Object {
   public:
@@ -29,7 +35,7 @@ class UIComponent : public Object {
     void SetColor(SDL_FColor color) { this->color = color; }
 
     glm::vec2 GetRelativePos() const { return leftTopPos; }
-    glm::vec2 GetWorldPos() const;
+    glm::vec2 GetScreenPos() const;
 
     virtual bool HitTest(glm::vec2 MousePos);
 
@@ -40,6 +46,7 @@ class UIComponent : public Object {
         : leftTopPos(leftTop), widthHeight(widthHeight), color(color) {}
 
   protected:
+    // useless for now
     bool zIndex;
     // this rect is screen pos!!!
     glm::vec2 leftTopPos;

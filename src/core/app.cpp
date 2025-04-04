@@ -1,6 +1,10 @@
 #include "app.h"
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_mouse.h"
 #include "UIBotton.h"
 #include "UIMgr.h"
+#include "UIPanel.h"
+#include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "pathMgr.h"
@@ -8,6 +12,7 @@
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
+#include <memory>
 
 App &App::Instance() {
     static App instance;
@@ -24,7 +29,7 @@ void App::Init(int argc, char *argv[]) {
                     false); // when this is done, the logger will be usable
 
     // system initialize
-    GET_RenderSystem.Init(1'000'000, 800, 600, "physics demo");
+    GET_RenderSystem.Init(1'000'000, 800, 600, {50,56,66,255}, "physics demo");
     GET_EventSystem.Init();
     GET_UIMgr.Init();
 
@@ -43,6 +48,15 @@ void App::Init(int argc, char *argv[]) {
 }
 
 void App::Run() {
+    auto panel = std::make_shared<UIPanel>(
+        glm::vec2{0, 100}, glm::vec2{400, 600});
+
+    panel->SetColor(ToFColor({40,44,52,255}));
+    panel->SetBarColor(ToFColor({33,37,43, 255}));
+    panel->SetBarHeight(40.0f);
+    panel->SetName("panel1");
+    panel->SetEnabled(true);
+
 
     auto button = std::make_shared<UIButton>(
         glm::vec2{0, 0}, glm::vec2{200, 100});
@@ -54,17 +68,25 @@ void App::Run() {
     button->SetEnabled(true);
 
     auto button1 = std::make_shared<UIButton>(
-        glm::vec2{0,75}, glm::vec2{200, 100});
+        glm::vec2{0,150}, glm::vec2{200, 100});
     button1->SetColor({0, 0, 255, 255});
     button1->SetColorHover({0, 255, 0, 255});
     button1->SetColorPressed({255, 0, 0, 255});
-    button1->SetCallBack([](SDL_Event &event) { LOG_INFO("Button2 clicked!"); });
+    button1->SetCallBack([&panel](SDL_Event &event) { LOG_INFO("Button2 clicked!");
+        panel->SetEnabled(false);
+    });
     button1->SetName("button2");
     button1->SetEnabled(true);
 
+    GET_EventSystem.AddEventListener(SDL_EVENT_MOUSE_BUTTON_DOWN, [&panel](SDL_Event &event) {
+        if (event.button.button != SDL_BUTTON_RIGHT) return;
+        if (!panel->GetEnabled()) panel->SetEnabled(true);
+    });
 
-    GET_UIMgr.AddUIComponent(button);
-    GET_UIMgr.AddUIComponent(button1);
+    GET_UIMgr.AddUIComponent(panel);
+    GET_UIMgr.AddUIComponent(button, panel);
+    GET_UIMgr.AddUIComponent(button1, panel);
+
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
