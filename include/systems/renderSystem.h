@@ -11,6 +11,7 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <glm/ext/vector_int2.hpp>
 #include <glm/detail/qualifier.hpp>
 #include <glm/ext/vector_float2.hpp>
@@ -110,20 +111,28 @@ struct DrawCommand {
     }
 };
 
+// 
+struct RenderSystemIniter {
+    int vertexBufferSize;
+    float fontSize;
+    glm::vec2 windowSize;
+    SDL_Color bgColor;
+    std::string fontName;
+    std::string windowName;
+};
 
 class RenderSystem {
   public:
 
     static RenderSystem &Instance();
-    bool Init(int vertexsBufferSize = 1'000'000, int width = 1800, int height = 900, SDL_Color bgColor = {0, 0, 0, 255},
-              const std::string &windowName = "physics demo");
+    bool Init(const RenderSystemIniter &initer);
     glm::vec2 GetWindowSize() const { return halfWindowSize * 2.0f; }
     glm::vec2 GetWindowCenter() const { return halfWindowSize; }
     void SetWindowSize(glm::vec2 size);
     void AddUIDrawCommand(DrawCommand&& cmd);
     void Render();
     
-  private:
+  private:  
     RenderSystem();
     ~RenderSystem();
     SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
@@ -144,6 +153,8 @@ class RenderSystem {
     glm::vec2 halfWindowSize;
     SDL_Window *window;
     SDL_Renderer *renderer;
+    TTF_Font *font;
+    TTF_TextEngine *textEngine;
     SDL_Color backgroundColor;
     Camera camera;
     std::vector<DrawCommand> UIdrawCommands;

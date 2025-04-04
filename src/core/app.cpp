@@ -29,7 +29,15 @@ void App::Init(int argc, char *argv[]) {
                     false); // when this is done, the logger will be usable
 
     // system initialize
-    GET_RenderSystem.Init(1'000'000, 800, 600, {50,56,66,255}, "physics demo");
+    RenderSystemIniter initer;
+    initer.vertexBufferSize = 1'000'000;
+    initer.fontSize = 16.0f;
+    initer.windowSize = {800, 600};
+    initer.bgColor = {50, 56, 66, 255};
+    initer.fontName = "YeHei.ttf";
+    initer.windowName = "Physics Simulator";
+
+    GET_RenderSystem.Init(initer);
     GET_EventSystem.Init();
     GET_UIMgr.Init();
 

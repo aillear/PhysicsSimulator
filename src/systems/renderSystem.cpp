@@ -1,9 +1,11 @@
 #include "renderSystem.h"
+#include "SDL3/SDL_init.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_rect.h"
 #include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
+#include "pathMgr.h"
 #include <SDL3./SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -11,11 +13,13 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_gfxPrimitives.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <cstddef>
 #include <cstring>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <glm/geometric.hpp>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -69,8 +73,7 @@ RenderSystem::~RenderSystem() {
  * @return true initialized successfully
  * @return false fail to initialize
  */
-bool RenderSystem::Init(int vertexBufferSize, int width, int height, SDL_Color bgColor,
-                        const std::string &windowName) {
+bool RenderSystem::Init(const RenderSystemIniter &initer) {
     LOG_INFO("Render system initializing...");
 
     // init SDL
@@ -78,28 +81,42 @@ bool RenderSystem::Init(int vertexBufferSize, int width, int height, SDL_Color b
         F_LOG_ERROR("Fail to init SDL: {}", SDL_GetError());
         return false;
     }
+
+    if (!TTF_Init()) {
+        F_LOG_ERROR("Fail to init SDL_ttf: {}", SDL_GetError());
+        SDL_Quit();
+        return false;
+    }
     // create window and renderer
-    window = SDL_CreateWindow(windowName.c_str(), width, height,
+    window = SDL_CreateWindow(initer.windowName.c_str(), initer.windowSize.x, initer.windowSize.y,
                               SDL_WINDOW_RESIZABLE);
     if (window == nullptr) {
         F_LOG_ERROR("Fail to create SDL window: {}", SDL_GetError());
+        TTF_Quit();
+        SDL_Quit();
         return false;
     }
+
     // SDL_GL_SetSwapInterval(0);
-    halfWindowSize = {0.5f * width, 0.5f * height};
+    halfWindowSize = 0.5f * initer.windowSize;
     F_LOG_INFO("Window size :{}", halfWindowSize);
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         F_LOG_ERROR("Fail to create SDL renderer: {}", SDL_GetError());
         SDL_DestroyWindow(window);
+        TTF_Quit();
         SDL_Quit();
         return false;
     }
 
     // set background color
-    backgroundColor = bgColor;
+    backgroundColor = initer.bgColor;
+
+    font = TTF_OpenFont(GET_PATH("assets", "fonts", initer.fontName).string().c_str(), 16.0f);
+    textEngine = TTF_CreateRendererTextEngine(renderer);
+
     // add window resize event listener
-    camera.setPosition(0.5f * halfWindowSize.x, 0.5f * halfWindowSize.y);
+    camera.setPosition(0.5f * initer.windowSize);
     camera.Init();
     GET_EventSystem.AddEventListener(
         SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
@@ -110,17 +127,17 @@ bool RenderSystem::Init(int vertexBufferSize, int width, int height, SDL_Color b
         });
 
     // set buffer size
-    if (vertexBufferSize <= 0) {
+    if (initer.vertexBufferSize <= 0) {
         F_LOG_ERROR("Vertex buffer size must be greater than 0, current is {}.",
-                    vertexBufferSize);
+                    initer.vertexBufferSize);
         return false;
-    } else if (vertexBufferSize < 10'000) {
+    } else if (initer.vertexBufferSize < 10'000) {
         F_LOG_WARNING(
             "Vertex buffer size {} is too small. may cause some problem.",
-            vertexBufferSize);
+            initer.vertexBufferSize);
     }
-    maxVertexBufferSize = vertexBufferSize;
-    maxIndicesSize = vertexBufferSize * 3; // 3 indices for each vertex
+    maxVertexBufferSize = initer.vertexBufferSize;
+    maxIndicesSize = initer.vertexBufferSize * 3; // 3 indices for each vertex
     vertexBuffer = std::make_unique<SDL_Vertex[]>(maxVertexBufferSize);
     indices = std::make_unique<int[]>(maxIndicesSize);
     F_LOG_INFO("Vertex buffer size: {}.", maxVertexBufferSize);
