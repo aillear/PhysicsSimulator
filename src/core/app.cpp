@@ -83,8 +83,8 @@ void App::Run() {
     button2->SetName("button2");
     button2->SetEnabled(true);
 
-    auto label = std::make_shared<UILabel>(glm::vec2{100, 100});
-    //label->ChangeText("EXIT");
+    auto label = std::make_shared<UILabel>(glm::vec2{10, -30});
+    label->ChangeText("EXIT");
     label->SetColor({0, 255, 255, 255});
     label->SetName("label1");
     label->SetEnabled(true);
@@ -97,10 +97,10 @@ void App::Run() {
                 panel->SetEnabled(true);
         });
 
-    GET_UIMgr.AddUIComponent(panel);
-    // GET_UIMgr.AddUIComponent(button, panel);
-    GET_UIMgr.AddUIComponent(button2, panel);
-    GET_UIMgr.AddUIComponent(label);
+        GET_UIMgr.AddUIComponent(panel);
+        // GET_UIMgr.AddUIComponent(button, panel);
+        GET_UIMgr.AddUIComponent(button2, panel);
+        GET_UIMgr.AddUIComponent(label, panel);
 
     while (running) {
         fpsc.StartFrame();

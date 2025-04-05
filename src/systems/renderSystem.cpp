@@ -158,8 +158,7 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
         SDL_Quit();
 
         return false;
-    } 
-    else if (initer.vertexBufferSize < 10'000) {
+    } else if (initer.vertexBufferSize < 10'000) {
         F_LOG_WARNING(
             "Vertex buffer size {} is too small. may cause some problem.",
             initer.vertexBufferSize);
@@ -194,15 +193,10 @@ void RenderSystem::SetFontSize(float size) {
     TTF_SetFontSize(font, fontSize);
 }
 
-TTF_Text* RenderSystem::CreateText(const std::string &text,
+std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
                                                    size_t size) {
-    TTF_Text* temp = TTF_CreateText(textEngine, font, text.c_str(), size);
-    if (!temp) {
-        F_LOG_ERROR("Fail to create text: {}", SDL_GetError());
-        return nullptr;
-    }
-    
-    return temp;
+    return std::shared_ptr<TTF_Text>(
+        TTF_CreateText(textEngine, font, text.c_str(), size), TTF_DestroyText);
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
@@ -234,7 +228,6 @@ void RenderSystem::AddUIDrawCommand(DrawCommand &&cmd) {
 void RenderSystem::HandleUIDrawCommand() {
     indicesSize = 0;
     vertexBufferSize = 0;
-    bool isLastText = false;
     for (auto &cmd : UIdrawCommands) {
         switch (cmd.shapeType) {
         case ShapeType::LINE:
@@ -251,7 +244,6 @@ void RenderSystem::HandleUIDrawCommand() {
             break;
         case ShapeType::TEXT:
             TextCommand(cmd);
-            isLastText = true;
             break;
         }
     }
@@ -426,13 +418,26 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
     vertexBufferSize += n + 2;
 }
 
-// TODO: implement text command
 void RenderSystem::TextCommand(DrawCommand &cmd) {
     auto text = cmd.GetComplex().GetText().get();
     SDL_FColor color = cmd.GetComplex().color;
-    auto pos = cmd.GetComplex().aabb;
-    TTF_SetTextColorFloat(text, color.r, color.g, color.b, color.a);
-    if (!TTF_DrawRendererText(text, pos.x, pos.y)) {
-        //F_LOG_ERROR("Fail to draw text: {}", SDL_GetError());
+
+    SDL_FPoint pos;
+    if (cmd.UIMode_ == false) {
+        pos =
+            PosWorld2Screen({cmd.GetComplex().aabb.x, cmd.GetComplex().aabb.y});
+    } else {
+        pos = ToFPoint({cmd.GetComplex().aabb.x, cmd.GetComplex().aabb.y});
     }
+
+    TTF_SetTextColorFloat(text, color.r, color.g, color.b, color.a);
+
+    if (vertexBufferSize != 0) {
+        SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
+                           vertexBufferSize, indices.get(), indicesSize);
+
+        vertexBufferSize = 0;
+        indicesSize = 0;
+    }
+    TTF_DrawRendererText(text, pos.x, pos.y);
 }
