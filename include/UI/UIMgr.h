@@ -9,6 +9,11 @@
  * @brief Manager for all UIComponents.
  *   It will update and render all UIComponents.
  *   workflow: create UIComponent -> add to UIMgr -> update and render in UIMgr -> remove from UIMgr
+ *             when a new UIComponent is added, it will be added to the list in the next frame.
+ *             when a UIComponent is removed, it will be removed from the list in the next frame.
+ *             in ench frame, UIMgr will first init the UIComponents added by last frame
+ *             then remove UIComponent that mark to be removed by last frame.
+ *             then update all UIComponents in the list.
  *   all the live cyle method will be called recursively.
  */
 class UIMgr {

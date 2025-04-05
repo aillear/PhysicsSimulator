@@ -19,10 +19,10 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <glm/geometric.hpp>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
 
 // lod level cache for circle
 template struct CircleLodCache<8>;
@@ -33,15 +33,12 @@ template struct CircleLodCache<40>;
 template struct CircleLodCache<48>;
 
 constexpr static int CIRCLE_LOD[] = {8, 16, 24, 32, 40, 48};
-const static std::vector<std::array<std::pair<float, float>, 64>> SIN_COS_CACHE = {
-    CircleLodCache<8>::getVertices(),
-    CircleLodCache<16>::getVertices(),
-    CircleLodCache<24>::getVertices(),
-    CircleLodCache<32>::getVertices(),
-    CircleLodCache<40>::getVertices(),
-    CircleLodCache<48>::getVertices(),
+const static std::vector<std::array<std::pair<float, float>, 64>>
+    SIN_COS_CACHE = {
+        CircleLodCache<8>::getVertices(),  CircleLodCache<16>::getVertices(),
+        CircleLodCache<24>::getVertices(), CircleLodCache<32>::getVertices(),
+        CircleLodCache<40>::getVertices(), CircleLodCache<48>::getVertices(),
 };
-
 
 // singleton
 RenderSystem &RenderSystem::Instance() {
@@ -57,11 +54,13 @@ RenderSystem::RenderSystem()
 }
 
 RenderSystem::~RenderSystem() {
+    TTF_DestroyRendererTextEngine(textEngine);
+    TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    LOG_INFO("SDL renderer and window has been destroied successfully.");
+    TTF_Quit();
     SDL_Quit();
-    LOG_INFO("SDL quit");
+    LOG_INFO("Render system destroyed.");
 }
 
 /**
@@ -88,8 +87,8 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
         return false;
     }
     // create window and renderer
-    window = SDL_CreateWindow(initer.windowName.c_str(), initer.windowSize.x, initer.windowSize.y,
-                              SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow(initer.windowName.c_str(), initer.windowSize.x,
+                              initer.windowSize.y, SDL_WINDOW_RESIZABLE);
     if (window == nullptr) {
         F_LOG_ERROR("Fail to create SDL window: {}", SDL_GetError());
         TTF_Quit();
@@ -99,7 +98,7 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
 
     // SDL_GL_SetSwapInterval(0);
     halfWindowSize = 0.5f * initer.windowSize;
-    F_LOG_INFO("Window size :{}", halfWindowSize);
+    F_LOG_INFO("Window size :{}", initer.windowSize);
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         F_LOG_ERROR("Fail to create SDL renderer: {}", SDL_GetError());
@@ -112,7 +111,9 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     // set background color
     backgroundColor = initer.bgColor;
 
-    font = TTF_OpenFont(GET_PATH("assets", "fonts", initer.fontName).string().c_str(), 16.0f);
+    fontSize = initer.fontSize;
+    font = TTF_OpenFont(
+        GET_PATH("assets", "fonts", initer.fontName).string().c_str(), initer.fontSize);
     textEngine = TTF_CreateRendererTextEngine(renderer);
 
     // add window resize event listener
@@ -130,6 +131,13 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     if (initer.vertexBufferSize <= 0) {
         F_LOG_ERROR("Vertex buffer size must be greater than 0, current is {}.",
                     initer.vertexBufferSize);
+        TTF_DestroyRendererTextEngine(textEngine);
+        TTF_CloseFont(font);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+
         return false;
     } else if (initer.vertexBufferSize < 10'000) {
         F_LOG_WARNING(
@@ -150,6 +158,26 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
 void RenderSystem::SetWindowSize(glm::vec2 size) {
     halfWindowSize = 0.5f * size;
     F_LOG_INFO("Resize window to: {}.", halfWindowSize * 2.0f);
+}
+
+void RenderSystem::SetFontSize(float size) {
+    if (size <= 0) {
+        F_LOG_ERROR("Font size must be greater than 0, current is {}.", size);
+        return;
+    } else if (size < 8) {
+        F_LOG_WARNING("Font size {} is too small. may cause some problem.", size);
+    }
+    else if (size == fontSize) {
+        return;
+    }
+    fontSize = size;
+    TTF_SetFontSize(font, fontSize);
+}
+
+std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string& text, size_t size) {
+    auto tempPtr = std::make_shared<TTF_Text>(
+        TTF_CreateText(textEngine, font, text.c_str(), size));
+    return tempPtr;
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
@@ -219,7 +247,7 @@ void RenderSystem::HandleUIDrawCommand() {
 void RenderSystem::LineCommand(DrawCommand &cmd) {
     int vertexBegin = vertexBufferSize;
     SDL_Vertex *buffer = vertexBuffer.get();
-    auto& command = cmd.GetBase();
+    auto &command = cmd.GetBase();
     SDL_FColor color = command.color;
     SDL_FPoint p[4] = {};
     glm::vec2 dir = command.rect.p2 - command.rect.p1;
@@ -231,8 +259,7 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
     if (cmd.UIMode_ == false) {
         p[0] = PosWorld2Screen(command.rect.p1) + p[2];
         p[1] = PosWorld2Screen(command.rect.p2) + p[2];
-    } 
-    else {
+    } else {
         p[0] = ToFPoint(command.rect.p1) + p[2];
         p[1] = ToFPoint(command.rect.p2) + p[2];
     }
@@ -257,10 +284,10 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
 void RenderSystem::RectCommand(DrawCommand &cmd) {
     int vertexBegin = vertexBufferSize;
     SDL_Vertex *buffer = vertexBuffer.get();
-    auto& command = cmd.GetBase();
+    auto &command = cmd.GetBase();
     SDL_FColor color = command.color;
     SDL_FPoint p[4] = {};
-    
+
     // if not UI mode, convert the position to screen space
     if (cmd.UIMode_ == false) {
         p[0] = PosWorld2Screen(command.rect.p1);
@@ -308,14 +335,20 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
 
     // set lod level
     int lodLevel;
-    if (radius <= 10) lodLevel = 0;
-    else if (radius <= 15) lodLevel = 1;
-    else if (radius <= 25) lodLevel = 2;
-    else if (radius <= 50) lodLevel = 3;
-    else if (radius <= 100) lodLevel = 4;
-    else lodLevel = 5;
+    if (radius <= 10)
+        lodLevel = 0;
+    else if (radius <= 15)
+        lodLevel = 1;
+    else if (radius <= 25)
+        lodLevel = 2;
+    else if (radius <= 50)
+        lodLevel = 3;
+    else if (radius <= 100)
+        lodLevel = 4;
+    else
+        lodLevel = 5;
 
-    const auto& cache = SIN_COS_CACHE[lodLevel];
+    const auto &cache = SIN_COS_CACHE[lodLevel];
     lodLevel = CIRCLE_LOD[lodLevel];
 
     int vertexBegin = vertexBufferSize;
@@ -323,8 +356,9 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
     SDL_FColor color = cmd.GetBase().color;
 
     for (int i = 0; i < lodLevel; i++) {
-        buffer[vertexBufferSize].position = center + SDL_FPoint{radius*cache[i].first,
-                                                      radius * cache[i].second};
+        buffer[vertexBufferSize].position =
+            center +
+            SDL_FPoint{radius * cache[i].first, radius * cache[i].second};
         buffer[vertexBufferSize].color = color;
         buffer[vertexBufferSize].tex_coord = {0, 0};
         vertexBufferSize++;
@@ -348,10 +382,10 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
                       n);
         return;
     }
-    
+
     // if not UI mode, convert the position to screen space
     if (cmd.UIMode_ == false) {
-        for (auto& v : vertexs) {
+        for (auto &v : vertexs) {
             v.position = PosWorld2Screen(ToGlmVec2(v.position));
         }
     }
@@ -369,5 +403,10 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
 
 // TODO: implement text command
 void RenderSystem::TextCommand(DrawCommand &cmd) {
-
+    auto text = cmd.GetComplex().GetText().get();
+    TTF_GetTextSize(text, nullptr, nullptr);
+    SDL_FColor color = cmd.GetComplex().color;
+    auto pos = cmd.GetComplex().aabb;
+    TTF_SetTextColorFloat(text, color.r, color.g, color.b, color.a);
+    TTF_DrawRendererText(text, pos.x, pos.y);
 }

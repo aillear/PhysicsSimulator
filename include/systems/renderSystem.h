@@ -1,7 +1,9 @@
 #pragma once
 
+#include "conversion.h"
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <variant>
@@ -36,9 +38,11 @@ struct BasicCommand {
 struct ComplexCommand {
     std::variant<
         std::vector<SDL_Vertex>,
-        std::string
+        std::shared_ptr<TTF_Text>
     > data;
     SDL_FRect aabb;
+    SDL_FColor color;  // ONLY for text
+
 
     /**
      * @brief Get the Vertexs object
@@ -56,11 +60,26 @@ struct ComplexCommand {
      *
      * @return std::string& 
      */
-    std::string &GetText() {
-        return std::get<std::string>(data);
+     std::shared_ptr<TTF_Text> &GetText() {
+        return std::get<std::shared_ptr<TTF_Text>>(data);
     }
 
-    
+    void SetFColor(SDL_FColor color) {
+        this->color = color;
+    }
+
+    void SetColor(SDL_Color color) {
+        this->color = ToFColor(color);
+    }
+
+    void SetAABB(SDL_FRect aabb) {
+        this->aabb = aabb;
+    }
+
+    void SetTextPos(glm::vec2 pos) {
+        aabb.x = pos.x;
+        aabb.y = pos.y;
+    }
 };
 
 struct DrawCommand {
@@ -79,7 +98,7 @@ struct DrawCommand {
             }
             case ShapeType::TEXT: {
                 auto cmdt = ComplexCommand();
-                cmdt.data = std::string();
+                cmdt.data = nullptr;
                 cmdt.aabb = {0, 0, 0, 0};
                 cmd = cmdt;
                 break;
@@ -111,14 +130,22 @@ struct DrawCommand {
     }
 };
 
-// 
+/**
+ * @brief struct for initialization of RenderSyste
+ * @param vertexBufferSize: size of the vertex buffer
+ * @param fontSize: size of the font
+ * @param windowSize: size of the window
+ * @param bgColor: background color of the window
+ * @param fontName: name of the font file
+ * @param windowName: name of the window
+ */
 struct RenderSystemIniter {
-    int vertexBufferSize;
-    float fontSize;
-    glm::vec2 windowSize;
-    SDL_Color bgColor;
-    std::string fontName;
-    std::string windowName;
+    int vertexBufferSize = 1'000'000;
+    float fontSize = 16.0f;
+    glm::vec2 windowSize = {800, 600};
+    SDL_Color bgColor = {50, 56, 66, 255};
+    std::string fontName = "YeHei.ttf";
+    std::string windowName = "Physics Simulator";
 };
 
 class RenderSystem {
@@ -129,6 +156,9 @@ class RenderSystem {
     glm::vec2 GetWindowSize() const { return halfWindowSize * 2.0f; }
     glm::vec2 GetWindowCenter() const { return halfWindowSize; }
     void SetWindowSize(glm::vec2 size);
+    float GetFontSize() const { return fontSize; }
+    void SetFontSize(float size);
+    std::shared_ptr<TTF_Text> CreateText(const std::string& text, size_t size = 0);
     void AddUIDrawCommand(DrawCommand&& cmd);
     void Render();
     
@@ -150,6 +180,7 @@ class RenderSystem {
     int indicesSize;
     int maxVertexBufferSize;
     int maxIndicesSize;
+    float fontSize;
     glm::vec2 halfWindowSize;
     SDL_Window *window;
     SDL_Renderer *renderer;

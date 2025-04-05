@@ -10,6 +10,7 @@
 #include "pathMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
+#include <cstdlib>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
@@ -30,14 +31,12 @@ void App::Init(int argc, char *argv[]) {
 
     // system initialize
     RenderSystemIniter initer;
-    initer.vertexBufferSize = 1'000'000;
-    initer.fontSize = 16.0f;
-    initer.windowSize = {800, 600};
-    initer.bgColor = {50, 56, 66, 255};
-    initer.fontName = "YeHei.ttf";
-    initer.windowName = "Physics Simulator";
 
-    GET_RenderSystem.Init(initer);
+    if (!GET_RenderSystem.Init(initer)) {
+        LOG_ERROR("Render system initialize failed.");
+        exit(1);
+    }
+    
     GET_EventSystem.Init();
     GET_UIMgr.Init();
 

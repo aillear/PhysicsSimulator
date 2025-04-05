@@ -39,7 +39,12 @@ class UIComponent : public Object {
 
     virtual bool HitTest(glm::vec2 MousePos);
 
+
+    // so that it's children don't need to implement these functions
     void PhysicsUpdate(float dt) override {;}
+    void OnMouseMove(SDL_Event &event) override {;}
+    void OnMouseDown(SDL_Event &event) override {;}
+    void OnMouseUp(SDL_Event &event) override {;}
 
     UIComponent(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
                 SDL_FColor color = {0, 0, 0, 0})
