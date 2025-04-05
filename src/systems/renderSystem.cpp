@@ -113,8 +113,27 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
 
     fontSize = initer.fontSize;
     font = TTF_OpenFont(
-        GET_PATH("assets", "fonts", initer.fontName).string().c_str(), initer.fontSize);
+        GET_PATH("assets", "fonts", initer.fontName).string().c_str(),
+        initer.fontSize);
+
+    if (!font) {
+        F_LOG_ERROR("Fail to load font: {}", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+        return false;
+    }
     textEngine = TTF_CreateRendererTextEngine(renderer);
+    if (!textEngine) {
+        F_LOG_ERROR("Fail to create text engine: {}", SDL_GetError());
+        TTF_CloseFont(font);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+        return false;
+    }
 
     // add window resize event listener
     camera.setPosition(0.5f * initer.windowSize);
@@ -139,7 +158,8 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
         SDL_Quit();
 
         return false;
-    } else if (initer.vertexBufferSize < 10'000) {
+    } 
+    else if (initer.vertexBufferSize < 10'000) {
         F_LOG_WARNING(
             "Vertex buffer size {} is too small. may cause some problem.",
             initer.vertexBufferSize);
@@ -165,19 +185,27 @@ void RenderSystem::SetFontSize(float size) {
         F_LOG_ERROR("Font size must be greater than 0, current is {}.", size);
         return;
     } else if (size < 8) {
-        F_LOG_WARNING("Font size {} is too small. may cause some problem.", size);
-    }
-    else if (size == fontSize) {
+        F_LOG_WARNING("Font size {} is too small. may cause some problem.",
+                      size);
+    } else if (size == fontSize) {
         return;
     }
     fontSize = size;
     TTF_SetFontSize(font, fontSize);
 }
 
-std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string& text, size_t size) {
-    auto tempPtr = std::make_shared<TTF_Text>(
-        TTF_CreateText(textEngine, font, text.c_str(), size));
-    return tempPtr;
+std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
+                                                   size_t size) {
+    TTF_Text* temp = TTF_CreateText(textEngine, font, text.c_str(), size);
+    if (!temp) {
+        F_LOG_ERROR("Fail to create text: {}", SDL_GetError());
+        return nullptr;
+    }
+    
+    return std::shared_ptr<TTF_Text>(
+        temp,
+        TTF_DestroyText
+    );
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
@@ -230,6 +258,7 @@ void RenderSystem::HandleUIDrawCommand() {
             break;
         }
     }
+    UIdrawCommands.clear();
     // check if the vertex buffer and indices buffer overflow
     if (vertexBufferSize > maxVertexBufferSize ||
         indicesSize > maxIndicesSize) {
@@ -241,7 +270,6 @@ void RenderSystem::HandleUIDrawCommand() {
         SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
                            vertexBufferSize, indices.get(), indicesSize);
     }
-    UIdrawCommands.clear();
 }
 
 void RenderSystem::LineCommand(DrawCommand &cmd) {
@@ -404,9 +432,10 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
 // TODO: implement text command
 void RenderSystem::TextCommand(DrawCommand &cmd) {
     auto text = cmd.GetComplex().GetText().get();
-    TTF_GetTextSize(text, nullptr, nullptr);
     SDL_FColor color = cmd.GetComplex().color;
     auto pos = cmd.GetComplex().aabb;
     TTF_SetTextColorFloat(text, color.r, color.g, color.b, color.a);
-    TTF_DrawRendererText(text, pos.x, pos.y);
+    if (!TTF_DrawRendererText(text, pos.x, pos.y)) {
+        //F_LOG_ERROR("Fail to draw text: {}", SDL_GetError());
+    }
 }

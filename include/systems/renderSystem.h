@@ -144,7 +144,7 @@ struct RenderSystemIniter {
     float fontSize = 16.0f;
     glm::vec2 windowSize = {800, 600};
     SDL_Color bgColor = {50, 56, 66, 255};
-    std::string fontName = "YeHei.ttf";
+    std::string fontName = "YaHei.ttf";
     std::string windowName = "Physics Simulator";
 };
 

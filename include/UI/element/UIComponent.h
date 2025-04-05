@@ -1,5 +1,6 @@
 #pragma once
 
+#include "conversion.h"
 #include "object.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_rect.h>
@@ -32,7 +33,8 @@ class UIComponent : public Object {
     void SetZIndex(bool zIndex) { this->zIndex = zIndex; }
 
     SDL_FColor GetColor() const { return color; }
-    void SetColor(SDL_FColor color) { this->color = color; }
+    void SetFColor(SDL_FColor color) { this->color = color; }
+    void SetColor(SDL_Color color) { this->color = ToFColor(color); }
 
     glm::vec2 GetRelativePos() const { return leftTopPos; }
     glm::vec2 GetScreenPos() const;

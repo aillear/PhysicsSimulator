@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
 #include <SDL3/SDL_rect.h>
 #include <format>
@@ -208,5 +209,58 @@ template <typename _CharT> struct std::formatter<SDL_Point, _CharT> {
 
   private:
     std::formatter<int, _CharT> elem_formatter_;
+    std::string_view separator_ = ", ";
+};
+
+
+template <typename _CharT> struct std::formatter<SDL_FRect, _CharT> {
+    constexpr auto parse(format_parse_context &ctx) {
+        auto pos = ctx.begin();
+        return elem_formatter_.parse(ctx);
+    }
+
+    template <typename _FormatContext>
+    auto format(SDL_FRect &v, _FormatContext &format_context) const {
+        auto out = format_context.out();
+        *out++ = '(';
+        out = elem_formatter_.format(v.x, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.y, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.w, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.h, format_context);
+        *out++ = ')';
+        return out;
+    }
+
+  private:
+    std::formatter<float, _CharT> elem_formatter_;
+    std::string_view separator_ = ", ";
+};
+
+template <typename _CharT> struct std::formatter<SDL_FColor, _CharT> {
+    constexpr auto parse(format_parse_context &ctx) {
+        auto pos = ctx.begin();
+        return elem_formatter_.parse(ctx);
+    }
+
+    template <typename _FormatContext>
+    auto format(SDL_FColor &v, _FormatContext &format_context) const {
+        auto out = format_context.out();
+        *out++ = '(';
+        out = elem_formatter_.format(v.r, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.g, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.b, format_context);
+        out = std::format_to(out, "{}", separator_);
+        out = elem_formatter_.format(v.a, format_context);
+        *out++ = ')';
+        return out;
+    }
+
+  private:
+    std::formatter<float, _CharT> elem_formatter_;
     std::string_view separator_ = ", ";
 };

@@ -21,6 +21,8 @@ class Logger {
               const std::string& logName = "app.log", bool instantFlush = false);
 
     void SetLogLevel(LogLevel level);
+    bool GetInstantFlush() const { return instantFlush_; };
+    void SetInstantFlush(bool instantFlush) { instantFlush_ = instantFlush; };
 
     // LogLevel: when the this log's level is less than current log level, the log will be ignored.
     void Log(LogLevel level, const std::string& msg);
