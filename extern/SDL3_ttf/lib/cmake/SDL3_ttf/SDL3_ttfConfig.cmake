@@ -15,12 +15,15 @@ set(SDLTTF_HARFBUZZ TRUE)
 set(SDLTTF_FREETYPE TRUE)
 
 set(SDLTTF_HARFBUZZ_REQUIRED_VERSION    2.3.1)
-set(SDLTTF_SDL3_REQUIRED_VERSION        3.1.5)
+set(SDLTTF_SDL3_REQUIRED_VERSION        3.2.6)
 
+set(SDL3_ttf_SDL3_ttf-shared_FOUND FALSE)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3_ttf-shared-targets.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/SDL3_ttf-shared-targets.cmake")
+    set(SDL3_ttf_SDL3_ttf-shared_FOUND TRUE)
 endif()
 
+set(SDL3_ttf_SDL3_ttf-static_FOUND FALSE)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3_ttf-static-targets.cmake")
     if(SDLTTF_VENDORED)
         if(SDLTTF_HARFBUZZ AND NOT MSVC)
@@ -57,6 +60,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3_ttf-static-targets.cmake")
     endif()
 
     include("${CMAKE_CURRENT_LIST_DIR}/SDL3_ttf-static-targets.cmake")
+    set(SDL3_ttf_SDL3_ttf-static_FOUND TRUE)
 endif()
 
 function(_sdl_create_target_alias_compat NEW_TARGET TARGET)
@@ -73,8 +77,30 @@ endfunction()
 if(NOT TARGET SDL3_ttf::SDL3_ttf)
     if(TARGET SDL3_ttf::SDL3_ttf-shared)
         _sdl_create_target_alias_compat(SDL3_ttf::SDL3_ttf SDL3_ttf::SDL3_ttf-shared)
-    else()
+    elseif(TARGET SDL3_ttf::SDL3_ttf-static)
         _sdl_create_target_alias_compat(SDL3_ttf::SDL3_ttf SDL3_ttf::SDL3_ttf-static)
     endif()
 endif()
 
+if(NOT SDL3_ttf_COMPONENTS AND NOT TARGET SDL3_ttf::SDL3_ttf-shared AND NOT TARGET SDL3_ttf::SDL3_ttf-static)
+    set(SDL3_ttf_FOUND FALSE)
+endif()
+
+####### Expanded from @PACKAGE_INIT@ by configure_package_config_file() #######
+####### Any changes to this file will be overwritten by the next CMake run ####
+####### The input file was SDL3_ttfConfig.cmake.in                            ########
+
+get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
+macro(check_required_components _NAME)
+  foreach(comp ${${_NAME}_FIND_COMPONENTS})
+    if(NOT ${_NAME}_${comp}_FOUND)
+      if(${_NAME}_FIND_REQUIRED_${comp})
+        set(${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
+####################################################################################
+check_required_components(SDL3_ttf)

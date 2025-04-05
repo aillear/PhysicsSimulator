@@ -194,7 +194,7 @@ void RenderSystem::SetFontSize(float size) {
     TTF_SetFontSize(font, fontSize);
 }
 
-std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
+TTF_Text* RenderSystem::CreateText(const std::string &text,
                                                    size_t size) {
     TTF_Text* temp = TTF_CreateText(textEngine, font, text.c_str(), size);
     if (!temp) {
@@ -202,10 +202,7 @@ std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
         return nullptr;
     }
     
-    return std::shared_ptr<TTF_Text>(
-        temp,
-        TTF_DestroyText
-    );
+    return temp;
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {

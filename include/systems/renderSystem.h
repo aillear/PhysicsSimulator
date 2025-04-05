@@ -158,7 +158,7 @@ class RenderSystem {
     void SetWindowSize(glm::vec2 size);
     float GetFontSize() const { return fontSize; }
     void SetFontSize(float size);
-    std::shared_ptr<TTF_Text> CreateText(const std::string& text, size_t size = 0);
+    TTF_Text* CreateText(const std::string& text, size_t size = 0);
     void AddUIDrawCommand(DrawCommand&& cmd);
     void Render();
     
