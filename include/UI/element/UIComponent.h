@@ -24,7 +24,6 @@
  */
 class UIComponent : public Object {
   public:
-    // TODO: add more layout system
     enum class TextAlign : Uint8 { DEFAULT = 0, START, CENTER, END };
     void Render() override = 0;
     void Update(float dt) override = 0;

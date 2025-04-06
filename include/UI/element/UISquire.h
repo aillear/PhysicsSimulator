@@ -5,7 +5,7 @@
 /**
  * @brief rect like ui component base
  * 
- */
+ */ 
 class UISquire : public UIComponent {
   public:
     void SetLeftTop(glm::vec2 leftTop) { this->leftTop = leftTop; }

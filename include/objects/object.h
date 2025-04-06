@@ -23,7 +23,7 @@ class Object {
   public:
     Object() : objectID(objectCount++) { ; };
     virtual ~Object() = default;
-    // life cycle wrapper
+    // life cycle wrapper, systems can manage object's lifecycle by this
     void InitWrapper();
     void RenderWrapper();
     void UpdateWrapper(float dt);

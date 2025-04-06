@@ -12,6 +12,7 @@
 #include "pathMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
+#include <cmath>
 #include <cstdlib>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
@@ -62,7 +63,7 @@ void App::Run() {
     panel->SetBarColor(ToFColor({33, 37, 43, 255}));
     panel->SetBarHeight(40.0f);
     panel->SetName("panel1");
-    panel->SetEnabled(false);
+    panel->SetEnabled(true);
 
     // auto button =
     //     std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{200, 100});
@@ -73,10 +74,10 @@ void App::Run() {
     // }); button->SetName("button1"); button->SetEnabled(true);
 
     auto button2 =
-        std::make_shared<UIButton>(glm::vec2{0, 150}, glm::vec2{200, 100});
-    button2->SetColor({0, 0, 255, 255});
-    button2->SetColorHover({0, 255, 0, 255});
-    button2->SetColorPressed({255, 0, 0, 255});
+        std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{30, 30});
+    button2->SetColor({40, 44, 52, 255});
+    button2->SetColorHover({47, 52, 62, 255});
+    button2->SetColorPressed({33, 37, 43, 255});
     button2->SetCallBack([&panel](SDL_Event &event) {
         LOG_INFO("Button2 clicked!");
         panel->SetEnabled(false);
@@ -85,10 +86,10 @@ void App::Run() {
     button2->SetEnabled(true);
 
     auto label = std::make_shared<UILabel>();
-    label->ChangeText("退出");
+    label->ChangeText("信息");
     label->SetColor({0, 255, 255, 255});
     label->SetName("label1");
-    label->SetAlignMent(TextAlign::CENTER, TextAlign::CENTER, {0, 0}, {0, 0});
+    //label->SetAlignMent(TextAlign::START, TextAlign::CENTER, {0, 0}, {0, 0});
     label->SetEnabled(true);
 
 
@@ -104,8 +105,10 @@ void App::Run() {
         GET_UIMgr.AddUIComponent(panel);
         // GET_UIMgr.AddUIComponent(button, panel);
         GET_UIMgr.AddUIComponent(button2, panel);
-        GET_UIMgr.AddUIComponent(label, button2);
-
+        GET_UIMgr.AddUIComponent(label, panel);
+        panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0}, {10, 0});
+        panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0}, {10, 0});
+        
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);

@@ -4,9 +4,14 @@
 #include "UIComponent.h"
 #include <functional>
 
-using ClickCallback = std::function<void(SDL_Event&)>;
+using ClickCallback = std::function<void(SDL_Event &)>;
 class UIButton : public UIComponent {
   public:
+    enum class ButtonState : Uint8 {
+        NORMAL = 0,
+        HOVER,
+        PRESSED,
+    };
     UIButton(glm::vec2 leftTop = {0, 0}, glm::vec2 rightBottom = {0, 0},
              SDL_FColor color = {0, 0, 0, 0},
              SDL_FColor colorHover = {0, 0, 0, 0},
@@ -29,11 +34,6 @@ class UIButton : public UIComponent {
     void OnMouseDown(SDL_Event &event) override;
     void OnMouseUp(SDL_Event &event) override;
 
-    enum class ButtonState : Uint8 {
-        NORMAL = 0,
-        HOVER,
-        PRESSED,
-    };
   private:
     SDL_FColor colorHover;
     SDL_FColor colorPressed;
