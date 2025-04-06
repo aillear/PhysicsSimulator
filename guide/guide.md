@@ -1,10 +1,57 @@
+# Basic Part
+
+## `object`
+
+The `Object` class serves as the foundational entity in this application, offering three core functionalities:
+
+### 1. Lifecycle Management
+
+- **Base Methods** (protected access)
+  Derived classes may override the following lifecycle methods:
+  - `Init()`
+  - `Render()`
+  - `Update(float)`
+  - `PhysicsUpdate(float)`
+  - `HandleEvent()`
+  - `Destroy()`
+- **Invocation Mechanism**
+  Lifecycle methods are triggered ​**only**​ when the object is managed by a dedicated system (e.g., `UIMgr`). Parent objects recursively invoke lifecycle methods across their children.
+- **Extended Callbacks**
+  Use `AddxxxCallback(callback)` to attach shared logic (applicable to this class and derived classes) to lifecycle functions. These callbacks execute ​**before**​ the corresponding lifecycle method.
+
+### 2. Hierarchy Management
+
+- **Tree Structure**
+  Maintains:
+  - A `vector` of child objects
+  - A pointer to its parent (`father`)
+- **Recursive Propagation**
+  Parent objects recursively dispatch lifecycle calls to children. Root nodes are owned and managed by external systems.
+
+### 3. Availability Control
+
+- Toggle Field
+
+  Controlled via the boolean `enable` field:
+
+  - `true`: Enables `Update`, `Render`, `PhysicsUpdate` (including children’s methods)
+  - `false`: Disables the above methods
+
+
+
+## `RenderSystem`
+
+`RenderSystem` is a singleton.
+
+ 
+
 # UI Part
 
 ## **`UIComponent`** (Base UI Class)
 
 Inherits from `Object`, serves as the foundation for UI elements with core functionality:
 
-**1. Coordinate System**
+### **1. Coordinate System**
 
 ​	All the position referred in UI family are relative to *SCREEN COORDINATION* !
 
@@ -13,7 +60,9 @@ Inherits from `Object`, serves as the foundation for UI elements with core funct
 
 
 
-**2. Lifecycle Management**
+### **2. Lifecycle Management**
+
+Lifecycle is managed by `UIMgr`
 
 - `Init()`     → Initializes when first added to `UIMgr `(`Init()` will be called in next frame before `Update()`.)
 - `Update()`  → Performs frame updates and it's children's `Update()`method recursively.
@@ -22,7 +71,7 @@ Inherits from `Object`, serves as the foundation for UI elements with core funct
 
 
 
-**3. Layout System**
+### **3. Layout System**
 
 - Supports X/Y axis alignment modes (start/center/end)
 
@@ -37,23 +86,6 @@ Inherits from `Object`, serves as the foundation for UI elements with core funct
   - offset x = 10, offset y = 10;
 
     ![image-20250405215359629](https://aillear-picbed.oss-cn-fuzhou.aliyuncs.com/image-20250405215359629.png)
-
-
-**4. Core Methods**
-
-```C++
-glm::vec2 GetScreenPos() const;
-
-void OnMouseMove(SDL_Event &event) override { ; }
-void OnMouseDown(SDL_Event &event) override { ; }
-void OnMouseUp(SDL_Event &event) override { ; }
-
-void Render() override = 0;
-void Update(float dt) override = 0;
-void HandleEvent(SDL_Event &event) override;
-```
-
-
 
 
 

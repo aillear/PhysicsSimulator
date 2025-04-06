@@ -82,8 +82,6 @@ class Object {
 
 
     bool enabled = true;
-    int selfEventID;
-    int updateID;
     std::string name;
 
     Uint32 objectID;
@@ -99,5 +97,4 @@ class Object {
     std::vector<UpdateFunctionWrapper> physicsUpdateCallBacks;
     std::vector<EventFunctionWrapper> handleEventCallBacks;
     std::vector<BasicFunctionWrapper> destroyCallBacks;
-
 };
