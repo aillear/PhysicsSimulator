@@ -30,6 +30,7 @@ void UIButton::Update(float dt) {;}
 // only when mouse is pressed, then set the state
 void UIButton::OnMouseDown(SDL_Event &event) {
     if (!event.button.down) return;
+    if (event.button.button != SDL_BUTTON_LEFT) return;
     if (!HitTest({event.button.x, event.button.y})) return;
     callback(event);
     state = ButtonState::PRESSED;

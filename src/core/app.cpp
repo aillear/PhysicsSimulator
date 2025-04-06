@@ -2,6 +2,7 @@
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_mouse.h"
 #include "UIBotton.h"
+#include "UIComponent.h"
 #include "UILabel.h"
 #include "UIMgr.h"
 #include "UIPanel.h"
@@ -83,11 +84,14 @@ void App::Run() {
     button2->SetName("button2");
     button2->SetEnabled(true);
 
-    auto label = std::make_shared<UILabel>(glm::vec2{10, -30});
-    label->ChangeText("EXIT");
+    auto label = std::make_shared<UILabel>();
+    label->ChangeText("退出");
     label->SetColor({0, 255, 255, 255});
     label->SetName("label1");
+    label->SetAlignMent(TextAlign::CENTER, TextAlign::CENTER, {0, 0}, {0, 0});
     label->SetEnabled(true);
+
+
 
     GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_DOWN, [&panel](SDL_Event &event) {
@@ -100,7 +104,7 @@ void App::Run() {
         GET_UIMgr.AddUIComponent(panel);
         // GET_UIMgr.AddUIComponent(button, panel);
         GET_UIMgr.AddUIComponent(button2, panel);
-        GET_UIMgr.AddUIComponent(label, panel);
+        GET_UIMgr.AddUIComponent(label, button2);
 
     while (running) {
         fpsc.StartFrame();

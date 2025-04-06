@@ -1,24 +1,13 @@
-# include "object.h"
+#include "object.h"
 #include "SDL3/SDL_events.h"
 
 Uint32 Object::objectCount = 0;
 
-void Object::UpdateWrapper(float dt) {
-    if (enabled) {
-        Update(dt);
-        for (auto &child : children) {
-            child->UpdateWrapper(dt);
-        }
-    }
-}
 
-void Object::PhysicsUpdateWrapper(float dt) {
-    if (enabled) {
-        Update(dt);
-        for (auto &child : children) {
-            child->PhysicsUpdateWrapper(dt);
-        }
-    }
+void Object::InitWrapper() {
+    for (auto& callBack : initCallBacks) callBack();
+    Init();
+    for (auto& child : children) child->InitWrapper();
 }
 
 void Object::RenderWrapper() {
@@ -31,12 +20,43 @@ void Object::RenderWrapper() {
     }
 }
 
-void Object::HandleEventWrapper(SDL_Event &event) {
+void Object::UpdateWrapper(float dt) {
     if (!enabled) return;
+    for (auto &callBack : updateCallBacks) {
+        callBack();
+    }
+    Update(dt);
+    for (auto &child : children) {
+        child->UpdateWrapper(dt);
+    } 
+}
+
+void Object::PhysicsUpdateWrapper(float dt) {
+    if (!enabled) return;
+    for (auto &callBack : physicsUpdateCallBacks) {
+        callBack();
+    }
+    PhysicsUpdate(dt);
+    for (auto &child : children) {
+        child->PhysicsUpdateWrapper(dt);
+    }
+}
+
+void Object::HandleEventWrapper(SDL_Event &event) {
+    if (!enabled)
+        return;
     for (auto &child : children) {
         child->HandleEventWrapper(event);
     }
     HandleEvent(event);
+}
+
+void Object::DestroyWrapper() {
+    for (auto &callBack : destroyCallBacks) callBack();
+    Destroy();
+    for (auto &child : children) {
+        child->DestroyWrapper();
+    }
 }
 
 void Object::AddChild(std::shared_ptr<Object> child) {
@@ -57,7 +77,9 @@ void Object::RemoveChild(std::shared_ptr<Object> child) {
 
 void Object::RemoveChlidByID(Uint32 id) {
     auto it = std::remove_if(children.begin(), children.end(),
-                             [id](const std::shared_ptr<Object> &child) { return child->objectID == id; });
+                             [id](const std::shared_ptr<Object> &child) {
+                                 return child->objectID == id;
+                             });
     if (it != children.end()) {
         (*it)->SetParent(nullptr);
         children.erase(it, children.end());
@@ -66,7 +88,9 @@ void Object::RemoveChlidByID(Uint32 id) {
 
 void Object::RemoveChlidByName(const std::string &name) {
     auto it = std::remove_if(children.begin(), children.end(),
-                             [&name](const std::shared_ptr<Object> &child) { return child->name == name; });
+                             [&name](const std::shared_ptr<Object> &child) {
+                                 return child->name == name;
+                             });
     if (it != children.end()) {
         (*it)->SetParent(nullptr);
         children.erase(it, children.end());
@@ -104,4 +128,28 @@ std::shared_ptr<Object> Object::GetChildByName(const std::string &name) {
         }
     }
     return nullptr;
+}
+
+void Object::AddInitCallBack(FunctionWrapper callBack) {
+    initCallBacks.emplace_back(callBack);
+}
+
+void Object::AddRenderCallBack(FunctionWrapper callBack) {
+    renderCallBacks.emplace_back(callBack);
+}
+
+void Object::AddUpdateCallBack(FunctionWrapper callBack) {
+    updateCallBacks.emplace_back(callBack);
+}
+
+void Object::AddPhysicsUpdateCallBack(FunctionWrapper callBack) {
+    physicsUpdateCallBacks.emplace_back(callBack);
+}
+
+void Object::AddHandleEventCallBack(FunctionWrapper callBack) {
+    handleEventCallBacks.emplace_back(callBack);
+}
+
+void Object::AddDestroyCallBack(FunctionWrapper callBack) {
+    destroyCallBacks.emplace_back(callBack);
 }

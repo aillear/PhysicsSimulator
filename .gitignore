@@ -19,3 +19,4 @@ _deps
 /logs
 /.vscode
 /test
+.clang-format

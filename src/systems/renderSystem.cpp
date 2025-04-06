@@ -255,6 +255,7 @@ void RenderSystem::HandleUIDrawCommand() {
             "vertex buffer or indices buffer overflow, {} > {} || {} > {}",
             vertexBufferSize, maxVertexBufferSize, indicesSize, maxIndicesSize);
     }
+    // check if the vertex buffer is empty
     if (vertexBufferSize > 0) {
         SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
                            vertexBufferSize, indices.get(), indicesSize);
@@ -432,6 +433,8 @@ void RenderSystem::TextCommand(DrawCommand &cmd) {
 
     TTF_SetTextColorFloat(text, color.r, color.g, color.b, color.a);
 
+    // need to render submit vertex first so that the text can be display in
+    // right order.
     if (vertexBufferSize != 0) {
         SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
                            vertexBufferSize, indices.get(), indicesSize);

@@ -40,12 +40,12 @@ void UIMgr::Destroy() {
 void UIMgr::Update(float dt) {
     // add new UIComponents
     for (auto& comp : uiComponentsToAdd) {
-        comp->Init();
         auto parent = comp->GetParent();
         if (parent == nullptr) {
             uiComponents.emplace_back(comp);
         }
         else parent->AddChild(comp);
+        comp->InitWrapper();
     }
     uiComponentsToAdd.clear();
 
@@ -60,7 +60,7 @@ void UIMgr::Update(float dt) {
         }
         else comp->GetParent()->RemoveChild(comp);
         
-        comp->Destroy();
+        comp->DestroyWrapper();
     }
     uiComponentsToRemove.clear();
 

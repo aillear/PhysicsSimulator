@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL3/SDL_stdinc.h"
 #include "conversion.h"
 #include <array>
 #include <cmath>
@@ -20,7 +21,7 @@
 
 struct GlmRect { glm::vec2 p1, p2; };
 struct GlmCircle { glm::vec2 center; float radius; };
-enum class ShapeType { POLYGON = 0, TEXT, LINE, RECT, CIRCLE };
+enum class ShapeType : Uint8 { POLYGON = 0, TEXT, LINE, RECT, CIRCLE };
 struct BasicCommand {
     union {
         GlmRect rect;
@@ -141,7 +142,7 @@ struct DrawCommand {
  */
 struct RenderSystemIniter {
     int vertexBufferSize = 1'000'000;
-    float fontSize = 16.0f;
+    float fontSize = 20.0f;
     glm::vec2 windowSize = {800, 600};
     SDL_Color bgColor = {50, 56, 66, 255};
     std::string fontName = "YaHei.ttf";

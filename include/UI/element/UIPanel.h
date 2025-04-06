@@ -2,6 +2,7 @@
 
 #include "SDL3/SDL_pixels.h"
 #include "UIComponent.h"
+#include <glm/common.hpp>
 
 /**
  * @brief
@@ -22,13 +23,12 @@ relative point ->   +-----------+   <-+
 
 relative point is left top corner of the panel.
 bar is additional height of the panel, you can click it to drag the panel.
-TODO: inplement this!
 */
 
 class UIPanel : public UIComponent {
   public:
     UIPanel(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
-            SDL_FColor color = {0, 0, 0, 0}, float barHeight = 20.0f,
+            SDL_FColor color = {0, 0, 0, 0}, float barHeight = 40.0f,
             SDL_FColor barColor = {255, 255, 255, 255})
         : UIComponent(leftTop, widthHeight, color), barHeight(barHeight),
           barColor(barColor) {
@@ -50,7 +50,7 @@ class UIPanel : public UIComponent {
     bool HitTest(glm::vec2 MousePos) override;
 
     float GetBarHeight() const { return barHeight; }
-    void SetBarHeight(int barHeight) { this->barHeight = barHeight; }
+    void SetBarHeight(float barHeight) { this->barHeight = glm::max(barHeight, 40.0f); }
     SDL_FColor GetBarColor() const { return barColor; }
     void SetBarColor(SDL_FColor barColor) { this->barColor = barColor; }
 
