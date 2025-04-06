@@ -7,7 +7,7 @@
 UIComponent::UIComponent(glm::vec2 leftTop, glm::vec2 widthHeight,
     SDL_FColor color) : leftTopPos(leftTop), widthHeight(widthHeight), color(color) {
 
-    AddUpdateCallBack([this](){
+    AddUpdateCallBack([this](float){
         if (!this->needToImplementAlignment) return;
         needToImplementAlignment = false;
         ImplementAlignment();

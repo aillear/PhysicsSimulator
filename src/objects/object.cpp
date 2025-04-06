@@ -23,7 +23,7 @@ void Object::RenderWrapper() {
 void Object::UpdateWrapper(float dt) {
     if (!enabled) return;
     for (auto &callBack : updateCallBacks) {
-        callBack();
+        callBack(dt);
     }
     Update(dt);
     for (auto &child : children) {
@@ -34,7 +34,7 @@ void Object::UpdateWrapper(float dt) {
 void Object::PhysicsUpdateWrapper(float dt) {
     if (!enabled) return;
     for (auto &callBack : physicsUpdateCallBacks) {
-        callBack();
+        callBack(dt);
     }
     PhysicsUpdate(dt);
     for (auto &child : children) {
@@ -43,8 +43,8 @@ void Object::PhysicsUpdateWrapper(float dt) {
 }
 
 void Object::HandleEventWrapper(SDL_Event &event) {
-    if (!enabled)
-        return;
+    if (!enabled) return;
+    for (auto &callBack : handleEventCallBacks) callBack(event);
     for (auto &child : children) {
         child->HandleEventWrapper(event);
     }
@@ -130,26 +130,26 @@ std::shared_ptr<Object> Object::GetChildByName(const std::string &name) {
     return nullptr;
 }
 
-void Object::AddInitCallBack(FunctionWrapper callBack) {
+void Object::AddInitCallBack(BasicFunctionWrapper callBack) {
     initCallBacks.emplace_back(callBack);
 }
 
-void Object::AddRenderCallBack(FunctionWrapper callBack) {
+void Object::AddRenderCallBack(BasicFunctionWrapper callBack) {
     renderCallBacks.emplace_back(callBack);
 }
 
-void Object::AddUpdateCallBack(FunctionWrapper callBack) {
+void Object::AddUpdateCallBack(UpdateFunctionWrapper callBack) {
     updateCallBacks.emplace_back(callBack);
 }
 
-void Object::AddPhysicsUpdateCallBack(FunctionWrapper callBack) {
+void Object::AddPhysicsUpdateCallBack(UpdateFunctionWrapper callBack) {
     physicsUpdateCallBacks.emplace_back(callBack);
 }
 
-void Object::AddHandleEventCallBack(FunctionWrapper callBack) {
+void Object::AddHandleEventCallBack(EventFunctionWrapper callBack) {
     handleEventCallBacks.emplace_back(callBack);
 }
 
-void Object::AddDestroyCallBack(FunctionWrapper callBack) {
+void Object::AddDestroyCallBack(BasicFunctionWrapper callBack) {
     destroyCallBacks.emplace_back(callBack);
 }

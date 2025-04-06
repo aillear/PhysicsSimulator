@@ -14,7 +14,10 @@
  *
  */
 
-using FunctionWrapper = std::function<void()>;
+using BasicFunctionWrapper = std::function<void()>;
+using UpdateFunctionWrapper = std::function<void(float)>;
+using EventFunctionWrapper = std::function<void(SDL_Event&)>;
+
 
 class Object {
   public:
@@ -69,13 +72,13 @@ class Object {
     virtual void HandleEvent(SDL_Event &event) = 0;
     virtual void Destroy() = 0;
 
-
-    void AddInitCallBack(FunctionWrapper callBack);
-    void AddRenderCallBack(FunctionWrapper callBack);
-    void AddUpdateCallBack(FunctionWrapper callBack);
-    void AddPhysicsUpdateCallBack(FunctionWrapper callBack);
-    void AddHandleEventCallBack(FunctionWrapper callBack);
-    void AddDestroyCallBack(FunctionWrapper callBack);
+    // you can add addition logic to update here
+    void AddInitCallBack(BasicFunctionWrapper callBack);
+    void AddRenderCallBack(BasicFunctionWrapper callBack);
+    void AddUpdateCallBack(UpdateFunctionWrapper callBack);
+    void AddPhysicsUpdateCallBack(UpdateFunctionWrapper callBack);
+    void AddHandleEventCallBack(EventFunctionWrapper callBack);
+    void AddDestroyCallBack(BasicFunctionWrapper callBack);
 
 
     bool enabled = true;
@@ -90,11 +93,11 @@ class Object {
 
   private:
     // TODO: call back, so that child can easily add new logic to life cycle.
-    std::vector<FunctionWrapper> initCallBacks;
-    std::vector<FunctionWrapper> renderCallBacks;
-    std::vector<FunctionWrapper> updateCallBacks;
-    std::vector<FunctionWrapper> physicsUpdateCallBacks;
-    std::vector<FunctionWrapper> handleEventCallBacks;
-    std::vector<FunctionWrapper> destroyCallBacks;
+    std::vector<BasicFunctionWrapper> initCallBacks;
+    std::vector<BasicFunctionWrapper> renderCallBacks;
+    std::vector<UpdateFunctionWrapper> updateCallBacks;
+    std::vector<UpdateFunctionWrapper> physicsUpdateCallBacks;
+    std::vector<EventFunctionWrapper> handleEventCallBacks;
+    std::vector<BasicFunctionWrapper> destroyCallBacks;
 
 };
