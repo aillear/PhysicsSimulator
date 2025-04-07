@@ -2,10 +2,7 @@
 
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_stdinc.h"
-#include "UIBotton.h"
 #include "UIComponent.h"
-#include "UILabel.h"
-#include "UIPanel.h"
 #include "eventSystem.h"
 #include <memory>
 
@@ -44,10 +41,6 @@ class UIMgr {
     void RemoveUIComponent(Uint32 componentID);
     void RemoveUIComponent(std::string componentName);
   
-    // there are some methods to quick add UIComponents prefabs
-    std::shared_ptr<UIButton> AddExitButtonToPanel(std::shared_ptr<UIPanel> panel);
-    // make sure that label text will not be changed!
-    std::shared_ptr<UILabel> AddLabelToButton(std::shared_ptr<UIButton> button, const std::string& text);
     
   private:
     UIMgr() = default;

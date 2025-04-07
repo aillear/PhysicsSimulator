@@ -53,7 +53,7 @@ Inherits from `Object`, serves as the foundation for UI elements with core funct
 
 ### **1. Coordinate System**
 
-​	All the position referred in UI family are relative to *SCREEN COORDINATION* !
+All the position referred in UI family are relative to *SCREEN COORDINATION* !
 
 - Relative Positioning `topLeftPos` to define position relative to parent's top-left corner
 - Absolute Positioning `GetScreenPos()` recursively calculates screen coordinates by summing ancestor positions
@@ -89,15 +89,32 @@ Lifecycle is managed by `UIMgr`
 
 ## **`UIMgr`** (singleton class to manage all UI elements)
 
-`UIMgr`, serves as the manager of all `UIComponents`, is responsible for maintaining the lifecycle methods of UIComponent.
+The `UIMgr` serves as the centralized controller for all `UIComponent` instances, enforcing lifecycle management and hierarchical organization of UI elements.
 
-### **1. **
+### **1. `UIComponent `Management**
 
+- **Registration Requirement**
+  A `UIComponent` ​**must**​ be registered with `UIMgr` to become functional.
+- **Core Methods**
+  Use the following to modify the component hierarchy:
+  - `AddUIComponent()`: Registers a component
+  - `RemoveUIComponent()`: Marks a component for removal
+- **Parent-Child Relationships**
+  A component’s parent can be designated, but the parent ​**must**​ already be registered and managed by `UIMgr`.
+  ​**Note**: Hierarchy changes take effect in the ​**next frame**.
 
+### **2. Lifecycle Execution Flow**
 
+The manager processes components in a strict per-frame sequence:
 
-
-
+1. **Initialization Phase**
+   - Processes components added in the **previous frame**
+   - Invokes their `Init()` methods
+2. **Destruction Phase**
+   - Removes components marked for deletion
+   - Triggers their `Destroy()` methods
+3. **Update-Render Phase**
+   - Executes `Update(float)` and `Render()` for all **active components**
 
 
 

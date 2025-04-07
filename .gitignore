@@ -19,5 +19,7 @@ _deps
 /logs
 /.vscode
 /test
+/bin/libc++.dll
+/bin/libunwind.dll
 .clang-format
 .VSCodeCounter
