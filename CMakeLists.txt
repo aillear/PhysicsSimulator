@@ -51,6 +51,7 @@ target_include_directories(${TARGET}
     ${PROJECT_ROOT_PATH}/include/objects
     ${PROJECT_ROOT_PATH}/include/systems
     ${PROJECT_ROOT_PATH}/include/UI/element
+    ${PROJECT_ROOT_PATH}/include/UI/customedUI
 )
 
 target_link_libraries(${TARGET}

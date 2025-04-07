@@ -25,10 +25,6 @@
 class UIComponent : public Object {
   public:
     enum class TextAlign : Uint8 { DEFAULT = 0, START, CENTER, END };
-    void Render() override = 0;
-    void Update(float dt) override = 0;
-    void Init() override { ; }
-    void Destroy() override { ; }
     // TODO:only handle mouse event? may change in the future.
     void HandleEvent(SDL_Event &event) override;
 
@@ -39,15 +35,19 @@ class UIComponent : public Object {
     void SetFColor(SDL_FColor color) { this->color = color; }
     void SetColor(SDL_Color color) { this->color = ToFColor(color); }
     bool GetRelateMode() const { return relateToParent; }
-    void SetRelateMode(bool relateToParent) { this->relateToParent = relateToParent; }
+    void SetRelateMode(bool relateToParent) {
+        this->relateToParent = relateToParent;
+    }
 
-    // normally, you should not use these methods, unless you know what you are doing.
-    // using set pos will not change the alignment field.
+    // normally, you should not use these methods, unless you know what you are
+    // doing. using set pos will not change the alignment field.
     glm::vec2 GetRelativePos() const { return leftTopPos; }
     glm::vec2 GetScreenPos() const;
     void SetRelativePos(glm::vec2 pos) { leftTopPos = pos; }
     glm::vec2 GetWidthHeight() const { return widthHeight; }
-    void SetWidthHeight(glm::vec2 widthHeight) { this->widthHeight = widthHeight; }
+    void SetWidthHeight(glm::vec2 widthHeight) {
+        this->widthHeight = widthHeight;
+    }
 
     glm::vec2 GetParentRelativePos() const;
     glm::vec2 GetParentScreenPos() const;
@@ -62,7 +62,8 @@ class UIComponent : public Object {
     TextAlign GetXAlign() const { return xAlign; }
     TextAlign GetYAlign() const { return yAlign; }
     // those set methods will change the position of the component.
-    void SetAlignMent(TextAlign xAlign, TextAlign yAlign, glm::vec2 offset, glm::vec2 margin);
+    void SetAlignMent(TextAlign xAlign, TextAlign yAlign, glm::vec2 offset,
+                      glm::vec2 margin);
     void SetMargin(glm::vec2 margin);
     void SetMarginX(float marginX);
     void SetMarginY(float marginY);
@@ -75,21 +76,26 @@ class UIComponent : public Object {
     virtual bool HitTest(glm::vec2 MousePos);
 
     // so that it's children don't need to implement these functions
-    void PhysicsUpdate(float dt) override { ; }
-    void OnMouseMove(SDL_Event &event) override { ; }
-    void OnMouseDown(SDL_Event &event) override { ; }
-    void OnMouseUp(SDL_Event &event) override { ; }
 
     UIComponent(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
                 SDL_FColor color = {0, 0, 0, 0});
 
   protected:
-    
+    void Render() override = 0;
+    void Update(float dt) override = 0;
+    void Init() override { ; }
+    void Destroy() override { ; }
+    void PhysicsUpdate(float dt) override { ; }
+    void OnMouseMove(SDL_Event &event) override { ; }
+    void OnMouseDown(SDL_Event &event) override { ; }
+    void OnMouseUp(SDL_Event &event) override { ; }
+
     void ImplementAlignment();
-    
+
     // useless for now
     bool zIndex;
-    bool relateToParent = true; // if true, the position is relative to parent, false relative to screen(0, 0)
+    bool relateToParent = true; // if true, the position is relative to parent,
+                                // false relative to screen(0, 0)
     TextAlign xAlign = TextAlign::START;
     TextAlign yAlign = TextAlign::START;
     // this rect is screen pos!!!
@@ -98,11 +104,11 @@ class UIComponent : public Object {
     // margin to place uicoponent, use it will change position.
     glm::vec2 margin;
     glm::vec2 offset;
-    SDL_FColor color;  
-    
+    SDL_FColor color;
 
   private:
-    bool needToImplementAlignment = false; // if true, need to implement alignment
+    bool needToImplementAlignment =
+        false; // if true, need to implement alignment
 };
 
 using TextAlign = UIComponent::TextAlign;

@@ -20,6 +20,7 @@ void UILabel::ChangeText(const std::string &text, size_t length) {
     TTF_GetTextSize(textObj.get(), &w, &h);
     widthHeight.x = static_cast<float>(w);
     widthHeight.y = static_cast<float>(h);
+    ImplementAlignment();
 }
 
 void UILabel::Init() {}

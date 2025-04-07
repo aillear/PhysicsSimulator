@@ -2,7 +2,7 @@
 
 ## `object`
 
-The `Object` class serves as the foundational entity in this application, offering three core functionalities:
+The `Object` class serves as the foundational entity in this application, offering three core functionalities: 
 
 ### 1. Lifecycle Management
 
@@ -32,7 +32,7 @@ The `Object` class serves as the foundational entity in this application, offeri
 
 - Toggle Field
 
-  Controlled via the boolean `enable` field:
+  Controlled via the Boolean `enable` field:
 
   - `true`: Enables `Update`, `Render`, `PhysicsUpdate` (including children’s methods)
   - `false`: Disables the above methods
@@ -81,13 +81,17 @@ Lifecycle is managed by `UIMgr`
 
 - Example Layout (X-center+ Y-start):
 
-  - margin x = 10(useless), margin y = 10; (margin was incorrectly marked as padding)
+  - margin x = 10(useless), margin y = 10; (margin was incorrectly marked as padding in the illustration below)
 
   - offset x = 10, offset y = 10;
 
     ![image-20250405215359629](https://aillear-picbed.oss-cn-fuzhou.aliyuncs.com/image-20250405215359629.png)
 
+## **`UIMgr`** (singleton class to manage all UI elements)
 
+`UIMgr`, serves as the manager of all `UIComponents`, is responsible for maintaining the lifecycle methods of UIComponent.
+
+### **1. **
 
 
 

@@ -1,5 +1,6 @@
 #include "FPSCounter.h"
 #include <chrono>
+#include <ratio>
 
 void FPSCounter::StartFrame() {
     auto now = std::chrono::steady_clock::now();
@@ -9,20 +10,19 @@ void FPSCounter::StartFrame() {
                      now - lastSecondTime_)
                      .count();
 
-    if (delta >= 1000) {
+    frameCount_++;
+    if (delta >= 1'000'000) {
         currentFPS_ = frameCount_;
         frameCount_ = 0;
         lastSecondTime_ = now;
     }
-
-    frameCount_++;
 }
 
 void FPSCounter::EndFrame() {
     auto now = std::chrono::steady_clock::now();
-    auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>(
-        now - frameStartTime_
-    ).count();  
+    auto frameTime =
+        std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(
+            now - frameStartTime_);
 
-    lastFrameTime_ = (frameTime) * 0.001f;
+    lastFrameTime_ = frameTime.count();
 }

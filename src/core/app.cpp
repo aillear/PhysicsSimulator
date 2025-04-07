@@ -3,7 +3,7 @@
 #include "SDL3/SDL_mouse.h"
 #include "UIBotton.h"
 #include "UIComponent.h"
-#include "UILabel.h"
+#include "UILabelReader.h"
 #include "UIMgr.h"
 #include "UIPanel.h"
 #include "conversion.h"
@@ -12,8 +12,8 @@
 #include "pathMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
-#include <cmath>
 #include <cstdlib>
+#include <format>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
@@ -33,9 +33,9 @@ void App::Init(int argc, char *argv[]) {
                     false); // when this is done, the logger will be usable
 
     // system initialize
-    RenderSystemIniter initer;
+    RenderSystemIniter RenderSystemIniter;
 
-    if (!GET_RenderSystem.Init(initer)) {
+    if (!GET_RenderSystem.Init(RenderSystemIniter)) {
         LOG_ERROR("Render system initialize failed.");
         exit(1);
     }
@@ -65,19 +65,13 @@ void App::Run() {
     panel->SetName("panel1");
     panel->SetEnabled(true);
 
-    // auto button =
-    //     std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{200, 100});
-    // button->SetColor({0, 0, 255, 255});
-    // button->SetColorHover({0, 255, 0, 255});
-    // button->SetColorPressed({255, 0, 0, 255});
-    // button->SetCallBack([](SDL_Event &event) { LOG_INFO("Button1 clicked!");
-    // }); button->SetName("button1"); button->SetEnabled(true);
 
     auto button2 =
         std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{30, 30});
-    button2->SetColor({40, 44, 52, 255});
-    button2->SetColorHover({47, 52, 62, 255});
-    button2->SetColorPressed({33, 37, 43, 255});
+    button2->SetColor({157, 42, 18, 255});
+
+    button2->SetColorHover({229, 74, 41, 255});
+    button2->SetColorPressed({233, 125, 102, 255});
     button2->SetCallBack([&panel](SDL_Event &event) {
         LOG_INFO("Button2 clicked!");
         panel->SetEnabled(false);
@@ -86,27 +80,42 @@ void App::Run() {
     button2->SetEnabled(true);
 
     auto label = std::make_shared<UILabel>();
-    label->ChangeText("信息");
+    label->ChangeText("Information");
     label->SetColor({0, 255, 255, 255});
     label->SetName("label1");
-    //label->SetAlignMent(TextAlign::START, TextAlign::CENTER, {0, 0}, {0, 0});
     label->SetEnabled(true);
 
+    auto label1 = std::make_shared<UILabelReader>();
+    label1->SetFColor({1,1,1,1});
+    label1->SetName("frame time reader");
+    label1->AddReader([this](){return std::format("{:.2f}ms", this->fpsc.GetLastFrameTime());});
+    label1->SetAlignMent(UIComponent::TextAlign::END, UIComponent::TextAlign::START, {0, 0}, {5, 5});
+    label1->SetEnabled(true);
 
+    auto label2 = std::make_shared<UILabelReader>();
+    label2->SetFColor({1,1,1,1});
+    label2->SetName("frame time reader");
+    label2->AddReader([this](){return std::format("{}FPS", this->fpsc.GetFPS());});
+    label2->SetAlignMent(UIComponent::TextAlign::END, UIComponent::TextAlign::START, {0, FONT_SIZE+5}, {5, 5});
+    label2->SetEnabled(true);
 
     GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_DOWN, [&panel](SDL_Event &event) {
             if (event.button.button != SDL_BUTTON_RIGHT)
                 return;
-            if (!panel->GetEnabled())
+            if (!panel->GetEnabled()) {
                 panel->SetEnabled(true);
+                panel->SetRelativePos({0, panel->GetBarHeight()});
+            }
         });
 
         GET_UIMgr.AddUIComponent(panel);
         // GET_UIMgr.AddUIComponent(button, panel);
         GET_UIMgr.AddUIComponent(button2, panel);
         GET_UIMgr.AddUIComponent(label, panel);
-        panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0}, {10, 0});
+        GET_UIMgr.AddUIComponent(label1, panel);
+        GET_UIMgr.AddUIComponent(label2, panel);
+        panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0}, {5, 0});
         panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0}, {10, 0});
         
     while (running) {

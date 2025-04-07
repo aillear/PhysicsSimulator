@@ -198,6 +198,7 @@ class RenderSystem {
 #define GET_RenderSystem RenderSystem::Instance()
 #define WORLD2SCREEN(pos) RenderSystem::Instance().PosWorld2Screen(pos)
 #define SCREEN2WORLD(pos) RenderSystem::Instance().PosScreen2World(pos)
+#define FONT_SIZE RenderSystem::Instance().GetFontSize()
 
 template <int LOD>
 struct CircleLodCache {
