@@ -1,7 +1,7 @@
 #include "app.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_mouse.h"
-#include "UIBotton.h"
+#include "UIButton.h"
 #include "UIComponent.h"
 #include "UILabelReader.h"
 #include "UIMgr.h"

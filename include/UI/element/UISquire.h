@@ -3,7 +3,7 @@
 #include <glm/ext/vector_float2.hpp>
 
 /**
- * @brief rect like ui component base
+ * @brief rect like ui component base useless
  * 
  */ 
 class UISquire : public UIComponent {

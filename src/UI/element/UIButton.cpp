@@ -1,6 +1,6 @@
 #include "SDL3/SDL_events.h"
-# include "UIBotton.h"
-# include "renderSystem.h"
+#include "UIButton.h"
+#include "renderSystem.h"
 
 void UIButton::Render() {
     // Check if the button is enabled before rendering
