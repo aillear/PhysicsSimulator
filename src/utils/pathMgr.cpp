@@ -51,3 +51,7 @@ void PathMgr::Init(int rootCount) {
         rootCount--;
     }
 }
+
+void PathMgr::Destroy() {
+    ;
+}

@@ -127,15 +127,15 @@ void App::Run() {
         GET_RenderSystem.Render();
         fpsc.EndFrame();
     }
-    Destory();
+    Destroy();
 }
 
-void App::Destory() {
-    // GET_RenderSystem.Destroy();
+void App::Destroy() {
+    GET_RenderSystem.Destroy();
     GET_UIMgr.Destroy();
-
-    // GET_EventSystem.Destroy();
-    // GET_Logger.Destroy();
-    // GET_PathMgr.Destroy();
+    GET_RenderSystem.Destroy();
+    GET_EventSystem.Destroy();
+    GET_Logger.Destroy();
+    GET_PathMgr.Destroy();
     LOG_INFO("App destroyed.");
 }

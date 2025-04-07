@@ -19,6 +19,7 @@ class Logger {
     // instantFlush : if it's true, the log will be instantly writen to log file;
     void Init(LogLevel level = LogLevel::INFO,
               const std::string& logName = "app.log", bool instantFlush = false);
+    void Destroy();
 
     void SetLogLevel(LogLevel level);
     bool GetInstantFlush() const { return instantFlush_; };
@@ -58,7 +59,7 @@ class Logger {
     
   private:
     Logger() = default;
-    ~Logger();
+    ~Logger() = default;
     Logger(const Logger&) = delete;
     Logger(const Logger&&) = delete;
     Logger& operator=(const Logger&) = delete;

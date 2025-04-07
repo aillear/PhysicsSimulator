@@ -13,6 +13,7 @@ class PathMgr {
      * @param rootCount parent's count from exe path to root path
      */
     void Init(int rootCount = 2);
+    void Destroy();
 
     // you can use this function to get resources's path.
     template <typename... Args> fs::path GetPath(Args &&...args) {

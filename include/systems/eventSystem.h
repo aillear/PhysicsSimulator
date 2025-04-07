@@ -20,6 +20,7 @@ class EventSystem {
   public:
     static EventSystem& Instance();
     void Init();
+    void Destroy();
     void HandleEvent();
     template<typename T>
     EventHandlerID AddEventListener(SDL_EventType type, T&& callback);
@@ -27,10 +28,10 @@ class EventSystem {
     template<class C, typename Method>
     EventHandlerID AddEventListener(SDL_EventType type, C* instance, Method callback);
 
+    void EventDispatcher(SDL_Event& event);
     bool RemoveEventListener(SDL_EventType type, EventHandlerID id);
     
   private:
-    void EventDispatcher(SDL_Event& event);
     std::unordered_map<SDL_EventType, std::list<CallBackWrapper>> eventMap_;
     std::shared_mutex mutex_;
     std::atomic<EventHandlerID> idCounter_{0};

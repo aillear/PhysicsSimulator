@@ -42,6 +42,14 @@ void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush)
     Info("Logger Initialized: level=`{}`, file={}.", LevelToStr(level), path.string());
 }
 
+void Logger::Destroy() {
+    if (!logFile_.is_open()) return;
+    
+    Info("Program exited.");
+    logFile_ << '\n' << std::endl;
+    logFile_.close();
+}
+
 void Logger::SetLogLevel(LogLevel level) {
     std::lock_guard<std::mutex> lock(mutex_);
     currentLevel_ = level;
@@ -83,14 +91,6 @@ void Logger::Warning(const std::string& msg) {
 
 void Logger::Error(const std::string& msg) {
     Log(LogLevel::ERROR, msg);
-}
-
-Logger::~Logger() {
-    if (!logFile_.is_open()) return;
-    
-    Info("Program exited.");
-    logFile_ << '\n' << std::endl;
-    logFile_.close();
 }
 
 std::string Logger::LevelToStr(LogLevel level) {

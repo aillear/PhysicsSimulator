@@ -154,6 +154,7 @@ class RenderSystem {
 
     static RenderSystem &Instance();
     bool Init(const RenderSystemIniter &initer);
+    void Destroy();
     glm::vec2 GetWindowSize() const { return halfWindowSize * 2.0f; }
     glm::vec2 GetWindowCenter() const { return halfWindowSize; }
     void SetWindowSize(glm::vec2 size);
@@ -165,7 +166,7 @@ class RenderSystem {
     
   private:  
     RenderSystem();
-    ~RenderSystem();
+    ~RenderSystem() = default;
     SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
     glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 

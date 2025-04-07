@@ -41,3 +41,7 @@ void EventSystem::HandleEvent() {
 void EventSystem::Init() {
     ;
 }
+
+void EventSystem::Destroy() {
+    eventMap_.clear();
+}

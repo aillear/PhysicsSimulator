@@ -11,7 +11,7 @@ class App {
     FPSCounter fpsc;
   private:
     App();
-    void Destory();
+    void Destroy();
     FPSmanager fpsm;
     
 };

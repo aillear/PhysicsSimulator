@@ -53,7 +53,7 @@ RenderSystem::RenderSystem()
     ;
 }
 
-RenderSystem::~RenderSystem() {
+void RenderSystem::Destroy() {
     TTF_DestroyRendererTextEngine(textEngine);
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
