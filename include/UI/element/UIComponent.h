@@ -44,14 +44,14 @@ class UIComponent : public Object {
     glm::vec2 GetRelativePos() const { return leftTopPos; }
     glm::vec2 GetScreenPos() const;
     void SetRelativePos(glm::vec2 pos) { leftTopPos = pos; }
-    glm::vec2 GetWidthHeight() const { return widthHeight; }
+    virtual glm::vec2 GetWidthHeight() const { return widthHeight; }
     void SetWidthHeight(glm::vec2 widthHeight) {
         this->widthHeight = widthHeight;
     }
 
     glm::vec2 GetParentRelativePos() const;
     glm::vec2 GetParentScreenPos() const;
-    glm::vec2 GetParentWidthHeight() const;
+    virtual glm::vec2 GetParentWidthHeight() const;
 
     glm::vec2 GetMargin() const { return margin; }
     float GetMarginX() const { return margin.x; }

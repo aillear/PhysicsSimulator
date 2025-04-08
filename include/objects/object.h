@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_stdinc.h"
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_events.h>
+#include <cstddef>
 #include <functional>
 #include <glm/ext/vector_float2.hpp>
 #include <string>
@@ -18,7 +19,7 @@ using BasicFunctionWrapper = std::function<void()>;
 using UpdateFunctionWrapper = std::function<void(float)>;
 using EventFunctionWrapper = std::function<void(SDL_Event&)>;
 
-
+using ObjectID = Uint64;
 class Object {
   public:
     Object() : objectID(objectCount++) { ; };
@@ -31,6 +32,9 @@ class Object {
     void HandleEventWrapper(SDL_Event &event);
     void DestroyWrapper();
 
+    void SetToRemove() {removedMark = true;}
+    void CheckChildToRemove();
+
     // event handle interface
     virtual void OnMouseMove(SDL_Event &event) = 0;
     virtual void OnMouseDown(SDL_Event &event) = 0;
@@ -40,20 +44,21 @@ class Object {
     void SetEnabled(bool enabled) { this->enabled = enabled; }
     void SetName(const std::string &name) { this->name = name; }
     const std::string &GetName() const { return name; }
-    Uint32 GetID() const { return objectID; }
+    const ObjectID GetID() const { return objectID; }
 
     // child management
     void AddChild(std::shared_ptr<Object> child);
     // remove first child by pointer, id or name
     // do not recursively remove child
+    // remove child my be reconscruct in the future.
     void RemoveChild(std::shared_ptr<Object> child);
-    void RemoveChlidByID(Uint32 id);
+    void RemoveChlidByID(ObjectID id);
     void RemoveChlidByName(const std::string &name);
-    void ClearChildren();
+    void RemoveAllChildren();
 
     // get first child by id or name, if not found, return nullptr
     // it will recursively search all children
-    std::shared_ptr<Object> GetChildByID(Uint32 id);
+    std::shared_ptr<Object> GetChildByID(ObjectID id);
     std::shared_ptr<Object> GetChildByName(const std::string &name);
 
     std::vector<std::shared_ptr<Object>> GetChildren() const {return children;}
@@ -82,15 +87,18 @@ class Object {
 
 
     bool enabled = true;
+    bool removedMark = false;
     std::string name;
 
-    Uint32 objectID;
-    static Uint32 objectCount; // I believe that Uint32_t is enough for the number of objects in the game
+    ObjectID objectID;
+    static ObjectID objectCount; // I believe that size_t is enough for the number of objects in the game
     Object *parent = nullptr;
     std::vector<std::shared_ptr<Object>> children;
 
   private:
-    // TODO: call back, so that child can easily add new logic to life cycle.
+    // release all children and itself recursively.
+    void ReleaseAllChildren();
+    // call back, so that child can easily add new logic to life cycle.
     std::vector<BasicFunctionWrapper> initCallBacks;
     std::vector<BasicFunctionWrapper> renderCallBacks;
     std::vector<UpdateFunctionWrapper> updateCallBacks;

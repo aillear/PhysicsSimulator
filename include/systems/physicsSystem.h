@@ -15,7 +15,7 @@ class PhysicsSystem {
     void Update();
 
     void AddObject(std::shared_ptr<RigidBody> obj, std::shared_ptr<RigidBody> target = nullptr);
-    void AddObject(std::shared_ptr<RigidBody> obj, Uint32 targetId);
+    void AddObject(std::shared_ptr<RigidBody> obj, Uint32 targetID);
     void AddObject(std::shared_ptr<RigidBody> obj, std::string targetName);
 
     void RemoveObject(std::shared_ptr<RigidBody> obj);

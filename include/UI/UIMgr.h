@@ -1,9 +1,9 @@
 # pragma once   
 
 #include "SDL3/SDL_events.h"
-#include "SDL3/SDL_stdinc.h"
 #include "UIComponent.h"
 #include "eventSystem.h"
+#include "object.h"
 #include <memory>
 
 
@@ -35,14 +35,17 @@ class UIMgr {
         all the UIComponents need to add to the list so that they can be updated and rendered
     */
     void AddUIComponent(std::shared_ptr<UIComponent> component, std::shared_ptr<UIComponent> target = nullptr);
-    void AddUIComponent(std::shared_ptr<UIComponent> component, Uint32 targetID);
+    void AddUIComponent(std::shared_ptr<UIComponent> component, ObjectID targetID);
     void AddUIComponent(std::shared_ptr<UIComponent> component, std::string targetName);
     // if not found, do nothing
     void RemoveUIComponent(std::shared_ptr<UIComponent> component);
-    void RemoveUIComponent(Uint32 componentID);
+    void RemoveUIComponent(ObjectID componentID);
     void RemoveUIComponent(std::string componentName);
   
-    
+    std::shared_ptr<UIComponent> FindComponentByID(ObjectID id);
+    std::shared_ptr<UIComponent> FindComponentByName(std::string name);
+
+
   private:
     UIMgr() = default;
     ~UIMgr() = default;
@@ -51,9 +54,9 @@ class UIMgr {
     // call uiComponents's HandleEvent function recursively
     void HandleSDLEvents(SDL_Event& event);
 
-    std::vector<std::shared_ptr<UIComponent>> uiComponents;
+    std::shared_ptr<UIComponent> rootNode;
     std::vector<std::shared_ptr<UIComponent>> uiComponentsToAdd;
-    std::vector<std::shared_ptr<UIComponent>> uiComponentsToRemove;
+    bool hasRemoveCalled = false;
     EventHandlerID eventHandler_1, eventHandler_2, eventHandler_3;
 };
 

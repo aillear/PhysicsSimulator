@@ -1,7 +1,6 @@
 #include "UIComponent.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_pixels.h"
-#include "renderSystem.h"
 #include <glm/ext/vector_float2.hpp>
 
 UIComponent::UIComponent(glm::vec2 leftTop, glm::vec2 widthHeight,
@@ -55,7 +54,6 @@ glm::vec2 UIComponent::GetParentScreenPos() const {
 }
 
 glm::vec2 UIComponent::GetParentWidthHeight() const {
-    if (parent == nullptr) return GET_RenderSystem.GetWindowSize();
     return static_cast<UIComponent*>(parent)->GetWidthHeight();
 }
 

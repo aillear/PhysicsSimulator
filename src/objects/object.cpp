@@ -1,17 +1,21 @@
 #include "object.h"
 #include "SDL3/SDL_events.h"
+#include <algorithm>
+#include <memory>
 
-Uint32 Object::objectCount = 0;
-
+ObjectID Object::objectCount = 0;
 
 void Object::InitWrapper() {
-    for (auto& callBack : initCallBacks) callBack();
+    for (auto &callBack : initCallBacks)
+        callBack();
     Init();
-    for (auto& child : children) child->InitWrapper();
+    for (auto &child : children)
+        child->InitWrapper();
 }
 
 void Object::RenderWrapper() {
-    if (!enabled) return;
+    if (!enabled)
+        return;
     // first draw self, then draw children
     // this is important, because children may cover self
     Render();
@@ -21,18 +25,20 @@ void Object::RenderWrapper() {
 }
 
 void Object::UpdateWrapper(float dt) {
-    if (!enabled) return;
+    if (!enabled)
+        return;
     for (auto &callBack : updateCallBacks) {
         callBack(dt);
     }
     Update(dt);
     for (auto &child : children) {
         child->UpdateWrapper(dt);
-    } 
+    }
 }
 
 void Object::PhysicsUpdateWrapper(float dt) {
-    if (!enabled) return;
+    if (!enabled)
+        return;
     for (auto &callBack : physicsUpdateCallBacks) {
         callBack(dt);
     }
@@ -43,8 +49,10 @@ void Object::PhysicsUpdateWrapper(float dt) {
 }
 
 void Object::HandleEventWrapper(SDL_Event &event) {
-    if (!enabled) return;
-    for (auto &callBack : handleEventCallBacks) callBack(event);
+    if (!enabled)
+        return;
+    for (auto &callBack : handleEventCallBacks)
+        callBack(event);
     for (auto &child : children) {
         child->HandleEventWrapper(event);
     }
@@ -52,11 +60,35 @@ void Object::HandleEventWrapper(SDL_Event &event) {
 }
 
 void Object::DestroyWrapper() {
-    for (auto &callBack : destroyCallBacks) callBack();
-    Destroy();
+    for (auto &callBack : destroyCallBacks)
+        callBack();
     for (auto &child : children) {
         child->DestroyWrapper();
     }
+    Destroy();
+}
+
+void Object::CheckChildToRemove() {
+    auto it = std::remove_if(children.begin(), children.end(), [](std::shared_ptr<Object>& obj) {
+        if (!obj->removedMark) return false;
+        obj->DestroyWrapper();
+        obj->ReleaseAllChildren();
+        return true;
+    });
+    children.erase(it, children.end());
+
+    for (auto& obj : children) {
+        obj->CheckChildToRemove();
+    }
+}
+
+void Object::ReleaseAllChildren() {
+    if (children.size() == 0)
+        return;
+    for (auto &chlid : children) {
+        chlid->ReleaseAllChildren();
+    }
+    children.clear();
 }
 
 void Object::AddChild(std::shared_ptr<Object> child) {
@@ -75,7 +107,7 @@ void Object::RemoveChild(std::shared_ptr<Object> child) {
     }
 }
 
-void Object::RemoveChlidByID(Uint32 id) {
+void Object::RemoveChlidByID(ObjectID id) {
     auto it = std::remove_if(children.begin(), children.end(),
                              [id](const std::shared_ptr<Object> &child) {
                                  return child->objectID == id;
@@ -97,14 +129,14 @@ void Object::RemoveChlidByName(const std::string &name) {
     }
 }
 
-void Object::ClearChildren() {
+void Object::RemoveAllChildren() {
     for (auto &child : children) {
         child->SetParent(nullptr);
     }
     children.clear();
 }
 
-std::shared_ptr<Object> Object::GetChildByID(Uint32 id) {
+std::shared_ptr<Object> Object::GetChildByID(ObjectID id) {
     for (auto &child : children) {
         if (child->objectID == id) {
             return child;
