@@ -6,6 +6,7 @@
 #include "eventSystem.h"
 #include <memory>
 
+
 /**
  * @brief Manager for all UIComponents.
  *   It will update and render all UIComponents.
@@ -20,7 +21,7 @@
 class UIMgr {
   public:
     static UIMgr& Instance();
-    void Init();
+    bool Init();
     void Destroy();
     void Update(float dt);
 

@@ -19,7 +19,7 @@ struct CallBackWrapper {
 class EventSystem {
   public:
     static EventSystem& Instance();
-    void Init();
+    bool Init();
     void Destroy();
     void HandleEvent();
     template<typename T>

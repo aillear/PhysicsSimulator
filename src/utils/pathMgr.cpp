@@ -19,7 +19,7 @@ PathMgr& PathMgr::Instance() {
 }
 
 // cross platform support
-void PathMgr::Init(int rootCount) {
+bool PathMgr::Init(int rootCount) {
     std::string raw_path;
 
     #ifdef _WIN32
@@ -43,6 +43,7 @@ void PathMgr::Init(int rootCount) {
     
     if (raw_path.empty()) {
         throw std::runtime_error("Failed to get executable path");
+        return false;
     }
 
     path_ = fs::path(raw_path);
@@ -50,6 +51,7 @@ void PathMgr::Init(int rootCount) {
         path_ = path_.parent_path();
         rootCount--;
     }
+    return true;
 }
 
 void PathMgr::Destroy() {

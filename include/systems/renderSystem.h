@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SDL3/SDL_stdinc.h"
-#include "TripleBuffer.h"
 #include "conversion.h"
 #include <array>
 #include <cmath>
@@ -192,7 +191,6 @@ class RenderSystem {
     SDL_Color backgroundColor;
     Camera camera;
     std::vector<DrawCommand> UIdrawCommands;
-    TripleBuffer<DrawCommand> PhysicsDrawCommands;
     std::unique_ptr<SDL_Vertex[]> vertexBuffer;
     std::unique_ptr<int[]> indices;
     

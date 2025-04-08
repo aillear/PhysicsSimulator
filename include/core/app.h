@@ -2,6 +2,7 @@
 #include "FPSCounter.h"
 #include <SDL3/SDL.h>
 #include <SDL3_framerate.h>
+#include <thread>
 class App {
   public:
     static App& Instance();
@@ -13,6 +14,7 @@ class App {
     App();
     void Destroy();
     FPSmanager fpsm;
+    std::thread physicsThread;
     
 };
 

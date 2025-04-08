@@ -12,7 +12,7 @@ class PathMgr {
      * 
      * @param rootCount parent's count from exe path to root path
      */
-    void Init(int rootCount = 2);
+    bool Init(int rootCount = 2);
     void Destroy();
 
     // you can use this function to get resources's path.

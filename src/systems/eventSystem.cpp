@@ -38,8 +38,8 @@ void EventSystem::HandleEvent() {
     }
 }
 
-void EventSystem::Init() {
-    ;
+bool EventSystem::Init() {
+    return true;
 }
 
 void EventSystem::Destroy() {

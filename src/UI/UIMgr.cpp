@@ -10,7 +10,7 @@ UIMgr& UIMgr::Instance() {
     return instance;
 }
 
-void UIMgr::Init() {
+bool UIMgr::Init() {
     eventHandler_1 = GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_MOTION,
         [this](SDL_Event& event) {HandleSDLEvents(event);}
@@ -28,6 +28,7 @@ void UIMgr::Init() {
 
     F_LOG_INFO("UIMgr initialized, event listeners' id: {}, {}, {}", 
         eventHandler_1, eventHandler_2, eventHandler_3);
+    return true;
 }
 
 void UIMgr::Destroy() {

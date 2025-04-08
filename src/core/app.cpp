@@ -6,10 +6,11 @@
 #include "UILabelReader.h"
 #include "UIMgr.h"
 #include "UIPanel.h"
-#include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "pathMgr.h"
+#include "physicsSystem.h"
+#include "renderBufferMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
 #include <cstdlib>
@@ -17,6 +18,7 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
+#include <thread>
 
 App &App::Instance() {
     static App instance;
@@ -31,20 +33,21 @@ void App::Init(int argc, char *argv[]) {
     GET_PathMgr.Init(); // PathMgr should be initialized first
     GET_Logger.Init(Logger::DEBUG, "app.log",
                     false); // when this is done, the logger will be usable
-
+    GET_Logger.SetInstantFlush(true);
     // system initialize
+    GET_EventSystem.Init();
+    GET_Buffer.Init();
     RenderSystemIniter RenderSystemIniter;
-
     if (!GET_RenderSystem.Init(RenderSystemIniter)) {
         LOG_ERROR("Render system initialize failed.");
+        this->Destroy();
         exit(1);
     }
-
-    GET_EventSystem.Init();
+    GET_PhysicsSystem.Init(100);
     GET_UIMgr.Init();
 
     SDL_initFramerate(&fpsm);
-    SDL_setFramerate(&fpsm, 90);
+    SDL_setFramerate(&fpsm, 100);
 
     // add event listener
     // quit event
@@ -60,7 +63,7 @@ void App::Run() {
         std::make_shared<UIPanel>(glm::vec2{0, 100}, glm::vec2{400, 600});
 
     panel->SetColor({40, 44, 52, 255});
-    panel->SetBarColor(ToFColor({33, 37, 43, 255}));
+    panel->SetBarColor({33, 37, 43, 255});
     panel->SetBarHeight(40.0f);
     panel->SetName("panel1");
     panel->SetEnabled(true);
@@ -118,11 +121,12 @@ void App::Run() {
         panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0}, {5, 0});
         panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0}, {10, 0});
         
+    GET_Logger.SetInstantFlush(true);
+
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
         GET_EventSystem.HandleEvent();
-
         GET_UIMgr.Update(fpsc.GetLastFrameTime());
         GET_RenderSystem.Render();
         fpsc.EndFrame();
@@ -131,11 +135,11 @@ void App::Run() {
 }
 
 void App::Destroy() {
-    GET_RenderSystem.Destroy();
     GET_UIMgr.Destroy();
+    GET_PhysicsSystem.Destroy();
     GET_RenderSystem.Destroy();
+    GET_Buffer.Destroy();
     GET_EventSystem.Destroy();
     GET_Logger.Destroy();
     GET_PathMgr.Destroy();
-    LOG_INFO("App destroyed.");
 }

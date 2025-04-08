@@ -1,4 +1,6 @@
 #include "tripleBuffer.h"
+#include "renderSystem.h"
+#include <cstddef>
 #include <mutex>
 #include <vector>
 
@@ -26,7 +28,7 @@ void TripleBuffer<T>::Prepare() {
 }
 
 template <typename T>
-std::vector<T>& TripleBuffer<T>::GetComsumeBuffer() noexcept {
+std::vector<T>& TripleBuffer<T>::GetConsumeBuffer() noexcept {
     return back_;
 }
 
@@ -39,3 +41,12 @@ template <typename T>
 std::vector<T>& TripleBuffer<T>::GetFrontBuffer() noexcept {
     return front_;
 }
+
+template <typename T>
+void TripleBuffer<T>::Reserve(size_t size) {
+    front_.reserve(size);
+    middle_.reserve(size);
+    back_.reserve(size);
+}
+
+template class TripleBuffer<DrawCommand>;

@@ -2,6 +2,7 @@
 
 #include "SDL3/SDL_pixels.h"
 #include "UIComponent.h"
+#include "conversion.h"
 #include <glm/common.hpp>
 #include <memory>
 
@@ -53,7 +54,8 @@ class UIPanel : public UIComponent {
     float GetBarHeight() const { return barHeight; }
     void SetBarHeight(float barHeight) { this->barHeight = glm::max(barHeight, 40.0f); }
     SDL_FColor GetBarColor() const { return barColor; }
-    void SetBarColor(SDL_FColor barColor) { this->barColor = barColor; }
+    void SetBarFColor(SDL_FColor barColor) { this->barColor = barColor; }
+    void SetBarColor(SDL_Color barColor) {this->barColor = ToFColor(barColor);}
 
     void SetBarAlignMent(std::shared_ptr<UIComponent> child, TextAlign xAlign, TextAlign yAlign, glm::vec2 offset, glm::vec2 margin);
 

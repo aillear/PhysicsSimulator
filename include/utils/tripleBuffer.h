@@ -1,5 +1,6 @@
 # pragma once
 
+#include <cstddef>
 #include <mutex>
 #include <vector>
 
@@ -11,9 +12,10 @@ public:
     void AddCommand(T&& item);
     void SubmitBuffers(std::vector<T>& buffers);
     void Prepare();
-    std::vector<T>& GetComsumeBuffer() noexcept;
+    std::vector<T>& GetConsumeBuffer() noexcept;
     void FinishConsuming() noexcept;
     std::vector<T>& GetFrontBuffer() noexcept;
+    void Reserve(size_t size);
 
 private:
     std::mutex swap_mutex_;

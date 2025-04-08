@@ -1,21 +1,44 @@
-# pragma once
+#pragma once
 
+#include "SDL3/SDL_pixels.h"
+#include "material.h"
+#include "objectWorld.h"
+#include "shape.h"
 #include <glm/ext/vector_float2.hpp>
+#include <memory>
 
 // TODO: add more physics properties
-// may define a struct call material.
-class RigidBody {
-    glm::vec2 position;
-    glm::vec2 velocity;
+class RigidBody : public ObjectWorld {
 
-    float rotation;
-    float angularVelocity;
+  private:
+  public:
+    RigidBody(glm::vec2 position, float area, Material mate, glm::vec2 wh,
+              float radius, bool isStatic, PhysicsShapeType type)
+        : ObjectWorld(position), area(area), material(mate),
+          mass(area * mate.density), widthHeight(wh), radius(radius),
+          isStatic(isStatic), velocity({0, 0}), rotation(0), angularVelocity(0),
+          type(type) {
+        ;
+    }
 
-    float mass; 
-    float density;
-    float area;
-    float resilience;
+    void Render() override;
 
     bool isStatic;
+    float mass;
+    float area;
+    Material material;
+    float radius;
+    glm::vec2 widthHeight;
+    PhysicsShapeType type;
 
+  protected:
+    float rotation;
+    float angularVelocity;
+    glm::vec2 velocity;
 };
+
+std::shared_ptr<RigidBody> CreateCircleBody(float radius, glm::vec2 position,
+                                            Material mate);
+
+std::shared_ptr<RigidBody> CreateBoxBody(glm::vec2 wh, glm::vec2 position,
+                                         Material mate);

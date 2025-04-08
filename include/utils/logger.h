@@ -17,7 +17,7 @@ class Logger {
     // LogLevel : set original log level;
     // logName  : set name of log file;
     // instantFlush : if it's true, the log will be instantly writen to log file;
-    void Init(LogLevel level = LogLevel::INFO,
+    bool Init(LogLevel level = LogLevel::INFO,
               const std::string& logName = "app.log", bool instantFlush = false);
     void Destroy();
 

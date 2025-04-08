@@ -10,7 +10,7 @@ Logger& Logger::Instance() {
     return instance;
 }
 
-void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush) {
+bool Logger::Init(LogLevel level, const std::string& logName, bool instantFlush) {
     mutex_.lock();
 
     auto path = GET_PATH("logs", logName);
@@ -23,7 +23,7 @@ void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush)
         if (!logDirCreated) {
             std::cerr << "Fail to create log directory!" << logDir << std::endl;
             mutex_.unlock();
-            return;
+            return false;
         }
     }
 
@@ -32,7 +32,7 @@ void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush)
     if (!logFile_.is_open()) {
         std::cerr << "Fail to open log file!" << std::endl;
         mutex_.unlock();
-        return;
+        return false;
     }
 
     currentLevel_ = level;
@@ -40,6 +40,7 @@ void Logger::Init(LogLevel level, const std::string& logName, bool instantFlush)
     mutex_.unlock();
     if (logDirCreated) Warning("Log directory has been created automatically: path={}", logDir.string());
     Info("Logger Initialized: level=`{}`, file={}.", LevelToStr(level), path.string());
+    return true;
 }
 
 void Logger::Destroy() {

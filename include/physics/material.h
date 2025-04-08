@@ -1,5 +1,7 @@
 # pragma once
 
-struct Meterial {
-    
+struct Material {
+    float density;
+    float resilience;
+    float frictionFactor;
 };

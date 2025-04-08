@@ -136,13 +136,13 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     }
 
     // add window resize event listener
-    camera.setPosition(0.5f * initer.windowSize);
+    camera.SetPosition(0.5f * initer.windowSize);
     camera.Init();
     GET_EventSystem.AddEventListener(
         SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
             glm::vec2 oldCenter = halfWindowSize;
             this->SetWindowSize({event.window.data1, event.window.data2});
-            this->camera.setPosition(camera.getPosition() + halfWindowSize -
+            this->camera.SetPosition(camera.GetPosition() + halfWindowSize -
                                      oldCenter);
         });
 
@@ -201,13 +201,13 @@ std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
     auto temp =
-        (worldPos - camera.getPosition()) * camera.getZoom() + halfWindowSize;
+        (worldPos - camera.GetPosition()) * camera.getZoom() + halfWindowSize;
     return {temp.x, temp.y};
 }
 
 glm::vec2 RenderSystem::PosScreen2World(glm::vec2 screenPos) {
     return (screenPos - halfWindowSize) * camera.getZoomR() +
-           camera.getPosition();
+           camera.GetPosition();
 }
 
 void RenderSystem::Render() {
