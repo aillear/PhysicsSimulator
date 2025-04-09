@@ -1,5 +1,6 @@
 #include "eventSystem.h"
 #include <SDL3/SDL_events.h>
+#include <mutex>
 
 
 EventSystem &EventSystem::Instance() {
@@ -43,5 +44,6 @@ bool EventSystem::Init() {
 }
 
 void EventSystem::Destroy() {
+    std::unique_lock lock(mutex_);
     eventMap_.clear();
 }

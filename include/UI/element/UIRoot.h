@@ -12,6 +12,9 @@ class UIRoot : public UIComponent {
     glm::vec2 GetWidthHeight() const override {
         return GET_RenderSystem.GetWindowSize();
     }
+    glm::vec2 GetParentWidthHeight() const override {
+        return this->GetWidthHeight();
+    }
   protected:
     void Init() override { this->leftTopPos = {0, 0}; }
     void Render() override { /* do nothing */;}

@@ -8,14 +8,13 @@ class App {
     static App& Instance();
     void Init(int argc, char* argv[]);
     void Run();
+    void Destroy();
     bool running;
     FPSCounter fpsc;
   private:
     App();
-    void Destroy();
     FPSmanager fpsm;
     std::thread physicsThread;
-    
 };
 
 

@@ -1,5 +1,6 @@
 #include "app.h"
 #include "SDL3/SDL_events.h"
+#include "SDL3/SDL_keycode.h"
 #include "SDL3/SDL_mouse.h"
 #include "UIButton.h"
 #include "UIComponent.h"
@@ -18,7 +19,6 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
-#include <thread>
 
 App &App::Instance() {
     static App instance;
@@ -31,8 +31,13 @@ void App::Init(int argc, char *argv[]) {
     running = true;
     // utils initialize
     GET_PathMgr.Init(); // PathMgr should be initialized first
+#ifdef _DEBUG_MODE
     GET_Logger.Init(Logger::DEBUG, "app.log",
-                    false); // when this is done, the logger will be usable
+                    true); // when this is done, the logger will be usable
+#else
+    GET_Logger.Init(Logger::INFO, "app.log",
+        false); // when this is done, the logger will be usable
+#endif
     GET_Logger.SetInstantFlush(true);
     // system initialize
     GET_EventSystem.Init();
@@ -56,9 +61,13 @@ void App::Init(int argc, char *argv[]) {
     LOG_INFO("App initialized.");
     LOG_INFO("Running...");
     LOG_INFO("==========================");
+#ifdef _DEBUG_MODE
+    LOG_DEBUG("current is debug mode");
+#endif
 }
 
 void App::Run() {
+
     auto panel =
         std::make_shared<UIPanel>(glm::vec2{0, 100}, glm::vec2{400, 600});
 
@@ -67,7 +76,6 @@ void App::Run() {
     panel->SetBarHeight(40.0f);
     panel->SetName("panel1");
     panel->SetEnabled(true);
-
 
     auto button2 =
         std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{30, 30});
@@ -89,17 +97,23 @@ void App::Run() {
     label->SetEnabled(true);
 
     auto label1 = std::make_shared<UILabelReader>();
-    label1->SetFColor({1,1,1,1});
+    label1->SetFColor({1, 1, 1, 1});
     label1->SetName("frame time reader");
-    label1->AddReader([this](){return std::format("{:.2f}ms", this->fpsc.GetLastFrameTime());});
-    label1->SetAlignMent(UIComponent::TextAlign::END, UIComponent::TextAlign::START, {0, 0}, {5, 5});
+    label1->AddReader([this]() {
+        return std::format("{:.2f}ms", this->fpsc.GetLastFrameTime());
+    });
+    label1->SetAlignMent(UIComponent::TextAlign::END,
+                         UIComponent::TextAlign::START, {0, 0}, {5, 5});
     label1->SetEnabled(true);
 
     auto label2 = std::make_shared<UILabelReader>();
-    label2->SetFColor({1,1,1,1});
-    label2->SetName("frame time reader");
-    label2->AddReader([this](){return std::format("{}FPS", this->fpsc.GetFPS());});
-    label2->SetAlignMent(UIComponent::TextAlign::END, UIComponent::TextAlign::START, {0, FONT_SIZE+5}, {5, 5});
+    label2->SetFColor({1, 1, 1, 1});
+    label2->SetName("frame rate reader");
+    label2->AddReader(
+        [this]() { return std::format("{}FPS", this->fpsc.GetFPS()); });
+    label2->SetAlignMent(UIComponent::TextAlign::END,
+                         UIComponent::TextAlign::START, {0, FONT_SIZE + 5},
+                         {5, 5});
     label2->SetEnabled(true);
 
     GET_EventSystem.AddEventListener(
@@ -112,16 +126,23 @@ void App::Run() {
             }
         });
 
-        GET_UIMgr.AddUIComponent(panel);
-        // GET_UIMgr.AddUIComponent(button, panel);
-        GET_UIMgr.AddUIComponent(button2, panel);
-        GET_UIMgr.AddUIComponent(label, panel);
-        GET_UIMgr.AddUIComponent(label1, panel);
-        GET_UIMgr.AddUIComponent(label2, panel);
-        panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0}, {5, 0});
-        panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0}, {10, 0});
-        
-    GET_Logger.SetInstantFlush(true);
+    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN,
+                                     [&button2](SDL_Event &event) {
+                                         if (event.key.key != SDLK_SPACE)
+                                             return;
+                                         GET_UIMgr.RemoveUIComponent(button2);
+                                     });
+
+    GET_UIMgr.AddUIComponent(panel);
+    // GET_UIMgr.AddUIComponent(button, panel);
+    GET_UIMgr.AddUIComponent(button2, panel);
+    GET_UIMgr.AddUIComponent(label, button2);
+    GET_UIMgr.AddUIComponent(label1, panel);
+    GET_UIMgr.AddUIComponent(label2, panel);
+    panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0},
+                           {5, 0});
+    panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0},
+                           {10, 0});
 
     while (running) {
         fpsc.StartFrame();
@@ -131,7 +152,6 @@ void App::Run() {
         GET_RenderSystem.Render();
         fpsc.EndFrame();
     }
-    Destroy();
 }
 
 void App::Destroy() {

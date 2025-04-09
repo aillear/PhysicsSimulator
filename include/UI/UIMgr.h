@@ -45,7 +45,7 @@ class UIMgr {
     std::shared_ptr<UIComponent> FindComponentByID(ObjectID id);
     std::shared_ptr<UIComponent> FindComponentByName(std::string name);
 
-
+  
   private:
     UIMgr() = default;
     ~UIMgr() = default;

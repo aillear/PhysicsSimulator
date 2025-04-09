@@ -32,6 +32,7 @@ class EventSystem {
     bool RemoveEventListener(SDL_EventType type, EventHandlerID id);
     
   private:
+    ~EventSystem() = default;
     std::unordered_map<SDL_EventType, std::list<CallBackWrapper>> eventMap_;
     std::shared_mutex mutex_;
     std::atomic<EventHandlerID> idCounter_{0};

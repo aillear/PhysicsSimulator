@@ -5,5 +5,6 @@
 int main(int argc, char *argv[]) {
     App::Instance().Init(argc, argv);
     App::Instance().Run();
+    App::Instance().Destroy();
     return 0;
 }

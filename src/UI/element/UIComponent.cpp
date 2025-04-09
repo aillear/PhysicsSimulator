@@ -1,17 +1,25 @@
 #include "UIComponent.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_pixels.h"
+#include "logger.h"
+#include "renderSystem.h"
 #include <glm/ext/vector_float2.hpp>
 
 UIComponent::UIComponent(glm::vec2 leftTop, glm::vec2 widthHeight,
     SDL_FColor color) : leftTopPos(leftTop), widthHeight(widthHeight), color(color) {
-
     AddUpdateCallBack([this](float){
         if (!this->needToImplementAlignment) return;
         needToImplementAlignment = false;
         ImplementAlignment();
     } );
-    
+#ifdef _DEBUG_MODE
+    AddInitCallBack([this]() {
+        F_LOG_DEBUG("UIcomponent id: {}, name: {} inited.", objectID, name);
+    });
+    AddDestroyCallBack([this]() {
+        F_LOG_DEBUG("UIcomponent id: {}, name: {} destroied.", objectID, name);
+    });
+#endif
 }
 
 bool UIComponent::HitTest(glm::vec2 MousePos) {
@@ -54,6 +62,7 @@ glm::vec2 UIComponent::GetParentScreenPos() const {
 }
 
 glm::vec2 UIComponent::GetParentWidthHeight() const {
+    if (parent == nullptr) return GET_RenderSystem.GetWindowSize();
     return static_cast<UIComponent*>(parent)->GetWidthHeight();
 }
 

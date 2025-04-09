@@ -74,7 +74,7 @@ void Object::CheckChildToRemove() {
         obj->DestroyWrapper();
         obj->ReleaseAllChildren();
         return true;
-    });
+    }); 
     children.erase(it, children.end());
 
     for (auto& obj : children) {
@@ -107,7 +107,7 @@ void Object::RemoveChild(std::shared_ptr<Object> child) {
     }
 }
 
-void Object::RemoveChlidByID(ObjectID id) {
+void Object::RemoveChildByID(ObjectID id) {
     auto it = std::remove_if(children.begin(), children.end(),
                              [id](const std::shared_ptr<Object> &child) {
                                  return child->objectID == id;
@@ -118,7 +118,7 @@ void Object::RemoveChlidByID(ObjectID id) {
     }
 }
 
-void Object::RemoveChlidByName(const std::string &name) {
+void Object::RemoveChildByName(const std::string &name) {
     auto it = std::remove_if(children.begin(), children.end(),
                              [&name](const std::shared_ptr<Object> &child) {
                                  return child->name == name;
@@ -184,4 +184,17 @@ void Object::AddHandleEventCallBack(EventFunctionWrapper callBack) {
 
 void Object::AddDestroyCallBack(BasicFunctionWrapper callBack) {
     destroyCallBacks.emplace_back(callBack);
+}
+
+void Object::ForEachChild(TraverseWrapper callBack) {
+    for (auto& child : children) {
+        child->ForSelfAndEachChild(callBack);
+    }
+}
+
+void Object::ForSelfAndEachChild(TraverseWrapper callBack) {
+    callBack(this);
+    for (auto& child : children) {
+        child->ForSelfAndEachChild(callBack);
+    }
 }

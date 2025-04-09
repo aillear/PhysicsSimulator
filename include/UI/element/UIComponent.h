@@ -83,8 +83,8 @@ class UIComponent : public Object {
   protected:
     void Render() override = 0;
     void Update(float dt) override = 0;
-    void Init() override { ; }
-    void Destroy() override { ; }
+    void Init() override {;}
+    void Destroy() override {;}
     void PhysicsUpdate(float dt) override { ; }
     void OnMouseMove(SDL_Event &event) override { ; }
     void OnMouseDown(SDL_Event &event) override { ; }

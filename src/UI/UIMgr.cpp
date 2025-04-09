@@ -1,4 +1,5 @@
 # include "UIMgr.h"
+#include "UIRoot.h"
 #include "SDL3/SDL_events.h"
 #include "UIComponent.h"
 #include "logger.h"
@@ -29,6 +30,8 @@ bool UIMgr::Init() {
         [this](SDL_Event& event) {HandleSDLEvents(event);}
     );
 
+    rootNode = std::make_shared<UIRoot>();
+    rootNode->SetName("rootUINode");
     F_LOG_INFO("UIMgr initialized, event listeners' id: {}, {}, {}", 
         eventHandler_1, eventHandler_2, eventHandler_3);
     return true;
@@ -38,6 +41,11 @@ void UIMgr::Destroy() {
     GET_EventSystem.RemoveEventListener(SDL_EVENT_MOUSE_MOTION, eventHandler_1);
     GET_EventSystem.RemoveEventListener(SDL_EVENT_MOUSE_BUTTON_DOWN, eventHandler_2);
     GET_EventSystem.RemoveEventListener(SDL_EVENT_MOUSE_BUTTON_UP, eventHandler_3);
+    for (auto& comp : rootNode->GetChildren()) {
+        comp->SetToRemove();
+    }
+    rootNode->CheckChildToRemove();
+    LOG_INFO("ALL UIComponest managed by UIMgr is released.");
 }
 
 // manage all UIComponent' live cycle, include init, update, and destroy

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "FPSCounter.h"
+#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_stdinc.h"
+#include "eventSystem.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <memory>
@@ -33,12 +35,13 @@ class PhysicsSystem {
     bool running;
   private:  
     PhysicsSystem() : running(false) {;}
+    ~PhysicsSystem() = default;
     FPSmanager fpsm;
     float targetDt;
+    EventHandlerID eventHandler1_;
 
-    std::vector<std::shared_ptr<RigidBody>> physicsObjects;
+    
     std::vector<std::shared_ptr<RigidBody>> physicsObjectsToAdd;
-    std::vector<std::shared_ptr<RigidBody>> physicsObjectsToRemove;
 
 };
 

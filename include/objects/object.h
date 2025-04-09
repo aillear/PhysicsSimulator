@@ -19,12 +19,15 @@ using BasicFunctionWrapper = std::function<void()>;
 using UpdateFunctionWrapper = std::function<void(float)>;
 using EventFunctionWrapper = std::function<void(SDL_Event&)>;
 
+
 using ObjectID = Uint64;
 class Object {
   public:
+    using TraverseWrapper = std::function<void(Object*)>;
     Object() : objectID(objectCount++) { ; };
     virtual ~Object() = default;
     // life cycle wrapper, systems can manage object's lifecycle by this
+    // in those wrapper, addtional logic will be invoked firstly, and then will call each object's lifecycle method. 
     void InitWrapper();
     void RenderWrapper();
     void UpdateWrapper(float dt);
@@ -52,8 +55,8 @@ class Object {
     // do not recursively remove child
     // remove child my be reconscruct in the future.
     void RemoveChild(std::shared_ptr<Object> child);
-    void RemoveChlidByID(ObjectID id);
-    void RemoveChlidByName(const std::string &name);
+    void RemoveChildByID(ObjectID id);
+    void RemoveChildByName(const std::string &name);
     void RemoveAllChildren();
 
     // get first child by id or name, if not found, return nullptr
@@ -62,6 +65,9 @@ class Object {
     std::shared_ptr<Object> GetChildByName(const std::string &name);
 
     std::vector<std::shared_ptr<Object>> GetChildren() const {return children;}
+
+    void ForEachChild(TraverseWrapper callback);
+    void ForSelfAndEachChild(TraverseWrapper callback);
 
     Object *GetParent() const { return parent; }
     void SetParent(Object *parent) { this->parent = parent; }
@@ -106,3 +112,5 @@ class Object {
     std::vector<EventFunctionWrapper> handleEventCallBacks;
     std::vector<BasicFunctionWrapper> destroyCallBacks;
 };
+
+using TraverseWrapper = Object::TraverseWrapper;

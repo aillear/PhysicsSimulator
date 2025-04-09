@@ -63,6 +63,10 @@ target_link_libraries(${TARGET}
     SDL3_image::SDL3_image
 )
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(_DEBUG_MODE)
+endif()
+
 # add_subdirectory(test)
 # option(BUILD_TESTS "Build unit tests" ON)
 # if(BUILD_TESTS)

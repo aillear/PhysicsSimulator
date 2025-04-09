@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_stdinc.h"
 #include "conversion.h"
 #include <array>
