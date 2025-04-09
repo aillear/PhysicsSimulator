@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SDL3/SDL_pixels.h"
 #include "material.h"
 #include "objectWorld.h"
 #include "shape.h"
@@ -22,6 +21,7 @@ class RigidBody : public ObjectWorld {
     }
 
     void Render() override;
+    void PhysicsUpdate(float dt) override;
 
     bool isStatic;
     float mass;

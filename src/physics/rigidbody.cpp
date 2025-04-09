@@ -1,6 +1,7 @@
 #include "rigidbody.h"
 #include "logger.h"
 #include "physicsSystem.h"
+#include "renderBufferMgr.h"
 #include "renderSystem.h"
 #include "shape.h"
 #include <glm/ext/vector_float2.hpp>
@@ -13,6 +14,7 @@ void RigidBody::Render() {
             cmd.GetBase().circle.center = position_;
             cmd.GetBase().circle.radius = radius;
             cmd.GetBase().color = color;
+            GET_Buffer.AddCommand(std::move(cmd));
             break;
         }
         case PhysicsShapeType::BOX: {
@@ -20,11 +22,16 @@ void RigidBody::Render() {
             cmd.GetBase().rect.p1 = position_;
             cmd.GetBase().rect.p2 = widthHeight;
             cmd.GetBase().color = color;
+            GET_Buffer.AddCommand(std::move(cmd));
             break;
         }
         default:
             break;
     }
+}
+
+void RigidBody::PhysicsUpdate(float dt) {
+    position_.y += 0.05f;
 }
 
 
@@ -54,8 +61,10 @@ std::shared_ptr<RigidBody> CreateCircleBody(float radius, glm::vec2 position,
 
     float mass = area * mate.density;
 
-    return std::make_shared<RigidBody>(position, area, mate, glm::vec2{0, 0},
+    auto obj = std::make_shared<RigidBody>(position, area, mate, glm::vec2{0, 0},
                                        radius, false, PhysicsShapeType::CIRCLE);
+    obj->SetColor({255, 0, 0, 255});
+    return obj;
 }
 
 std::shared_ptr<RigidBody> CreateBoxBody(glm::vec2 wh, glm::vec2 position,

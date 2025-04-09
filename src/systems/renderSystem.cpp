@@ -6,6 +6,7 @@
 #include "eventSystem.h"
 #include "logger.h"
 #include "pathMgr.h"
+#include "renderBufferMgr.h"
 #include <SDL3./SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -216,6 +217,7 @@ void RenderSystem::Render() {
                            backgroundColor.b, backgroundColor.a);
     SDL_RenderClear(renderer);
 
+    HandlePhysicsDrawCommand();
     HandleUIDrawCommand();
 
     SDL_RenderPresent(renderer);
@@ -223,6 +225,44 @@ void RenderSystem::Render() {
 
 void RenderSystem::AddUIDrawCommand(DrawCommand &&cmd) {
     UIdrawCommands.emplace_back(std::forward<DrawCommand>(cmd));
+}
+
+void RenderSystem::HandlePhysicsDrawCommand() {
+    GET_Buffer.Prepare();
+    auto &cmds = GET_Buffer.GetConsumeBuffer();
+    indicesSize = 0;
+    vertexBufferSize = 0;
+
+    for (auto &cmd : cmds) {
+        switch (cmd.shapeType) {
+        case ShapeType::LINE:
+            LineCommand(cmd);
+            break;
+        case ShapeType::RECT:
+            RectCommand(cmd);
+            break;
+        case ShapeType::CIRCLE:
+            CircleCommand(cmd);
+            break;
+        case ShapeType::POLYGON:
+            PolygonCommand(cmd);
+            break;
+        case ShapeType::TEXT:
+            TextCommand(cmd);
+            break;
+        }
+    }
+    if (vertexBufferSize > maxVertexBufferSize ||
+        indicesSize > maxIndicesSize) {
+        F_LOG_ERROR(
+            "vertex buffer or indices buffer overflow, {} > {} || {} > {}",
+            vertexBufferSize, maxVertexBufferSize, indicesSize, maxIndicesSize);
+    }
+    // check if the vertex buffer is empty
+    if (vertexBufferSize > 0) {
+        SDL_RenderGeometry(renderer, nullptr, vertexBuffer.get(),
+                           vertexBufferSize, indices.get(), indicesSize);
+    }
 }
 
 void RenderSystem::HandleUIDrawCommand() {

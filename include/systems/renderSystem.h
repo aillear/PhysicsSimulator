@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_stdinc.h"
 #include "conversion.h"
 #include <array>
@@ -171,6 +170,7 @@ class RenderSystem {
     SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
     glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 
+    void HandlePhysicsDrawCommand();
     void HandleUIDrawCommand();
     
     void LineCommand(DrawCommand &cmd);

@@ -1,9 +1,5 @@
 #include "app.h"
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_keycode.h"
-#include "SDL3/SDL_mouse.h"
 #include "UIButton.h"
-#include "UIComponent.h"
 #include "UILabelReader.h"
 #include "UIMgr.h"
 #include "UIPanel.h"
@@ -14,11 +10,13 @@
 #include "renderBufferMgr.h"
 #include "renderSystem.h"
 #include <SDL3_framerate.h>
-#include <cstdlib>
-#include <format>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
+#include <mutex>
+#include <thread>
+
+std::mutex physicsThreadMutex;
 
 App &App::Instance() {
     static App instance;
@@ -27,8 +25,6 @@ App &App::Instance() {
 App::App() : running(false) { ; }
 
 void App::Init(int argc, char *argv[]) {
-    // set running to true.
-    running = true;
     // utils initialize
     GET_PathMgr.Init(); // PathMgr should be initialized first
 #ifdef _DEBUG_MODE
@@ -59,6 +55,7 @@ void App::Init(int argc, char *argv[]) {
     GET_EventSystem.AddEventListener(
         SDL_EVENT_QUIT, [this](SDL_Event &event) { this->running = false; });
     LOG_INFO("App initialized.");
+    SetRunning();
     LOG_INFO("Running...");
     LOG_INFO("==========================");
 #ifdef _DEBUG_MODE
@@ -116,6 +113,27 @@ void App::Run() {
                          {5, 5});
     label2->SetEnabled(true);
 
+    auto label3 = std::make_shared<UILabelReader>();
+    label3->SetFColor({1, 1, 1, 1});
+    label3->SetName("frame time reader");
+    auto& reader = GET_PhysicsSystem.fpsc;
+    label3->AddReader(
+        [&reader]() { return std::format("{:.2f}ms", reader.GetLastFrameTime()); });
+    label3->SetAlignMent(UIComponent::TextAlign::START,
+                         UIComponent::TextAlign::START, {0, 0},
+                         {5, 5});
+    label3->SetEnabled(true);
+
+    auto label4 = std::make_shared<UILabelReader>();
+    label4->SetFColor({1, 1, 1, 1});
+    label4->SetName("frame time reader");
+    label4->AddReader(
+        [&reader]() { return std::format("{}FPS", reader.GetFPS()); });
+    label4->SetAlignMent(UIComponent::TextAlign::START,
+                         UIComponent::TextAlign::START, {0, FONT_SIZE + 5},
+                         {5, 5});
+    label4->SetEnabled(true);
+
     GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_DOWN, [&panel](SDL_Event &event) {
             if (event.button.button != SDL_BUTTON_RIGHT)
@@ -136,14 +154,26 @@ void App::Run() {
     GET_UIMgr.AddUIComponent(panel);
     // GET_UIMgr.AddUIComponent(button, panel);
     GET_UIMgr.AddUIComponent(button2, panel);
-    GET_UIMgr.AddUIComponent(label, button2);
+    GET_UIMgr.AddUIComponent(label, panel);
     GET_UIMgr.AddUIComponent(label1, panel);
     GET_UIMgr.AddUIComponent(label2, panel);
+    GET_UIMgr.AddUIComponent(label3, panel);
+    GET_UIMgr.AddUIComponent(label4, panel);
+
+
     panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0},
                            {5, 0});
     panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0},
                            {10, 0});
 
+    
+    physicsThreadMutex.lock();
+    physicsThread = std::thread([]() {
+        std::lock_guard<std::mutex> lock(physicsThreadMutex);
+        GET_PhysicsSystem.SetRunning();
+        GET_PhysicsSystem.UpdateWrapper();
+    });
+    physicsThreadMutex.unlock();
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
@@ -152,6 +182,7 @@ void App::Run() {
         GET_RenderSystem.Render();
         fpsc.EndFrame();
     }
+    physicsThread.join();
 }
 
 void App::Destroy() {

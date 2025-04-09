@@ -54,9 +54,9 @@ class UIMgr {
     // call uiComponents's HandleEvent function recursively
     void HandleSDLEvents(SDL_Event& event);
 
+    bool hasRemoveCalled = false;
     std::shared_ptr<UIComponent> rootNode;
     std::vector<std::shared_ptr<UIComponent>> uiComponentsToAdd;
-    bool hasRemoveCalled = false;
     EventHandlerID eventHandler_1, eventHandler_2, eventHandler_3;
 };
 

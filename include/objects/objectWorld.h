@@ -1,8 +1,7 @@
 # pragma once
 
-#include "SDL3/SDL_pixels.h"
-#include "conversion.h"
 #include "object.h"
+#include "conversion.h"
 #include <glm/ext/vector_float2.hpp>
 
 class ObjectWorld : public Object {
@@ -19,16 +18,15 @@ class ObjectWorld : public Object {
     void SetColor(SDL_Color color) {this->color = ToFColor(color);}
     SDL_FColor GetFColor() const {return color;}
 
-
-    void Init() override{;}
-    void Render() override{;}
-    void Update(float dt) override{;}
-    void PhysicsUpdate(float dt) override{;}
-    void HandleEvent(SDL_Event &event) override{;}
-    void Destroy() override{;}
-
     void OnMouseDown(SDL_Event &event) override{;}
     void OnMouseMove(SDL_Event &event) override{;}
     void OnMouseUp(SDL_Event &event) override{;}
 
+  protected:
+    void Init() override{;}
+    void Render() override = 0;
+    void Update(float dt) override{;}
+    void PhysicsUpdate(float dt) override = 0;
+    void HandleEvent(SDL_Event &event) override{;}
+    void Destroy() override{;}
 };
