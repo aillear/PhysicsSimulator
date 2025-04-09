@@ -1,5 +1,5 @@
 # PhysicsSimulator
- a physics simulator demo based on SDL2
+ a physics simulator demo based on SDL3
 
 
 
