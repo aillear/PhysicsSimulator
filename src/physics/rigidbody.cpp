@@ -10,10 +10,16 @@
 void RigidBody::Render() {
     switch (type) {
         case PhysicsShapeType::CIRCLE: {
-            DrawCommand cmd(ShapeType::HOLLOW_CIRCLE, false);
+            DrawCommand cmd(ShapeType::CIRCLE, false);
             cmd.GetBase().circle.center = position_;
             cmd.GetBase().circle.radius = radius;
             cmd.GetBase().color = color;
+            GET_Buffer.AddCommand(std::move(cmd));
+
+            cmd = DrawCommand(ShapeType::HOLLOW_CIRCLE, false);
+            cmd.GetBase().circle.center = position_;
+            cmd.GetBase().circle.radius = radius;
+            cmd.GetBase().color = {1,1,1,1};
             cmd.halfLineWidth = 1.0f;
             GET_Buffer.AddCommand(std::move(cmd));
             break;

@@ -24,7 +24,8 @@ file(GLOB SRC
     ${PROJECT_ROOT_PATH}/src/physics/*.cpp
     ${PROJECT_ROOT_PATH}/src/objects/*.cpp
     ${PROJECT_ROOT_PATH}/src/systems/*.cpp
-    ${PROJECT_ROOT_PATH}/src/UI/element/*.cpp
+    ${PROJECT_ROOT_PATH}/src/UI/elements/*.cpp
+    ${PROJECT_ROOT_PATH}/src/physics/elements/*.cpp
 )
 
 # package
@@ -50,8 +51,9 @@ target_include_directories(${TARGET}
     ${PROJECT_ROOT_PATH}/include/physics
     ${PROJECT_ROOT_PATH}/include/objects
     ${PROJECT_ROOT_PATH}/include/systems
-    ${PROJECT_ROOT_PATH}/include/UI/element
+    ${PROJECT_ROOT_PATH}/include/UI/elements
     ${PROJECT_ROOT_PATH}/include/UI/customedUI
+    ${PROJECT_ROOT_PATH}/include/physics/elements
 )
 
 target_link_libraries(${TARGET}

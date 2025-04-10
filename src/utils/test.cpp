@@ -9,6 +9,7 @@
 #include "material.h"
 #include "physicsSystem.h"
 #include "renderSystem.h"
+#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
@@ -22,7 +23,7 @@ void SomeCustomLogicHere() {
     panel->SetBarColor({33, 37, 43, 255});
     panel->SetBarHeight(40.0f);
     panel->SetName("panel1");
-    panel->SetEnabled(true);
+    panel->SetEnabled(false);
 
     auto button2 =
         std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{30, 30});
@@ -96,13 +97,6 @@ void SomeCustomLogicHere() {
             }
         });
 
-    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN,
-                                     [button2](SDL_Event &event) {
-                                         if (event.key.key != SDLK_SPACE)
-                                             return;
-                                         GET_UIMgr.RemoveUIComponent(button2);
-                                     });
-
     GET_UIMgr.AddUIComponent(panel);
     // GET_UIMgr.AddUIComponent(button, panel);
     GET_UIMgr.AddUIComponent(button2, panel);
@@ -120,10 +114,10 @@ void SomeCustomLogicHere() {
 
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
-    // for (int i = 0; i < 100; i++) {
-    //     GET_PhysicsSystem.AddObject(
-    //         CreateCircleBody(20, {(i % 100) * 100, (i / 100) * 100}, m));
-    // }
+    for (int i = 0; i < 100; i++) {
+        GET_PhysicsSystem.AddObject(
+            CreateCircleBody(20, {(i % 100) * 100, (i / 100) * 100}, m));
+    }
 
     // for (int i = 0; i < 100; i++) {
     //     GET_PhysicsSystem.AddObject(
