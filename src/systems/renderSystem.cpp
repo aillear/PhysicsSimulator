@@ -563,19 +563,7 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
                       n);
         return;
     }
-    
-
-    // if not UI mode, convert the position to screen space
-    if (cmd.UIMode_ == false) {
-        for (auto &v : vertexs) {
-            auto t = PosWorld2Screen(ToGlmVec2(v.position));
-            if (t.x >= 300) {
-                int a;
-            }
-            v.position = t;
-        }
-    }
-
+    // just move to buffer first
     memcpy(buffer + vertexBufferSize, p, n * sizeof(SDL_Vertex));
 
     n -= 2;
@@ -584,11 +572,19 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
         indices[indicesSize++] = vertexBufferSize + i + 1;
         indices[indicesSize++] = vertexBufferSize + i + 2;
     }
+    int i = vertexBufferSize;
     vertexBufferSize += n + 2;
+    
+    // directly coordition tranfrom in buffer.
+    if (cmd.UIMode_ == false) {
+        for (; i < vertexBufferSize; i++) {
+            buffer[i].position = PosWorld2Screen(ToGlmVec2(buffer[i].position));
+        }
+    }
 }
 
 void RenderSystem::PolygonHollowCommand(DrawCommand &cmd) {
-    auto &vertexs = cmd.GetComplex().GetVertexs();
+    std::vector<SDL_Vertex> vertexs(cmd.GetComplex().GetVertexs());
     int n = vertexs.size();
     if (n < 3) {
         F_LOG_WARNING("Polygon must have at least 3 vertices, but {} given.",

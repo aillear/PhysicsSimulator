@@ -6,7 +6,6 @@
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
-#include "renderSystem.h"
 #include <memory>
 #include <string>
 
@@ -40,20 +39,6 @@ void PhysicsSystem::UpdateWrapper() {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
         Update();
-        DrawCommand cmd(ShapeType::POLYGON, false);
-        auto& v = cmd.GetComplex().GetVertexs();
-        v.emplace_back(MakeVertex({0, 0}, {1, 0, 0, 1}));
-        v.emplace_back(MakeVertex({20, 4}, {1, 0, 0, 1}));
-        v.emplace_back(MakeVertex({24, 16}, {1, 0, 0, 1}));
-        v.emplace_back(MakeVertex({8, 20}, {1, 0, 0, 1}));
-        v.emplace_back(MakeVertex({-4, 10}, {1, 0, 0, 1}));
-        // DrawCommand cmd(ShapeType::RECT, false);
-        // cmd.GetBase().color = {1,1,1,0};
-        // cmd.GetBase().rect.p1 = {0, 0};
-        // cmd.GetBase().rect.p1 = {100, 100};
-
-        GET_Buffer.AddCommand(std::move(cmd));
-
         GET_Buffer.Submit();
         fpsc.EndFrame();
     }
