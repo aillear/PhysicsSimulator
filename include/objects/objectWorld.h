@@ -5,9 +5,6 @@
 #include <glm/ext/vector_float2.hpp>
 
 class ObjectWorld : public Object {
-  protected:
-    glm::vec2 position_;
-    SDL_FColor color;
   public:
     ObjectWorld(glm::vec2 position = {0, 0}) : position_(position) {;};
     glm::vec2 GetPosition() const { return position_; }
@@ -28,4 +25,7 @@ class ObjectWorld : public Object {
     void PhysicsUpdate(float dt) override = 0;
     void HandleEvent(SDL_Event &event) override{;}
     void Destroy() override{;}
+
+    glm::vec2 position_;
+    SDL_FColor color;
 };

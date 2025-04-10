@@ -180,7 +180,7 @@ class RenderSystem {
     void HandleUIDrawCommand();
 
     void LineCommand(DrawCommand &cmd);
-    void LineCommand(SDL_Vertex &p1, SDL_Vertex &p2, float halfLineWidth);
+    void LineCommand(SDL_Vertex &p1, SDL_Vertex &p2, float halfLineWidth, bool zoomWithCamera = false);
     void RectCommand(DrawCommand &cmd);
     void RectHollowCommand(DrawCommand &cmd);
     void CircleCommand(DrawCommand &cmd);

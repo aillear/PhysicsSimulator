@@ -4,12 +4,13 @@
 #include "UIMgr.h"
 #include "UIPanel.h"
 #include "app.h"
+#include "circleBody.h"
+#include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "material.h"
 #include "physicsSystem.h"
 #include "renderSystem.h"
-#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
@@ -114,13 +115,9 @@ void SomeCustomLogicHere() {
 
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
-    for (int i = 0; i < 100; i++) {
-        GET_PhysicsSystem.AddObject(
-            CreateCircleBody(20, {(i % 100) * 100, (i / 100) * 100}, m));
+    for (int i = 0; i < 10; i++) {
+        auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 50, i * 50}, 20);
+        circle->SetFColor(RandomFColor());
+        GET_PhysicsSystem.AddObject(circle);
     }
-
-    // for (int i = 0; i < 100; i++) {
-    //     GET_PhysicsSystem.AddObject(
-    //         CreateBoxBody({20, 20}, {(i % 100) * 100, (i / 100) * 100 + 1000}, m));
-    // }
 }

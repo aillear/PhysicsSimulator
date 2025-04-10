@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
+#include "SDL3/SDL_stdinc.h"
 #include <SDL3/SDL_rect.h>
 #include <format>
 #include <glm/detail/qualifier.hpp>
@@ -264,3 +265,12 @@ template <typename _CharT> struct std::formatter<SDL_FColor, _CharT> {
     std::formatter<float, _CharT> elem_formatter_;
     std::string_view separator_ = ", ";
 };
+
+
+int RandomInt(int from, int to);
+
+float RandomFloat(float from, float to);
+float RandomFloat01();
+
+SDL_FColor RandomFColor(float r=-1.0f, float g=-1.0f, float b=-1.0f);
+SDL_Color RandomColor(Uint8 r, Uint8 g, Uint8 b);

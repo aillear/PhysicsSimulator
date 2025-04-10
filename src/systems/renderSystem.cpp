@@ -322,6 +322,7 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
     glm::vec2 dir = command.rect.p2 - command.rect.p1;
     dir = {dir.y, -dir.x};
     dir = glm::normalize(dir) * cmd.halfLineWidth;
+    if (cmd.scaleWithZoom) dir *= camera.getZoom();
     p[2] = ToFPoint(dir);
 
     // if not UI mode, convert the position to screen space
@@ -351,13 +352,16 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
 }
 
 void RenderSystem::LineCommand(SDL_Vertex &p1, SDL_Vertex &p2,
-                               float halfLineWidth) {
+                               float halfLineWidth, bool zoomWithCamera) {
     int vertexBegin = vertexBufferSize;
     SDL_Vertex *buffer = vertexBuffer.get();
 
     glm::vec2 dir = ToGlmVec2(p1.position - p2.position);
     dir = {dir.y, -dir.x};
     dir = glm::normalize(dir) * halfLineWidth;
+    if (zoomWithCamera) {
+        dir *= camera.getZoom();
+    }
     SDL_FPoint dirSDL = ToFPoint(dir);
     buffer[vertexBufferSize] = p1;
     buffer[vertexBufferSize++].position += dirSDL;
@@ -437,10 +441,12 @@ void RenderSystem::RectHollowCommand(DrawCommand &cmd) {
     v[2].position = p2;
     v[3].position = {p2.x, p1.y};
 
-    LineCommand(v[0], v[1], cmd.halfLineWidth);
-    LineCommand(v[1], v[2], cmd.halfLineWidth);
-    LineCommand(v[2], v[3], cmd.halfLineWidth);
-    LineCommand(v[3], v[0], cmd.halfLineWidth);
+    bool zoomWithCamera = cmd.scaleWithZoom;
+
+    LineCommand(v[0], v[1], cmd.halfLineWidth, zoomWithCamera);
+    LineCommand(v[1], v[2], cmd.halfLineWidth, zoomWithCamera);
+    LineCommand(v[2], v[3], cmd.halfLineWidth, zoomWithCamera);
+    LineCommand(v[3], v[0], cmd.halfLineWidth, zoomWithCamera);
 }
 
 void RenderSystem::CircleCommand(DrawCommand &cmd) {
@@ -543,14 +549,15 @@ void RenderSystem::CircleHollowCommand(DrawCommand &cmd) {
     v[0].position =
         center + SDL_FPoint{radius * cache[0].first, radius * cache[0].second};
     v[0].tex_coord = {0, 0};
+    bool zoomWithCamera = cmd.scaleWithZoom;
     for (int i = 1; i < lodLevel; i++) {
         v[i].color = color;
         v[i].tex_coord = {0, 0};
         v[i].position = center + SDL_FPoint{radius * cache[i].first,
                                             radius * cache[i].second};
-        LineCommand(v[i - 1], v[i], cmd.halfLineWidth);
+        LineCommand(v[i - 1], v[i], cmd.halfLineWidth, zoomWithCamera);
     }
-    LineCommand(v[lodLevel - 1], v[0], cmd.halfLineWidth);
+    LineCommand(v[lodLevel - 1], v[0], cmd.halfLineWidth, zoomWithCamera);
 }
 
 void RenderSystem::PolygonCommand(DrawCommand &cmd) {
@@ -599,10 +606,11 @@ void RenderSystem::PolygonHollowCommand(DrawCommand &cmd) {
         }
     }
 
+    bool zoomWithCamera = cmd.scaleWithZoom;
     for (int i = 1; i < n; i++) {
-        LineCommand(vertexs[i - 1], vertexs[i], cmd.halfLineWidth);
+        LineCommand(vertexs[i - 1], vertexs[i], cmd.halfLineWidth, zoomWithCamera);
     }
-    LineCommand(vertexs[n - 1], vertexs[0], cmd.halfLineWidth);
+    LineCommand(vertexs[n - 1], vertexs[0], cmd.halfLineWidth, zoomWithCamera);
 }
 
 void RenderSystem::TextCommand(DrawCommand &cmd) {
