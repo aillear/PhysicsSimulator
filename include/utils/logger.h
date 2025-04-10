@@ -40,6 +40,7 @@ class Logger {
     template <typename... Args>
     void Debug(std::format_string<Args...> fmt, Args&&... args) {
         Log(LogLevel::DEBUG, std::format(fmt, std::forward<Args>(args)...));
+        InstantFlush();
     }
 
     template <typename... Args>
@@ -50,12 +51,16 @@ class Logger {
     template <typename... Args>
     void Warning(std::format_string<Args...> fmt, Args&&... args) {
         Log(LogLevel::WARNING, std::format(fmt, std::forward<Args>(args)...));
+        InstantFlush();
     }
 
     template <typename... Args>
     void Error(std::format_string<Args...> fmt, Args&&... args) {
         Log(LogLevel::ERROR, std::format(fmt, std::forward<Args>(args)...));
+        InstantFlush();
     }
+
+    void InstantFlush() {logFile_.flush();};
     
   private:
     Logger() = default;

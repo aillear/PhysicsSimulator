@@ -10,18 +10,20 @@
 void RigidBody::Render() {
     switch (type) {
         case PhysicsShapeType::CIRCLE: {
-            DrawCommand cmd(ShapeType::CIRCLE, false);
+            DrawCommand cmd(ShapeType::HOLLOW_CIRCLE, false);
             cmd.GetBase().circle.center = position_;
             cmd.GetBase().circle.radius = radius;
             cmd.GetBase().color = color;
+            cmd.halfLineWidth = 1.0f;
             GET_Buffer.AddCommand(std::move(cmd));
             break;
         }
         case PhysicsShapeType::BOX: {
-            DrawCommand cmd(ShapeType::CIRCLE, false);
+            DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
             cmd.GetBase().rect.p1 = position_;
-            cmd.GetBase().rect.p2 = widthHeight;
+            cmd.GetBase().rect.p2 = widthHeight + position_;
             cmd.GetBase().color = color;
+            cmd.halfLineWidth = 1.0f;
             GET_Buffer.AddCommand(std::move(cmd));
             break;
         }
@@ -31,7 +33,7 @@ void RigidBody::Render() {
 }
 
 void RigidBody::PhysicsUpdate(float dt) {
-    position_.y += 0.05f;
+
 }
 
 
@@ -93,6 +95,8 @@ std::shared_ptr<RigidBody> CreateBoxBody(glm::vec2 wh, glm::vec2 position,
 
     float mass = area * mate.density;
 
-    return std::make_shared<RigidBody>(position, area, mate, wh,
+    auto obj = std::make_shared<RigidBody>(position, area, mate, wh,
                                        0, false, PhysicsShapeType::BOX);
+    obj->SetColor({0, 255, 0, 255});
+    return obj;
 }

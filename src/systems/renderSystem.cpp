@@ -1,20 +1,13 @@
 #include "renderSystem.h"
-#include "SDL3/SDL_init.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_rect.h"
+#include "SDL3/SDL_render.h"
 #include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "pathMgr.h"
 #include "renderBufferMgr.h"
-#include <SDL3./SDL.h>
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_keycode.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_video.h>
-#include <SDL3_gfxPrimitives.h>
-#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstring>
 #include <glm/ext/vector_float2.hpp>
@@ -22,7 +15,6 @@
 #include <glm/geometric.hpp>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 // lod level cache for circle
@@ -34,6 +26,7 @@ template struct CircleLodCache<40>;
 template struct CircleLodCache<48>;
 
 constexpr static int CIRCLE_LOD[] = {8, 16, 24, 32, 40, 48};
+#define MAX_LOD_LEVEL CIRCLE_LOD[5]
 const static std::vector<std::array<std::pair<float, float>, 64>>
     SIN_COS_CACHE = {
         CircleLodCache<8>::getVertices(),  CircleLodCache<16>::getVertices(),
@@ -235,20 +228,29 @@ void RenderSystem::HandlePhysicsDrawCommand() {
 
     for (auto &cmd : cmds) {
         switch (cmd.shapeType) {
-        case ShapeType::LINE:
-            LineCommand(cmd);
-            break;
-        case ShapeType::RECT:
-            RectCommand(cmd);
-            break;
-        case ShapeType::CIRCLE:
-            CircleCommand(cmd);
+        case ShapeType::HOLLOW_POL:
+            PolygonHollowCommand(cmd);
             break;
         case ShapeType::POLYGON:
             PolygonCommand(cmd);
             break;
         case ShapeType::TEXT:
             TextCommand(cmd);
+            break;
+        case ShapeType::LINE:
+            LineCommand(cmd);
+            break;
+        case ShapeType::RECT:
+            RectCommand(cmd);
+            break;
+        case ShapeType::HOLLOW_RECT:
+            RectHollowCommand(cmd);
+            break;
+        case ShapeType::CIRCLE:
+            CircleCommand(cmd);
+            break;
+        case ShapeType::HOLLOW_CIRCLE:
+            CircleHollowCommand(cmd);
             break;
         }
     }
@@ -270,20 +272,29 @@ void RenderSystem::HandleUIDrawCommand() {
     vertexBufferSize = 0;
     for (auto &cmd : UIdrawCommands) {
         switch (cmd.shapeType) {
-        case ShapeType::LINE:
-            LineCommand(cmd);
-            break;
-        case ShapeType::RECT:
-            RectCommand(cmd);
-            break;
-        case ShapeType::CIRCLE:
-            CircleCommand(cmd);
+        case ShapeType::HOLLOW_POL:
+            PolygonHollowCommand(cmd);
             break;
         case ShapeType::POLYGON:
             PolygonCommand(cmd);
             break;
         case ShapeType::TEXT:
             TextCommand(cmd);
+            break;
+        case ShapeType::LINE:
+            LineCommand(cmd);
+            break;
+        case ShapeType::RECT:
+            RectCommand(cmd);
+            break;
+        case ShapeType::HOLLOW_RECT:
+            RectHollowCommand(cmd);
+            break;
+        case ShapeType::CIRCLE:
+            CircleCommand(cmd);
+            break;
+        case ShapeType::HOLLOW_CIRCLE:
+            CircleHollowCommand(cmd);
             break;
         }
     }
@@ -310,7 +321,7 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
     SDL_FPoint p[4] = {};
     glm::vec2 dir = command.rect.p2 - command.rect.p1;
     dir = {dir.y, -dir.x};
-    dir = glm::normalize(dir);
+    dir = glm::normalize(dir) * cmd.halfLineWidth;
     p[2] = ToFPoint(dir);
 
     // if not UI mode, convert the position to screen space
@@ -330,6 +341,35 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
         buffer[vertexBufferSize].tex_coord = {0, 0};
         vertexBufferSize++;
     }
+
+    indices[indicesSize++] = vertexBegin + 0;
+    indices[indicesSize++] = vertexBegin + 1;
+    indices[indicesSize++] = vertexBegin + 2;
+    indices[indicesSize++] = vertexBegin + 1;
+    indices[indicesSize++] = vertexBegin + 2;
+    indices[indicesSize++] = vertexBegin + 3;
+}
+
+void RenderSystem::LineCommand(SDL_Vertex &p1, SDL_Vertex &p2,
+                               float halfLineWidth) {
+    int vertexBegin = vertexBufferSize;
+    SDL_Vertex *buffer = vertexBuffer.get();
+
+    glm::vec2 dir = ToGlmVec2(p1.position - p2.position);
+    dir = {dir.y, -dir.x};
+    dir = glm::normalize(dir) * halfLineWidth;
+    SDL_FPoint dirSDL = ToFPoint(dir);
+    buffer[vertexBufferSize] = p1;
+    buffer[vertexBufferSize++].position += dirSDL;
+
+    buffer[vertexBufferSize] = p1;
+    buffer[vertexBufferSize++].position -= dirSDL;
+
+    buffer[vertexBufferSize] = p2;
+    buffer[vertexBufferSize++].position += dirSDL;
+
+    buffer[vertexBufferSize] = p2;
+    buffer[vertexBufferSize++].position -= dirSDL;
 
     indices[indicesSize++] = vertexBegin + 0;
     indices[indicesSize++] = vertexBegin + 1;
@@ -371,6 +411,36 @@ void RenderSystem::RectCommand(DrawCommand &cmd) {
     indices[indicesSize++] = vertexBegin + 2;
     indices[indicesSize++] = vertexBegin + 3;
     indices[indicesSize++] = vertexBegin + 1;
+}
+
+void RenderSystem::RectHollowCommand(DrawCommand &cmd) {
+    auto &command = cmd.GetBase();
+    SDL_FColor color = command.color;
+    SDL_FPoint p1, p2;
+
+    if (cmd.UIMode_ == false) {
+        p1 = PosWorld2Screen(command.rect.p1);
+        p2 = PosWorld2Screen(command.rect.p2);
+    } else {
+        p1 = ToFPoint(command.rect.p1);
+        p2 = ToFPoint(command.rect.p2);
+    }
+
+    SDL_Vertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].color = color;
+        v[i].tex_coord = {0, 0};
+    }
+
+    v[0].position = p1;
+    v[1].position = {p1.x, p2.y};
+    v[2].position = p2;
+    v[3].position = {p2.x, p1.y};
+
+    LineCommand(v[0], v[1], cmd.halfLineWidth);
+    LineCommand(v[1], v[2], cmd.halfLineWidth);
+    LineCommand(v[2], v[3], cmd.halfLineWidth);
+    LineCommand(v[3], v[0], cmd.halfLineWidth);
 }
 
 void RenderSystem::CircleCommand(DrawCommand &cmd) {
@@ -430,10 +500,95 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
     }
 }
 
+void RenderSystem::CircleHollowCommand(DrawCommand &cmd) {
+    // if not UI mode, convert the position and radius to screen space
+    SDL_FPoint center;
+    float radius;
+    if (cmd.UIMode_ == false) {
+        center = PosWorld2Screen(cmd.GetBase().circle.center);
+        radius = cmd.GetBase().circle.radius * camera.getZoom();
+    } else {
+        center = ToFPoint(cmd.GetBase().circle.center);
+        radius = cmd.GetBase().circle.radius;
+    }
+
+    if (radius < 0) {
+        F_LOG_WARNING("Circle radius must be greater than 0, but {} given.",
+                      radius);
+        return;
+    }
+
+    // set lod level
+    int lodLevel;
+    if (radius <= 10)
+        lodLevel = 0;
+    else if (radius <= 15)
+        lodLevel = 1;
+    else if (radius <= 25)
+        lodLevel = 2;
+    else if (radius <= 50)
+        lodLevel = 3;
+    else if (radius <= 100)
+        lodLevel = 4;
+    else
+        lodLevel = 5;
+
+    const auto &cache = SIN_COS_CACHE[lodLevel];
+    lodLevel = CIRCLE_LOD[lodLevel];
+
+    SDL_FColor color = cmd.GetBase().color;
+
+    SDL_Vertex v[MAX_LOD_LEVEL];
+    v[0].color = color;
+    v[0].position =
+        center + SDL_FPoint{radius * cache[0].first, radius * cache[0].second};
+    v[0].tex_coord = {0, 0};
+    for (int i = 1; i < lodLevel; i++) {
+        v[i].color = color;
+        v[i].tex_coord = {0, 0};
+        v[i].position = center + SDL_FPoint{radius * cache[i].first,
+                                            radius * cache[i].second};
+        LineCommand(v[i - 1], v[i], cmd.halfLineWidth);
+    }
+    LineCommand(v[lodLevel - 1], v[0], cmd.halfLineWidth);
+}
+
 void RenderSystem::PolygonCommand(DrawCommand &cmd) {
     SDL_Vertex *buffer = vertexBuffer.get();
     auto &vertexs = cmd.GetComplex().GetVertexs();
     SDL_Vertex *p = vertexs.data();
+    int n = vertexs.size();
+    if (n < 3) {
+        F_LOG_WARNING("Polygon must have at least 3 vertices, but {} given.",
+                      n);
+        return;
+    }
+    
+
+    // if not UI mode, convert the position to screen space
+    if (cmd.UIMode_ == false) {
+        for (auto &v : vertexs) {
+            auto t = PosWorld2Screen(ToGlmVec2(v.position));
+            if (t.x >= 300) {
+                int a;
+            }
+            v.position = t;
+        }
+    }
+
+    memcpy(buffer + vertexBufferSize, p, n * sizeof(SDL_Vertex));
+
+    n -= 2;
+    for (int i = 0; i < n; i++) {
+        indices[indicesSize++] = vertexBufferSize;
+        indices[indicesSize++] = vertexBufferSize + i + 1;
+        indices[indicesSize++] = vertexBufferSize + i + 2;
+    }
+    vertexBufferSize += n + 2;
+}
+
+void RenderSystem::PolygonHollowCommand(DrawCommand &cmd) {
+    auto &vertexs = cmd.GetComplex().GetVertexs();
     int n = vertexs.size();
     if (n < 3) {
         F_LOG_WARNING("Polygon must have at least 3 vertices, but {} given.",
@@ -448,15 +603,10 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
         }
     }
 
-    memcpy(buffer + vertexBufferSize, p, n * sizeof(SDL_Vertex));
-
-    n -= 2;
-    for (int i = 0; i < n; i++) {
-        indices[indicesSize++] = vertexBufferSize;
-        indices[indicesSize++] = vertexBufferSize + i + 1;
-        indices[indicesSize++] = vertexBufferSize + i + 2;
+    for (int i = 1; i < n; i++) {
+        LineCommand(vertexs[i - 1], vertexs[i], cmd.halfLineWidth);
     }
-    vertexBufferSize += n + 2;
+    LineCommand(vertexs[n - 1], vertexs[0], cmd.halfLineWidth);
 }
 
 void RenderSystem::TextCommand(DrawCommand &cmd) {

@@ -80,6 +80,7 @@ void Logger::Log(LogLevel level, const std::string& msg) {
 
 void Logger::Debug(const std::string& msg) {
     Log(LogLevel::DEBUG, msg);
+    InstantFlush();
 }
 
 void Logger::Info(const std::string& msg) {
@@ -88,10 +89,12 @@ void Logger::Info(const std::string& msg) {
 
 void Logger::Warning(const std::string& msg) {
     Log(LogLevel::WARNING, msg);
+    InstantFlush();
 }
 
 void Logger::Error(const std::string& msg) {
     Log(LogLevel::ERROR, msg);
+    InstantFlush();
 }
 
 std::string Logger::LevelToStr(LogLevel level) {

@@ -8,19 +8,22 @@
 #include <SDL3_framerate.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
+
 class PhysicsSystem {
   public:
     static PhysicsSystem &Instance();
 
-    void SetRunning() {running = true;}
+    void SetRunning() { running = true; }
 
     bool Init(int targetFPS);
     void Destroy();
     void UpdateWrapper();
     void Update();
 
-    void AddObject(std::shared_ptr<ObjectWorld> obj, std::shared_ptr<ObjectWorld> target = nullptr);
+    void AddObject(std::shared_ptr<ObjectWorld> obj,
+                   std::shared_ptr<ObjectWorld> target = nullptr);
     void AddObject(std::shared_ptr<ObjectWorld> obj, ObjectID targetID);
     void AddObject(std::shared_ptr<ObjectWorld> obj, std::string targetName);
 
@@ -31,7 +34,7 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> FindObjectById(ObjectID id);
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
-
+    void AddCustomInitFunction(BasicFunctionWrapper callBack) {initFunctionWrapper.emplace_back(std::move(callBack));}
 
     constexpr static float MinBodySize = 0.01f * 0.01f;
     constexpr static float MaxBodySize = 64.0f * 64.0f;
@@ -40,14 +43,14 @@ class PhysicsSystem {
     constexpr static float MaxDensity = 21.4f;
 
     FPSCounter fpsc;
-    private:  
-    
-    PhysicsSystem() : running(false) {;}
+
+  private:
+    PhysicsSystem() : running(false) { ; }
     ~PhysicsSystem() = default;
-    PhysicsSystem(const PhysicsSystem&) = delete;
-    PhysicsSystem& operator=(const PhysicsSystem&) = delete;
-    void HandleSDLEvents(SDL_Event& event);
-    
+    PhysicsSystem(const PhysicsSystem &) = delete;
+    PhysicsSystem &operator=(const PhysicsSystem &) = delete;
+    void HandleSDLEvents(SDL_Event &event);
+
     bool running;
     FPSmanager fpsm;
     float targetDt;
@@ -55,7 +58,8 @@ class PhysicsSystem {
     EventHandlerID eventHandler1_;
     std::shared_ptr<ObjectWorld> rootNode;
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
+
+    std::vector<BasicFunctionWrapper> initFunctionWrapper;
 };
 
-
-# define GET_PhysicsSystem PhysicsSystem::Instance()
+#define GET_PhysicsSystem PhysicsSystem::Instance()

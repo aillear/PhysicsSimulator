@@ -23,6 +23,9 @@ class RigidBody : public ObjectWorld {
     void Render() override;
     void PhysicsUpdate(float dt) override;
 
+    void Move(glm::vec2 ds) {position_ += ds;}
+    void MoveTo(glm::vec2 destinaion) {position_ = destinaion;}
+
     bool isStatic;
     float mass;
     float area;

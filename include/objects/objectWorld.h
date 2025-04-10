@@ -9,8 +9,7 @@ class ObjectWorld : public Object {
     glm::vec2 position_;
     SDL_FColor color;
   public:
-    ObjectWorld() : position_(0, 0) {;};
-    ObjectWorld(glm::vec2 position) : position_(position) {;};
+    ObjectWorld(glm::vec2 position = {0, 0}) : position_(position) {;};
     glm::vec2 GetPosition() const { return position_; }
     void SetPosition(const glm::vec2 &pos) { position_ = pos; }
     void SetPosition(float x, float y) { position_ = {x, y}; }

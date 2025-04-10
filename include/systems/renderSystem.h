@@ -2,32 +2,47 @@
 
 #include "SDL3/SDL_stdinc.h"
 #include "conversion.h"
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_video.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <array>
+#include <camera.h>
 #include <cmath>
 #include <cstddef>
+#include <glm/detail/qualifier.hpp>
+#include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <memory>
 #include <string>
 #include <variant>
 #include <vector>
-#include <camera.h>
-#include <SDL3/SDL_rect.h>
-#include <SDL3/SDL_video.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <glm/ext/vector_int2.hpp>
-#include <glm/detail/qualifier.hpp>
-#include <glm/ext/vector_float2.hpp>
 
-struct GlmRect { glm::vec2 p1, p2; };
-struct GlmCircle { glm::vec2 center; float radius; };
-enum class ShapeType : Uint8 { POLYGON = 0, TEXT, LINE, RECT, CIRCLE };
+
+struct GlmRect {
+    glm::vec2 p1, p2;
+};
+struct GlmCircle {
+    glm::vec2 center;
+    float radius;
+};
+enum class ShapeType : Uint8 {
+    HOLLOW_POL = 0,
+    POLYGON,
+    TEXT,
+    LINE,
+    RECT,
+    HOLLOW_RECT,
+    CIRCLE,
+    HOLLOW_CIRCLE
+};
 struct BasicCommand {
     union {
         GlmRect rect;
         GlmCircle circle;
-     };
-    SDL_FColor color;
+    };
+    SDL_FColor color = {1, 1, 1, 1};
 };
 
 /**
@@ -37,19 +52,15 @@ struct BasicCommand {
  *  when it comes to be string, aabb is the size of the text.
  */
 struct ComplexCommand {
-    std::variant<
-        std::vector<SDL_Vertex>,
-        std::shared_ptr<TTF_Text>
-    > data;
+    std::variant<std::vector<SDL_Vertex>, std::shared_ptr<TTF_Text>> data;
     SDL_FRect aabb;
-    SDL_FColor color;  // ONLY for text
-
+    SDL_FColor color; // ONLY for text
 
     /**
      * @brief Get the Vertexs object
      *        this function is unsafe.
-     * 
-     * @return std::vector<SDL_Vertex>& 
+     *
+     * @return std::vector<SDL_Vertex>&
      */
     std::vector<SDL_Vertex> &GetVertexs() {
         return std::get<std::vector<SDL_Vertex>>(data);
@@ -57,25 +68,19 @@ struct ComplexCommand {
 
     /**
      * @brief Get the Text object
-     *        this function is unsafe. 
+     *        this function is unsafe.
      *
-     * @return std::string& 
+     * @return std::string&
      */
-     std::shared_ptr<TTF_Text> &GetText() {
+    std::shared_ptr<TTF_Text> &GetText() {
         return std::get<std::shared_ptr<TTF_Text>>(data);
     }
 
-    void SetFColor(SDL_FColor color) {
-        this->color = color;
-    }
+    void SetFColor(SDL_FColor color) { this->color = color; }
 
-    void SetColor(SDL_Color color) {
-        this->color = ToFColor(color);
-    }
+    void SetColor(SDL_Color color) { this->color = ToFColor(color); }
 
-    void SetAABB(SDL_FRect aabb) {
-        this->aabb = aabb;
-    }
+    void SetAABB(SDL_FRect aabb) { this->aabb = aabb; }
 
     void SetTextPos(glm::vec2 pos) {
         aabb.x = pos.x;
@@ -85,50 +90,51 @@ struct ComplexCommand {
 
 struct DrawCommand {
     bool UIMode_;
+    bool scaleWithZoom = false; // if true, line width will zoom with camera.
+    float halfLineWidth = 0.5f; // if hollow, line width is this.
     ShapeType shapeType;
     std::variant<BasicCommand, ComplexCommand> cmd;
 
-    DrawCommand(ShapeType type, bool UIMode) : shapeType(type), UIMode_(UIMode) {
+    DrawCommand(ShapeType type, bool UIMode)
+        : shapeType(type), UIMode_(UIMode) {
         switch (type) {
-            case ShapeType::POLYGON: {
-                auto cmdt = ComplexCommand();
-                cmdt.data = std::vector<SDL_Vertex>();
-                cmdt.aabb = {0, 0, 0, 0};
-                cmd = cmdt;
-                break;
-            }
-            case ShapeType::TEXT: {
-                auto cmdt = ComplexCommand();
-                cmdt.data = nullptr;
-                cmdt.aabb = {0, 0, 0, 0};
-                cmd = cmdt;
-                break;
-            }
-            default:
-                cmd = BasicCommand{};
-                break;
+        case ShapeType::HOLLOW_POL:
+        case ShapeType::POLYGON: {
+            auto cmdt = ComplexCommand();
+            cmdt.data = std::vector<SDL_Vertex>();
+            cmdt.aabb = {0, 0, 0, 0};
+            cmd = cmdt;
+            break;
+        }
+
+        case ShapeType::TEXT: {
+            auto cmdt = ComplexCommand();
+            cmdt.data = nullptr;
+            cmdt.aabb = {0, 0, 0, 0};
+            cmd = cmdt;
+            break;
+        }
+        default:
+            cmd = BasicCommand{};
+            break;
         }
     }
 
     /**
      * @brief Get the Base object
      *       this function is unsafe.
-     * 
-     * @return BasicCommand& 
+     *
+     * @return BasicCommand&
      */
-    BasicCommand& GetBase() {
-        return std::get<BasicCommand>(cmd);
-    }
+    BasicCommand &GetBase() { return std::get<BasicCommand>(cmd); }
 
     /**
      * @brief Get the Complex object
      *       this function is unsafe.
-     * 
-     * @return ComplexCommand& 
+     *
+     * @return ComplexCommand&
      */
-    ComplexCommand& GetComplex() {
-        return std::get<ComplexCommand>(cmd);
-    }
+    ComplexCommand &GetComplex() { return std::get<ComplexCommand>(cmd); }
 };
 
 /**
@@ -151,7 +157,6 @@ struct RenderSystemIniter {
 
 class RenderSystem {
   public:
-
     static RenderSystem &Instance();
     bool Init(const RenderSystemIniter &initer);
     void Destroy();
@@ -160,11 +165,12 @@ class RenderSystem {
     void SetWindowSize(glm::vec2 size);
     float GetFontSize() const { return fontSize; }
     void SetFontSize(float size);
-    std::shared_ptr<TTF_Text> CreateText(const std::string& text, size_t size = 0);
-    void AddUIDrawCommand(DrawCommand&& cmd);
+    std::shared_ptr<TTF_Text> CreateText(const std::string &text,
+                                         size_t size = 0);
+    void AddUIDrawCommand(DrawCommand &&cmd);
     void Render();
-    
-  private:  
+
+  private:
     RenderSystem();
     ~RenderSystem() = default;
     SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
@@ -172,11 +178,15 @@ class RenderSystem {
 
     void HandlePhysicsDrawCommand();
     void HandleUIDrawCommand();
-    
+
     void LineCommand(DrawCommand &cmd);
+    void LineCommand(SDL_Vertex &p1, SDL_Vertex &p2, float halfLineWidth);
     void RectCommand(DrawCommand &cmd);
+    void RectHollowCommand(DrawCommand &cmd);
     void CircleCommand(DrawCommand &cmd);
+    void CircleHollowCommand(DrawCommand &cmd);
     void PolygonCommand(DrawCommand &cmd);
+    void PolygonHollowCommand(DrawCommand &cmd);
     void TextCommand(DrawCommand &cmd);
 
     int vertexBufferSize;
@@ -194,7 +204,6 @@ class RenderSystem {
     std::vector<DrawCommand> UIdrawCommands;
     std::unique_ptr<SDL_Vertex[]> vertexBuffer;
     std::unique_ptr<int[]> indices;
-    
 };
 
 #define GET_RenderSystem RenderSystem::Instance()
@@ -202,9 +211,8 @@ class RenderSystem {
 #define SCREEN2WORLD(pos) RenderSystem::Instance().PosScreen2World(pos)
 #define FONT_SIZE RenderSystem::Instance().GetFontSize()
 
-template <int LOD>
-struct CircleLodCache {
-    static const std::array<std::pair<float, float>, 64>& getVertices() {
+template <int LOD> struct CircleLodCache {
+    static const std::array<std::pair<float, float>, 64> &getVertices() {
         static const auto cache = []() {
             std::array<std::pair<float, float>, 64> arr{};
             float angle_step = 2 * M_PI / LOD;
