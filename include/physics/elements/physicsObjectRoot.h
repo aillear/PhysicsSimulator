@@ -31,20 +31,20 @@ class PhysicsObjectRoot : public ObjectWorld {
             return;
         firstObj->Move(glm::normalize(dir) * 100.0f * dt);
 
-        int childCount = children.size();
-        glm::vec2 norm;
-        float depth;
-        for (int i = 0; i < childCount - 1; i++) {
-            for (int j = i + 1; j < childCount; j++) {
-                auto a = (RigidBody*)children[i].get();
-                auto b = (RigidBody*)children[j].get();
-                if (!GET_CollisionMgr.IntersectCircle(
-                        {a->GetPosition(), a->GetRadius()},
-                        {b->GetPosition(), b->GetRadius()}, norm, depth))
-                    continue;
-                a->Move(norm * depth * -0.5f);
-                b->Move(norm * depth * 0.5f);
-            }
-        }
+        // int childCount = children.size();
+        // glm::vec2 norm;
+        // float depth;
+        // for (int i = 0; i < childCount - 1; i++) {
+        //     for (int j = i + 1; j < childCount; j++) {
+        //         auto a = (RigidBody*)children[i].get();
+        //         auto b = (RigidBody*)children[j].get();
+        //         if (!GET_CollisionMgr.IntersectCircle(
+        //                 {a->GetPosition(), a->GetRadius()},
+        //                 {b->GetPosition(), b->GetRadius()}, norm, depth))
+        //             continue;
+        //         a->Move(norm * depth * -0.5f);
+        //         b->Move(norm * depth * 0.5f);
+        //     }
+        // }
     }
 };

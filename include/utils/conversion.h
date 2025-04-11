@@ -8,6 +8,7 @@
 #include <glm/ext/vector_float2.hpp>
 #include <ostream>
 
+
 template <typename T> struct Vector2 {
   public:
     T x;

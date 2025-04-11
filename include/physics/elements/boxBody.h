@@ -1,0 +1,38 @@
+#pragma once
+
+#include "SDL3/SDL_render.h"
+#include "material.h"
+#include "rigidbody.h"
+#include "transform.h"
+#include <array>
+#include <glm/ext/vector_float2.hpp>
+#include <vector>
+class BoxBody : public RigidBody {
+  public:
+    BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight);
+
+    glm::vec2 GetWidthHeight() const override { return widthHeight_; }
+    void SetWidthHeight(glm::vec2 wh) override { widthHeight_ = wh; }
+
+    void SetPosition(const glm::vec2& position) override;
+    void SetPosition(float x, float y) override;
+
+    void SetRotation(float rotation) override;
+    void SetColor(SDL_Color color) override;
+    void SetFColor(SDL_FColor color) override;
+    void SetColorBoundry(SDL_Color color) override;
+    void SetFColorBoundry(SDL_FColor color) override;
+
+  protected:
+    void Render() override;
+    void PhysicsUpdate(float dt) override;
+
+    void GetVertexTransfrom();
+
+    bool needToTransfrom = true;
+    glm::vec2 widthHeight_;
+    Transform2D transformer;
+    std::array<glm::vec2, 4> OriginVertex;
+    std::vector<SDL_Vertex> TransformedVertexF;
+    std::vector<SDL_Vertex> TransformedVertexB;
+};

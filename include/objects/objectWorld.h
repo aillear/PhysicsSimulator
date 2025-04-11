@@ -9,11 +9,12 @@ class ObjectWorld : public Object {
   public:
     ObjectWorld(glm::vec2 position = {0, 0}) : position_(position) { ; };
     glm::vec2 GetPosition() const { return position_; }
-    void SetPosition(const glm::vec2 &pos) { position_ = pos; }
-    void SetPosition(float x, float y) { position_ = {x, y}; }
-    void SetFColor(SDL_FColor color) { this->color = color; }
-    void SetColor(SDL_Color color) { this->color = ToFColor(color); }
-    SDL_FColor GetFColor() const { return color; }
+    virtual void SetPosition(const glm::vec2 &pos) { position_ = pos; }
+    virtual void SetPosition(float x, float y) { position_ = {x, y}; }
+    virtual void SetFColor(SDL_FColor color) { this->color_ = color; }
+    virtual void SetColor(SDL_Color color) { this->color_ = ToFColor(color); }
+    SDL_FColor GetFColor() const { return color_; }
+    SDL_Color GetColor() const {return ToColor(color_);}
 
     void OnMouseDown(SDL_Event &event) override { ; }
     void OnMouseMove(SDL_Event &event) override { ; }
@@ -30,5 +31,5 @@ class ObjectWorld : public Object {
     void Destroy() override { ; }
 
     glm::vec2 position_;
-    SDL_FColor color;
+    SDL_FColor color_;
 };

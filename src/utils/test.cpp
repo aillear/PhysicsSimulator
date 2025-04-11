@@ -4,6 +4,7 @@
 #include "UIMgr.h"
 #include "UIPanel.h"
 #include "app.h"
+#include "boxBody.h"
 #include "circleBody.h"
 #include "conversion.h"
 #include "eventSystem.h"
@@ -115,9 +116,15 @@ void SomeCustomLogicHere() {
 
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
-    for (int i = 0; i < 10; i++) {
-        auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i * 40}, 20);
-        circle->SetFColor(RandomFColor());
-        GET_PhysicsSystem.AddObject(circle);
+    // for (int i = 0; i < 10; i++) {
+    //     auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i * 40}, 20);
+    //     circle->SetFColor(RandomFColor());
+    //     GET_PhysicsSystem.AddObject(circle);
+    // }
+
+    for (int i = 0; i < 10;  i++) {
+        auto box = std::make_shared<BoxBody>(m, glm::vec2{i * 40, i * 40}, glm::vec2{20, 30});
+        box->SetFColor(RandomFColor());
+        GET_PhysicsSystem.AddObject(box);
     }
 }
