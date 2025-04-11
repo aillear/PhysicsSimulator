@@ -3,6 +3,7 @@
 #include "SDL3/SDL_scancode.h"
 #include "collisionMgr.h"
 #include "inputSystem.h"
+#include "logger.h"
 #include "objectWorld.h"
 #include "rigidbody.h"
 #include <glm/ext/vector_float2.hpp>
@@ -23,13 +24,12 @@ class PhysicsObjectRoot : public ObjectWorld {
         if (KeyState(SDL_SCANCODE_D))
             dir.x++;
 
-        if (dir.x == 0 && dir.y == 0)
-            return;
-
-        auto firstObj = static_cast<RigidBody *>(children.begin()->get());
-        if (firstObj == nullptr)
-            return;
-        firstObj->Move(glm::normalize(dir) * 100.0f * dt);
+        if (dir.x != 0 || dir.y != 0) {
+            auto firstObj = static_cast<RigidBody *>(children.begin()->get());
+            if (firstObj == nullptr)
+                return;
+            firstObj->Move(glm::normalize(dir) * 100.0f * dt);
+        }
 
         // int childCount = children.size();
         // glm::vec2 norm;
@@ -46,5 +46,23 @@ class PhysicsObjectRoot : public ObjectWorld {
         //         b->Move(norm * depth * 0.5f);
         //     }
         // }
+
+        int childCount = children.size();
+        for (auto &child : children) {
+            auto temp = (RigidBody *)child.get();
+            temp->SetFColorBoundry({1, 1, 1, 1});
+        }
+
+        for (int i = 0; i < childCount - 1; i++) {
+            for (int j = i + 1; j < childCount; j++) {
+                auto a = (RigidBody *)children[i].get();
+                auto b = (RigidBody *)children[j].get();
+                if (!GET_CollisionMgr.IntersectPolygon(a->GetVertex(),
+                                                       b->GetVertex()))
+                    continue;
+                a->SetFColorBoundry({1, 0, 0, 1});
+                b->SetFColorBoundry({1, 0, 0, 1});
+            }
+        }
     }
 };

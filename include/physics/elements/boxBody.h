@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
 #include "material.h"
 #include "rigidbody.h"
@@ -14,14 +15,20 @@ class BoxBody : public RigidBody {
     glm::vec2 GetWidthHeight() const override { return widthHeight_; }
     void SetWidthHeight(glm::vec2 wh) override { widthHeight_ = wh; }
 
+    void Move(glm::vec2 ds) override;
+    void MoveTo(glm::vec2 destinaion) override;
+
     void SetPosition(const glm::vec2& position) override;
     void SetPosition(float x, float y) override;
 
     void SetRotation(float rotation) override;
     void SetColor(SDL_Color color) override;
     void SetFColor(SDL_FColor color) override;
+
     void SetColorBoundry(SDL_Color color) override;
     void SetFColorBoundry(SDL_FColor color) override;
+
+    const std::vector<SDL_Vertex>& GetVertex() const override {return TransformedVertexB;}
 
   protected:
     void Render() override;

@@ -7,6 +7,7 @@
 #include "rigidbody.h"
 #include "shape.h"
 #include "transform.h"
+#include <glm/ext/vector_float2.hpp>
 #include <utility>
 #include <vector>
 
@@ -25,6 +26,16 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     OriginVertex[3] = {-Right, Buttom};
     TransformedVertexF = std::vector<SDL_Vertex>(4);
     TransformedVertexB = std::vector<SDL_Vertex>(4);
+    SetFColor({1,1,0,1});
+    SetFColorBoundry({1,1,1,1});
+}
+
+void BoxBody::Move(glm::vec2 ds) {
+    SetPosition(position_ + ds);
+}
+
+void BoxBody::MoveTo(glm::vec2 destination) {
+    SetPosition(destination);
 }
 
 void BoxBody::SetPosition(const glm::vec2& position) {
@@ -84,7 +95,6 @@ void BoxBody::GetVertexTransfrom() {
 }
 
 void BoxBody::Render() {
-    GetVertexTransfrom();
     // draw it self
     DrawCommand cmd(ShapeType::POLYGON, false);
     cmd.GetComplex().data = TransformedVertexF;
@@ -98,4 +108,5 @@ void BoxBody::Render() {
 
 void BoxBody::PhysicsUpdate(float dt) {
     SetRotation(rotation_ + 90*dt);
+    GetVertexTransfrom();
 }

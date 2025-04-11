@@ -14,13 +14,11 @@ class RigidBody : public ObjectWorld {
     RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type)
         : ObjectWorld(position), material_(mate), velocity_({0, 0}), rotation_(0),
           angularVelocity_(0), type_(type) {
-            this->SetFColor({1, 1, 1, 1});
-            this->SetFColorBoundry({1,1,1,1});
         ;
     }
 
-    void Move(glm::vec2 ds) { position_ += ds; }
-    void MoveTo(glm::vec2 destinaion) { position_ = destinaion; }
+    virtual void Move(glm::vec2 ds) { position_ += ds; }
+    virtual void MoveTo(glm::vec2 destinaion) { position_ = destinaion; }
     PhysicsShapeType GetType() { return type_; }
     float GetMass() const { return mass_; }
     float GetArea() const { return area_; }
@@ -36,6 +34,7 @@ class RigidBody : public ObjectWorld {
     virtual void SetFColorBoundry(SDL_FColor color) { boundaryColor_ = color; }
     virtual void SetColorBoundry(SDL_Color color) { boundaryColor_ = ToFColor(color); }
 
+    // circle
     virtual float GetRadius() const ;
     virtual void SetRadius(float radius) ;
 
@@ -43,6 +42,8 @@ class RigidBody : public ObjectWorld {
     virtual void SetWidthHeight(glm::vec2 wh);
 
     virtual void SetRotation(float rotation) {rotation_ = rotation;}
+
+    virtual const std::vector<SDL_Vertex>& GetVertex() const;
 
   protected:
     void Render() override = 0;
