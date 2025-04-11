@@ -55,7 +55,12 @@ class PhysicsSystem {
     FPSmanager fpsm;
     float targetDt;
     bool hasRemoveCalled = false;
-    EventHandlerID eventHandler1_;
+
+    EventHandlerID eventHandler_1;
+    EventHandlerID eventHandler_2;
+    EventHandlerID eventHandler_3;
+    EventHandlerID eventHandler_4;
+    
     std::shared_ptr<ObjectWorld> rootNode;
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 

@@ -89,7 +89,8 @@ class UIComponent : public Object {
     void OnMouseMove(SDL_Event &event) override { ; }
     void OnMouseDown(SDL_Event &event) override { ; }
     void OnMouseUp(SDL_Event &event) override { ; }
-
+    void OnKeyUp(SDL_Event &event) override { ; }
+    void OnKeyDown(SDL_Event &event) override { ; }
     void ImplementAlignment();
 
     // useless for now

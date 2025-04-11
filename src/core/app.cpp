@@ -1,6 +1,8 @@
 #include "app.h"
 #include "UIMgr.h"
 #include "eventSystem.h"
+#include "inputSystem.h"
+#include "collisionMgr.h"
 #include "logger.h"
 #include "pathMgr.h"
 #include "physicsSystem.h"
@@ -28,12 +30,13 @@ void App::Init(int argc, char *argv[]) {
                     true); // when this is done, the logger will be usable
 #else
     GET_Logger.Init(Logger::INFO, "app.log",
-        false); // when this is done, the logger will be usable
+                    false); // when this is done, the logger will be usable
 #endif
     GET_Logger.SetInstantFlush(true);
     // system initialize
     GET_EventSystem.Init();
     GET_Buffer.Init();
+    GET_InputSystem.Init();
     RenderSystemIniter RenderSystemIniter;
     if (!GET_RenderSystem.Init(RenderSystemIniter)) {
         LOG_ERROR("Render system initialize failed.");
@@ -41,6 +44,7 @@ void App::Init(int argc, char *argv[]) {
         exit(1);
     }
     GET_PhysicsSystem.Init(100);
+    GET_CollisionMgr.Init();
     GET_UIMgr.Init();
 
     SDL_initFramerate(&fpsm);
@@ -50,11 +54,12 @@ void App::Init(int argc, char *argv[]) {
     // quit event
     GET_EventSystem.AddEventListener(
         SDL_EVENT_QUIT, [this](SDL_Event &event) { this->running = false; });
-    LOG_INFO("App initialized.");
 
-    for (auto& callBack : initFunctionWrapper_) callBack();
+    for (auto &callBack : initFunctionWrapper_)
+        callBack();
 
     SetRunning();
+    LOG_INFO("App initialized.");
     LOG_INFO("Running...");
     LOG_INFO("==========================");
 #ifdef _DEBUG_MODE
@@ -64,8 +69,9 @@ void App::Init(int argc, char *argv[]) {
 
 void App::Run() {
 
-    for (auto& callBack : beforeRunFunctionWrapper_) callBack();
-    
+    for (auto &callBack : beforeRunFunctionWrapper_)
+        callBack();
+
     physicsThreadMutex.lock();
     physicsThread = std::thread([]() {
         std::lock_guard<std::mutex> lock(physicsThreadMutex);

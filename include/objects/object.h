@@ -42,6 +42,8 @@ class Object {
     virtual void OnMouseMove(SDL_Event &event) = 0;
     virtual void OnMouseDown(SDL_Event &event) = 0;
     virtual void OnMouseUp(SDL_Event &event) = 0;
+    virtual void OnKeyDown(SDL_Event &event) = 0;
+    virtual void OnKeyUp(SDL_Event &event) = 0;
 
     bool GetEnabled() const { return enabled; }
     void SetEnabled(bool enabled) { this->enabled = enabled; }

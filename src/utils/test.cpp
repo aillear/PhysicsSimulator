@@ -116,7 +116,7 @@ void SomeCustomLogicHere() {
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
     for (int i = 0; i < 10; i++) {
-        auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 50, i * 50}, 20);
+        auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i * 40}, 20);
         circle->SetFColor(RandomFColor());
         GET_PhysicsSystem.AddObject(circle);
     }

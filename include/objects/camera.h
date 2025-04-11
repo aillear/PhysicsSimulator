@@ -18,6 +18,8 @@ class Camera : public ObjectWorld {
     void OnMouseMove(SDL_Event &event) override {;}
     void OnMouseDown(SDL_Event &event) override {;}
     void OnMouseUp(SDL_Event &event) override {;}
+    void OnKeyDown(SDL_Event &event) override {;}
+    void OnKeyUp(SDL_Event &event) override {;}
     void Destroy() override {;}
 
     // useful methods.
