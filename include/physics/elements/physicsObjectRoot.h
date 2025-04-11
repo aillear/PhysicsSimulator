@@ -52,16 +52,20 @@ class PhysicsObjectRoot : public ObjectWorld {
             auto temp = (RigidBody *)child.get();
             temp->SetFColorBoundry({1, 1, 1, 1});
         }
-
+        
+        glm::vec2 norm;
+        float depth;
         for (int i = 0; i < childCount - 1; i++) {
             for (int j = i + 1; j < childCount; j++) {
                 auto a = (RigidBody *)children[i].get();
                 auto b = (RigidBody *)children[j].get();
-                if (!GET_CollisionMgr.IntersectPolygon(a->GetVertex(),
-                                                       b->GetVertex()))
+                if (!GET_CollisionMgr.IntersectPolygon(
+                        a->GetVertex(), b->GetVertex(), norm, depth))
                     continue;
                 a->SetFColorBoundry({1, 0, 0, 1});
                 b->SetFColorBoundry({1, 0, 0, 1});
+                a->Move(norm * depth * -0.5f);
+                b->Move(norm * depth * 0.5f);
             }
         }
     }

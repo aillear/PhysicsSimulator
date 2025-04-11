@@ -1,11 +1,13 @@
 #include "collisionMgr.h"
+#include "SDL3/SDL_render.h"
 #include "conversion.h"
-#include "inputSystem.h"
 #include <_mingw_stat64.h>
 #include <algorithm>
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
 #include <limits>
+#include <vector>
 
 CollisionMgr &CollisionMgr::Instance() {
     static CollisionMgr instance;
@@ -33,8 +35,13 @@ bool CollisionMgr::IntersectCircle(GlmCircle a, GlmCircle b, glm::vec2 &norm,
 }
 
 // SAT collision detect.
-bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex>& a,
-                                    const std::vector<SDL_Vertex>& b) {
+bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
+                                    const std::vector<SDL_Vertex> &b,
+                                    glm::vec2 &norm, float &depth) {
+
+    norm = {0, 0};
+    depth = std::numeric_limits<float>::max();
+
     for (int i = 0; i < a.size(); i++) {
         auto va = a[i].position;
         auto edge = a[(i + 1) % a.size()].position - va;
@@ -44,6 +51,12 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex>& a,
         glm::vec2 pb = GetProject(b, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
             return false;
+
+        float axisDepth = std::min(pa.y - pb.x, pb.y - pa.x);
+        if (axisDepth < depth) {
+            depth = axisDepth;
+            norm = axis;
+        }
     }
 
     for (int i = 0; i < b.size(); i++) {
@@ -55,16 +68,27 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex>& a,
         glm::vec2 pb = GetProject(b, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
             return false;
+        float axisDepth = std::min(pa.y - pb.x, pb.y - pa.x);
+        if (axisDepth < depth) {
+            depth = axisDepth;
+            norm = axis;
+        }
     }
+
+    depth /= glm::length(norm);
+    norm = glm::normalize(norm);
+
+    auto direction = GetArithmeticMean(b) - GetArithmeticMean(a);
+    if (glm::dot(direction, norm) < 0.0f) norm = -norm;
     return true;
 }
 
-glm::vec2 CollisionMgr::GetProject(const std::vector<SDL_Vertex>& vertexs,
+glm::vec2 CollisionMgr::GetProject(const std::vector<SDL_Vertex> &vertices,
                                    glm::vec2 axis) {
     glm::vec2 res = {std::numeric_limits<float>::max(),
                      std::numeric_limits<float>::min()};
 
-    for (auto &vertex : vertexs) {
+    for (auto &vertex : vertices) {
         glm::vec2 v = ToGlmVec2(vertex.position);
         float proj = glm::dot(v, axis);
 
@@ -72,4 +96,14 @@ glm::vec2 CollisionMgr::GetProject(const std::vector<SDL_Vertex>& vertexs,
         res.y = std::max(res.y, proj);
     }
     return res;
+}
+
+glm::vec2 CollisionMgr::GetArithmeticMean(const std::vector<SDL_Vertex>& vertices) {
+    glm::vec2 center = {0, 0};
+    for (auto& vertex : vertices) {
+        center.x += vertex.position.x;
+        center.y += vertex.position.y;
+    }
+    int size = vertices.size();
+    return center / (float)size;
 }

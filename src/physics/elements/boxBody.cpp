@@ -13,7 +13,7 @@
 
 BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     : RigidBody(position, mate, PhysicsShapeType::BOX),
-      widthHeight_(widthHeight), transformer(position, 0) {
+      widthHeight_(widthHeight), transformer(position, 0), needToTransfrom(true) {
     area_ = widthHeight.x * widthHeight.y;
     mass_ = area_ * material_.density;
     SafeCheck();
@@ -28,6 +28,7 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     TransformedVertexB = std::vector<SDL_Vertex>(4);
     SetFColor({1,1,0,1});
     SetFColorBoundry({1,1,1,1});
+    GetVertexTransfrom();
 }
 
 void BoxBody::Move(glm::vec2 ds) {

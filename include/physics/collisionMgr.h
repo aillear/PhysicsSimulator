@@ -12,10 +12,11 @@ class CollisionMgr {
     void Destory();
 
     bool IntersectCircle(GlmCircle a, GlmCircle b, glm::vec2& norm, float& depth);
-    bool IntersectPolygon(const std::vector<SDL_Vertex>& a, const std::vector<SDL_Vertex>& b);
+    bool IntersectPolygon(const std::vector<SDL_Vertex>& a, const std::vector<SDL_Vertex>& b, glm::vec2& norm, float& depth);
   private:
 
-    glm::vec2 GetProject(const std::vector<SDL_Vertex>& vertexs, glm::vec2 axis);
+    glm::vec2 GetProject(const std::vector<SDL_Vertex>& vertices, glm::vec2 axis);
+    glm::vec2 GetArithmeticMean(const std::vector<SDL_Vertex>& vertices);
     
     CollisionMgr() = default;
     ~CollisionMgr() = default; 
