@@ -108,6 +108,6 @@ void BoxBody::Render() {
 }
 
 void BoxBody::PhysicsUpdate(float dt) {
-    SetRotation(rotation_ + 90*dt);
+    // SetRotation(rotation_ + 90*dt);
     GetVertexTransfrom();
 }

@@ -13,19 +13,21 @@ CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     SetColorBoundry({1,1,1,1});
 }
 
+const GlmCircle CircleBody::GetCircle() const  {
+    return {position_, radius_};
+}
+
 void CircleBody::Render() {
     // draw it self
     DrawCommand cmd(ShapeType::CIRCLE, false);
     cmd.GetBase().color = color_;
-    cmd.GetBase().circle.center = position_;
-    cmd.GetBase().circle.radius = radius_;
+    cmd.GetBase().circle = GetCircle();
     GET_Buffer.AddCommand(std::move(cmd));
 
     // draw outline
     cmd = DrawCommand(ShapeType::HOLLOW_CIRCLE, false);
     cmd.GetBase().color = boundaryColor_;
-    cmd.GetBase().circle.center = position_;
-    cmd.GetBase().circle.radius = radius_;
+    cmd.GetBase().circle = GetCircle();
     cmd.halfLineWidth = 0.5f;
     GET_Buffer.AddCommand(std::move(cmd));
 }

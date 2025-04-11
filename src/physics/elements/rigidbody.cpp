@@ -20,6 +20,13 @@ void RigidBody::SetRadius(float radius) {
     return;
 }
 
+const GlmCircle RigidBody::GetCircle() const {
+    F_LOG_WARNING("Try to get a NoneCircleBody's({}) circle.",
+                  ShapeTypeToStr(type_));
+    static GlmCircle __empty_circle__{{0, 0}, 0};
+    return __empty_circle__;
+}
+
 glm::vec2 RigidBody::GetWidthHeight() const {
     F_LOG_WARNING("Try to get a NoneBoxBody's({}) width and height.",
                   ShapeTypeToStr(type_));

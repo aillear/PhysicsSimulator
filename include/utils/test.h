@@ -4,3 +4,5 @@
 void SomeCustomLogicHere();
 
 void SomeCustomLogicPHere();
+
+void SomeCustomLogicPAHere();

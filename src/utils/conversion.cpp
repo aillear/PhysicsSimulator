@@ -165,3 +165,10 @@ SDL_Color RandomColor(Uint8 r, Uint8 g, Uint8 b) {
     b = RandomInt(0, 256);
     return SDL_Color{r, g, b, 255};
 }
+
+glm::vec2 RandomPos(glm::vec2 leftTop, glm::vec2 rightButtom) {
+    glm::vec2 newPos;
+    newPos.x = RandomFloat(leftTop.x, rightButtom.x);
+    newPos.y = RandomFloat(leftTop.y, rightButtom.y);
+    return newPos;
+}

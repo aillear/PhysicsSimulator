@@ -4,6 +4,7 @@
 #include "conversion.h"
 #include "material.h"
 #include "objectWorld.h"
+#include "renderSystem.h"
 #include "shape.h"
 #include <glm/ext/vector_float2.hpp>
 #include <string>
@@ -34,9 +35,12 @@ class RigidBody : public ObjectWorld {
     virtual void SetFColorBoundry(SDL_FColor color) { boundaryColor_ = color; }
     virtual void SetColorBoundry(SDL_Color color) { boundaryColor_ = ToFColor(color); }
 
+    const PhysicsShapeType GetPhysicsType() const {return type_;}
+
     // circle
     virtual float GetRadius() const ;
     virtual void SetRadius(float radius) ;
+    virtual const GlmCircle GetCircle() const ;
 
     virtual glm::vec2 GetWidthHeight() const;
     virtual void SetWidthHeight(glm::vec2 wh);

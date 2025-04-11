@@ -6,16 +6,21 @@
 #include "app.h"
 #include "boxBody.h"
 #include "circleBody.h"
+#include "collisionMgr.h"
 #include "conversion.h"
 #include "eventSystem.h"
+#include "inputSystem.h"
 #include "logger.h"
 #include "material.h"
 #include "physicsSystem.h"
 #include "renderSystem.h"
+#include "rigidbody.h"
+#include "shape.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
+#include <utility>
 
 void SomeCustomLogicHere() {
     auto panel =
@@ -117,14 +122,98 @@ void SomeCustomLogicHere() {
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
     // for (int i = 0; i < 10; i++) {
-    //     auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i * 40}, 20);
-    //     circle->SetFColor(RandomFColor());
+    //     auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i *
+    //     40}, 20); circle->SetFColor(RandomFColor());
     //     GET_PhysicsSystem.AddObject(circle);
     // }
 
-    for (int i = 0; i < 10;  i++) {
-        auto box = std::make_shared<BoxBody>(m, glm::vec2{i * 40, i * 40}, glm::vec2{20, 30});
-        box->SetFColor(RandomFColor());
-        GET_PhysicsSystem.AddObject(box);
+    for (int i = 0; i < 10; i++) {
+        auto pos = RandomPos({20, 20}, {780, 580});
+        int type = RandomInt(0, 2);
+        std::shared_ptr<RigidBody> obj;
+        if (type == 0)
+            obj = std::make_shared<CircleBody>(m, pos, 20);
+        else
+            obj = std::make_shared<BoxBody>(m, pos, glm::vec2{30, 20});
+        
+        obj->SetFColor(RandomFColor());
+        GET_PhysicsSystem.AddObject(obj);
+    }
+}
+
+void SomeCustomLogicPAHere() {
+    auto children = GET_PhysicsSystem.GetRootNode()->GetChildren();
+    const float dt = GET_PhysicsSystem.GetTargetDt();
+
+    glm::vec2 dir = {0, 0};
+
+    if (KeyState(SDL_SCANCODE_W))
+        dir.y--;
+    if (KeyState(SDL_SCANCODE_S))
+        dir.y++;
+    if (KeyState(SDL_SCANCODE_A))
+        dir.x--;
+    if (KeyState(SDL_SCANCODE_D))
+        dir.x++;
+
+    if (dir.x != 0 || dir.y != 0) {
+        auto firstObj = static_cast<RigidBody *>(children.begin()->get());
+        if (firstObj == nullptr)
+            return;
+        firstObj->Move(glm::normalize(dir) * 200.0f * dt);
+    }
+
+    // int childCount = children.size();
+    // glm::vec2 norm;
+    // float depth;
+    // for (int i = 0; i < childCount - 1; i++) {
+    //     for (int j = i + 1; j < childCount; j++) {
+    //         auto a = (RigidBody*)children[i].get();
+    //         auto b = (RigidBody*)children[j].get();
+    //         if (!GET_CollisionMgr.IntersectCircle(
+    //                 {a->GetPosition(), a->GetRadius()},
+    //                 {b->GetPosition(), b->GetRadius()}, norm, depth))
+    //             continue;
+    //         a->Move(norm * depth * -0.5f);
+    //         b->Move(norm * depth * 0.5f);
+    //     }
+    // }
+
+    int childCount = children.size();
+    for (auto &child : children) {
+        auto temp = (RigidBody *)child.get();
+        temp->SetFColorBoundry({1, 1, 1, 1});
+    }
+
+    glm::vec2 norm;
+    float depth;
+    for (int i = 0; i < childCount - 1; i++) {
+        for (int j = i + 1; j < childCount; j++) {
+            auto a = (RigidBody *)children[i].get();
+            auto b = (RigidBody *)children[j].get();
+            if (a->GetPhysicsType() == PhysicsShapeType::CIRCLE &&
+                b->GetPhysicsType() == PhysicsShapeType::CIRCLE) {
+                if (!GET_CollisionMgr.IntersectCircle(
+                        a->GetCircle(), b->GetCircle(), norm, depth))
+                    continue;
+            } else if (a->GetPhysicsType() == PhysicsShapeType::CIRCLE &&
+                       b->GetPhysicsType() != PhysicsShapeType::CIRCLE) {
+                if (!GET_CollisionMgr.IntersectPolygonAndCircle(
+                        a->GetCircle(), b->GetVertex(), norm, depth))
+                    continue;
+            } else if (a->GetPhysicsType() != PhysicsShapeType::CIRCLE &&
+                       b->GetPhysicsType() == PhysicsShapeType::CIRCLE) {
+                std::swap(a, b);
+                if (!GET_CollisionMgr.IntersectPolygonAndCircle(
+                        a->GetCircle(), b->GetVertex(), norm, depth))
+                    continue;
+            } else if (!GET_CollisionMgr.IntersectPolygon(
+                           a->GetVertex(), b->GetVertex(), norm, depth))
+                continue;
+            a->SetFColorBoundry({1, 0, 0, 1});
+            b->SetFColorBoundry({1, 0, 0, 1});
+            a->Move(norm * depth * -0.5f);
+            b->Move(norm * depth * 0.5f);
+        }
     }
 }

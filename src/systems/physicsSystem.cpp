@@ -58,6 +58,7 @@ void PhysicsSystem::UpdateWrapper() {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
         Update();
+        for (auto& callBack : AfterUpdateFunctionWrapper) callBack();
         GET_Buffer.Submit();
         fpsc.EndFrame();
     }

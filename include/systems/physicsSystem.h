@@ -22,6 +22,9 @@ class PhysicsSystem {
     void UpdateWrapper();
     void Update();
 
+    const std::shared_ptr<ObjectWorld> GetRootNode() {return rootNode;}
+    const float GetTargetDt() const {return targetDt;}
+
     void AddObject(std::shared_ptr<ObjectWorld> obj,
                    std::shared_ptr<ObjectWorld> target = nullptr);
     void AddObject(std::shared_ptr<ObjectWorld> obj, ObjectID targetID);
@@ -35,6 +38,7 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
     void AddCustomInitFunction(BasicFunctionWrapper callBack) {initFunctionWrapper.emplace_back(std::move(callBack));}
+    void AddCustomAfterUpdateFunction(BasicFunctionWrapper callBack) {AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));}
 
     constexpr static float MinBodySize = 0.01f * 0.01f;
     constexpr static float MaxBodySize = 64.0f * 64.0f;
@@ -65,6 +69,7 @@ class PhysicsSystem {
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 
     std::vector<BasicFunctionWrapper> initFunctionWrapper;
+    std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()
