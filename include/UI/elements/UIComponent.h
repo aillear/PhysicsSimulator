@@ -59,11 +59,11 @@ class UIComponent : public Object {
     glm::vec2 GetOffset() const { return offset; }
     float GetOffsetX() const { return offset.x; }
     float GetOffsetY() const { return offset.y; }
-    TextAlign GetXAlign() const { return xAlign; }
-    TextAlign GetYAlign() const { return yAlign; }
+    TextAlign GetXAlign() const { return xAlign_; }
+    TextAlign GetYAlign() const { return yAlign_; }
     // those set methods will change the position of the component.
-    void SetAlignMent(TextAlign xAlign, TextAlign yAlign, glm::vec2 offset,
-                      glm::vec2 margin);
+    void SetAlignMent(TextAlign xAlign, TextAlign yAlign, glm::vec2 offset = {0, 0},
+                      glm::vec2 margin= {0, 0});
     void SetMargin(glm::vec2 margin);
     void SetMarginX(float marginX);
     void SetMarginY(float marginY);
@@ -97,8 +97,8 @@ class UIComponent : public Object {
     bool zIndex;
     bool relateToParent = true; // if true, the position is relative to parent,
                                 // false relative to screen(0, 0)
-    TextAlign xAlign = TextAlign::START;
-    TextAlign yAlign = TextAlign::START;
+    TextAlign xAlign_;
+    TextAlign yAlign_;
     // this rect is screen pos!!!
     glm::vec2 leftTopPos;
     glm::vec2 widthHeight;

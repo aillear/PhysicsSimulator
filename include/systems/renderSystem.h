@@ -147,9 +147,10 @@ struct DrawCommand {
  * @param windowName: name of the window
  */
 struct RenderSystemIniter {
+    bool isFullScreen = true;
     int vertexBufferSize = 1'000'000;
     float fontSize = 20.0f;
-    glm::vec2 windowSize = {1280, 720};
+    glm::vec2 windowSize = {1920, 1080};
     SDL_Color bgColor = {50, 56, 66, 255};
     std::string fontName = "YaHei.ttf";
     std::string windowName = "Physics Simulator";
@@ -169,6 +170,8 @@ class RenderSystem {
                                          size_t size = 0);
     void AddUIDrawCommand(DrawCommand &&cmd);
     void Render();
+
+    const Camera& GetCamera() const {return this->camera;} 
 
   private:
     RenderSystem();

@@ -29,7 +29,7 @@ bar is additional height of the panel, you can click it to drag the panel.
 
 class UIPanel : public UIComponent {
   public:
-    UIPanel(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
+    UIPanel(glm::vec2 widthHeight = {0, 0}, glm::vec2 leftTop = {0, 0},
             SDL_FColor color = {0, 0, 0, 0}, float barHeight = 40.0f,
             SDL_FColor barColor = {255, 255, 255, 255})
         : UIComponent(leftTop, widthHeight, color), barHeight(barHeight),

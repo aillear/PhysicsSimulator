@@ -13,11 +13,11 @@ class UIButton : public UIComponent {
         HOVER,
         PRESSED,
     };
-    UIButton(glm::vec2 leftTop = {0, 0}, glm::vec2 rightBottom = {0, 0},
+    UIButton(glm::vec2 widthHeight = {0, 0}, glm::vec2 leftTop = {0, 0},
              SDL_FColor color = {0, 0, 0, 0},
              SDL_FColor colorHover = {0, 0, 0, 0},
              SDL_FColor colorPressed = {0, 0, 0, 0})
-        : UIComponent(leftTop, rightBottom, color), colorHover(colorHover),
+        : UIComponent(leftTop, widthHeight, color), colorHover(colorHover),
           colorPressed(colorPressed) {
         ;
     }

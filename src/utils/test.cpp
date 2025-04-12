@@ -1,5 +1,8 @@
 #include "test.h"
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_keycode.h"
 #include "UIButton.h"
+#include "UIComponent.h"
 #include "UILabelReader.h"
 #include "UIMgr.h"
 #include "UIPanel.h"
@@ -15,6 +18,7 @@
 #include "renderSystem.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
+#include <format>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
@@ -22,7 +26,7 @@
 
 void SomeCustomLogicHere() {
     auto panel =
-        std::make_shared<UIPanel>(glm::vec2{0, 100}, glm::vec2{400, 600});
+        std::make_shared<UIPanel>(glm::vec2{400, 600});
 
     panel->SetColor({40, 44, 52, 255});
     panel->SetBarColor({33, 37, 43, 255});
@@ -31,7 +35,7 @@ void SomeCustomLogicHere() {
     panel->SetEnabled(false);
 
     auto button2 =
-        std::make_shared<UIButton>(glm::vec2{0, 0}, glm::vec2{30, 30});
+        std::make_shared<UIButton>(glm::vec2{30, 30});
     button2->SetColor({157, 42, 18, 255});
 
     button2->SetColorHover({229, 74, 41, 255});
@@ -92,6 +96,18 @@ void SomeCustomLogicHere() {
                          {5, 5});
     label4->SetEnabled(true);
 
+    auto label5 = std::make_shared<UILabelReader>();
+    label5->SetFColor({1,1,1,1});
+    label5->SetName("cameraReader");
+    auto &camera = GET_RenderSystem.GetCamera();
+    label5->AddReader([&camera](){
+        return std::format("camera zoom: {}, location: {}", camera.getZoom(), camera.GetPosition());
+    });
+    label5->SetAlignMent(UIComponent::TextAlign::START,
+        UIComponent::TextAlign::START, {0, (FONT_SIZE + 5) * 2},
+        {5, 5});
+    label5->SetEnabled(true);
+
     GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_DOWN, [panel](SDL_Event &event) {
             if (event.button.button != SDL_BUTTON_RIGHT)
@@ -101,6 +117,8 @@ void SomeCustomLogicHere() {
                 panel->SetRelativePos({0, panel->GetBarHeight()});
             }
         });
+    
+    
 
     GET_UIMgr.AddUIComponent(panel);
     // GET_UIMgr.AddUIComponent(button, panel);
@@ -110,11 +128,73 @@ void SomeCustomLogicHere() {
     GET_UIMgr.AddUIComponent(label2, panel);
     GET_UIMgr.AddUIComponent(label3, panel);
     GET_UIMgr.AddUIComponent(label4, panel);
+    GET_UIMgr.AddUIComponent(label5, panel);
+
+    auto exitPanel = std::make_shared<UIPanel>(glm::vec2{320, 240});
+    exitPanel->SetName("exit menu");
+    exitPanel->SetBarHeight(40.0f);
+    exitPanel->SetAlignMent(TextAlign::CENTER, TextAlign::CENTER);
+    exitPanel->SetBarColor({33, 37, 43, 255});
+    exitPanel->SetColor({40, 44, 52, 255});
+    exitPanel->SetEnabled(false);
+
+    auto button =
+        std::make_shared<UIButton>(glm::vec2{30, 30});
+        button->SetName("button");
+    button->SetColor({157, 42, 18, 255});
+    button->SetColorHover({229, 74, 41, 255});
+    button->SetColorPressed({233, 125, 102, 255});
+    button->SetCallBack([exitPanel](SDL_Event &event) {
+        exitPanel->SetEnabled(false);
+    });
+    button->SetEnabled(true);
+
+    auto exitButton =
+        std::make_shared<UIButton>(glm::vec2{100, 50});
+    exitButton->SetName("EXIT BUTTON");
+    exitButton->SetColor({157, 42, 18, 255});
+
+    exitButton->SetColorHover({229, 74, 41, 255});
+    exitButton->SetColorPressed({233, 125, 102, 255});
+    exitButton->SetAlignMent(UIComponent::TextAlign::CENTER, UIComponent::TextAlign::CENTER);
+    exitButton->SetCallBack([](SDL_Event &) {
+        SDL_Event e;
+        e.type = SDL_EVENT_QUIT;
+        SDL_PushEvent(&e);
+    });
+    exitButton->SetEnabled(true);
+
+    auto exitlabel = std::make_shared<UILabel>();
+    exitlabel->ChangeText("menu");
+    exitlabel->SetColor({0, 255, 255, 255});
+    exitlabel->SetName("exitlabel1");
+    exitlabel->SetEnabled(true);
+
+    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN, [exitPanel](SDL_Event& e){
+        if (e.key.key != SDLK_ESCAPE) return;
+        exitPanel->SetEnabled(true);
+    });
 
     panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0},
                            {5, 0});
     panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0},
                            {10, 0});
+
+    
+
+    exitPanel->SetBarAlignMent(button, TextAlign::END, TextAlign::CENTER, {0, 0},
+                            {5, 0});
+    exitPanel->SetBarAlignMent(exitlabel, TextAlign::START, TextAlign::CENTER, {0, 0},
+                            {10, 0});
+                           
+
+
+    GET_UIMgr.AddUIComponent(exitPanel);
+    GET_UIMgr.AddUIComponent(exitButton, exitPanel);
+    GET_UIMgr.AddUIComponent(button, exitPanel);
+    GET_UIMgr.AddUIComponent(exitlabel, exitPanel);
+
+
 }
 
 void SomeCustomLogicPHere() {

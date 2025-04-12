@@ -6,7 +6,7 @@
 #include <glm/ext/vector_float2.hpp>
 
 UIComponent::UIComponent(glm::vec2 leftTop, glm::vec2 widthHeight,
-    SDL_FColor color) : leftTopPos(leftTop), widthHeight(widthHeight), color(color) {
+    SDL_FColor color) : leftTopPos(leftTop), widthHeight(widthHeight), color(color), xAlign_(TextAlign::START), yAlign_(TextAlign::START) {
     AddUpdateCallBack([this](float){
         if (!this->needToImplementAlignment) return;
         needToImplementAlignment = false;
@@ -68,7 +68,7 @@ glm::vec2 UIComponent::GetParentWidthHeight() const {
 
 void UIComponent::ImplementAlignment() {
     auto parentWH = GetParentWidthHeight();
-    switch (xAlign) {
+    switch (xAlign_) {
         case TextAlign::START:
             leftTopPos.x = margin.x + offset.x;
             break;
@@ -82,7 +82,7 @@ void UIComponent::ImplementAlignment() {
             break;
     }
 
-    switch (yAlign) {
+    switch (yAlign_) {
         case TextAlign::START:
             leftTopPos.y = margin.y + offset.y;
             break;
@@ -108,12 +108,12 @@ void UIComponent::SetOffset(glm::vec2 offset) {
 }
 
 void UIComponent::SetAlignModeX(TextAlign xAlign) {
-    this->xAlign = xAlign;
+    this->xAlign_ = xAlign;
     needToImplementAlignment = true;
 }
 
 void UIComponent::SetAlignModeY(TextAlign yAlign) {
-    this->yAlign = yAlign;
+    this->yAlign_ = yAlign;
     needToImplementAlignment = true;
 }
 
@@ -139,8 +139,8 @@ void UIComponent::SetOffsetY(float offsetY) {
 
 void UIComponent::SetAlignMent(TextAlign xAlign, TextAlign yAlign,
                                 glm::vec2 offset, glm::vec2 margin) {
-    this->xAlign = xAlign;
-    this->yAlign = yAlign;
+    this->xAlign_ = xAlign;
+    this->yAlign_ = yAlign;
     this->offset = offset;
     this->margin = margin;
     needToImplementAlignment = true;

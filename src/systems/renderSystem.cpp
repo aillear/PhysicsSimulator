@@ -2,6 +2,7 @@
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
+#include "SDL3/SDL_video.h"
 #include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
@@ -80,9 +81,12 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
         SDL_Quit();
         return false;
     }
+
+    Uint64 flag = SDL_WINDOW_RESIZABLE;
+    if (initer.isFullScreen) flag |= SDL_WINDOW_FULLSCREEN;
     // create window and renderer
     window = SDL_CreateWindow(initer.windowName.c_str(), initer.windowSize.x,
-                              initer.windowSize.y, SDL_WINDOW_RESIZABLE);
+                              initer.windowSize.y, flag);
     if (window == nullptr) {
         F_LOG_ERROR("Fail to create SDL window: {}", SDL_GetError());
         TTF_Quit();
@@ -91,7 +95,9 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     }
 
     // SDL_GL_SetSwapInterval(0);
-    halfWindowSize = 0.5f * initer.windowSize;
+    int windowW, windowH;
+    SDL_GetWindowSize(window, &windowW, &windowH);
+    halfWindowSize = {0.5f * windowW, 0.5f * windowH};
     F_LOG_INFO("Window size :{}", initer.windowSize);
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
@@ -130,7 +136,7 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     }
 
     // add window resize event listener
-    camera.SetPosition(0.5f * initer.windowSize);
+    camera.SetPosition({0, 0});
     camera.Init();
     GET_EventSystem.AddEventListener(
         SDL_EVENT_WINDOW_RESIZED, [this](SDL_Event &event) {
