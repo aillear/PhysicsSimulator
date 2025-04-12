@@ -149,7 +149,7 @@ struct DrawCommand {
 struct RenderSystemIniter {
     int vertexBufferSize = 1'000'000;
     float fontSize = 20.0f;
-    glm::vec2 windowSize = {800, 600};
+    glm::vec2 windowSize = {1280, 720};
     SDL_Color bgColor = {50, 56, 66, 255};
     std::string fontName = "YaHei.ttf";
     std::string windowName = "Physics Simulator";

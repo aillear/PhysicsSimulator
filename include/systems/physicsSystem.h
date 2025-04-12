@@ -3,12 +3,10 @@
 #include "FPSCounter.h"
 #include "SDL3/SDL_events.h"
 #include "eventSystem.h"
-#include "object.h"
-#include "objectWorld.h"
+#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 class PhysicsSystem {
@@ -37,6 +35,8 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> FindObjectById(ObjectID id);
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
+    const int GetBodyCount() const {return rootNode->GetChildren().size();}
+
     void AddCustomInitFunction(BasicFunctionWrapper callBack) {initFunctionWrapper.emplace_back(std::move(callBack));}
     void AddCustomAfterUpdateFunction(BasicFunctionWrapper callBack) {AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));}
 
@@ -54,6 +54,9 @@ class PhysicsSystem {
     PhysicsSystem(const PhysicsSystem &) = delete;
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
     void HandleSDLEvents(SDL_Event &event);
+    void CollisionHandler();
+    bool Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth);       // this is only should used by CollisionHandler()
+
 
     bool running;
     FPSmanager fpsm;

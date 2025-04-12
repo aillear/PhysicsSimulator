@@ -71,3 +71,8 @@ bool RigidBody::SafeCheck() const {
     }
     return true;
 }
+
+void RigidBody::OnCollision(RigidBody* rigidBody, glm::vec2 norm, float depth) {
+    // not really to use it now;
+    // Move(0.5f * norm * depth);
+}

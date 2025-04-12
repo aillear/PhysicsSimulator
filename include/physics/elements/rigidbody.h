@@ -37,6 +37,8 @@ class RigidBody : public ObjectWorld {
 
     const PhysicsShapeType GetPhysicsType() const {return type_;}
 
+    virtual void OnCollision(RigidBody* rigidBody, glm::vec2 norm, float depth);
+
     // circle
     virtual float GetRadius() const ;
     virtual void SetRadius(float radius) ;

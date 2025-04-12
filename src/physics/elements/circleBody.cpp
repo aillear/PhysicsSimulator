@@ -10,7 +10,7 @@ CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     mass_ = area_ * material_.density;
     SafeCheck();
     SetFColor({1,1,0,1});
-    SetColorBoundry({1,1,1,1});
+    SetFColorBoundry({1,1,1,1});
 }
 
 const GlmCircle CircleBody::GetCircle() const  {

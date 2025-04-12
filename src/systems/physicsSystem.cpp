@@ -1,13 +1,19 @@
 #include "physicsSystem.h"
 #include "SDL3/SDL_events.h"
+#include "collisionMgr.h"
 #include "eventSystem.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
+#include "rigidbody.h"
+#include "shape.h"
+#include <glm/ext/vector_float2.hpp>
 #include <memory>
 #include <string>
+
+using Shape = PhysicsShapeType;
 
 PhysicsSystem &PhysicsSystem::Instance() {
     static PhysicsSystem instance;
@@ -58,6 +64,7 @@ void PhysicsSystem::UpdateWrapper() {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
         Update();
+        CollisionHandler();
         for (auto& callBack : AfterUpdateFunctionWrapper) callBack();
         GET_Buffer.Submit();
         fpsc.EndFrame();
@@ -141,4 +148,53 @@ std::shared_ptr<ObjectWorld> PhysicsSystem::FindObjectByName(std::string name) {
     }
     return std::static_pointer_cast<ObjectWorld>(
         rootNode->GetChildByName(name));
+}
+
+void PhysicsSystem::CollisionHandler() {
+    auto children = rootNode->GetChildren();
+    int childCount = children.size();
+    glm::vec2 norm{0, 0};
+    float depth = 0;
+    for (int i = 0; i < childCount-1; i++) {
+        RigidBody* objA = static_cast<RigidBody*>(children[i].get());
+        for (int j = i+1; j < childCount; j++) {
+            RigidBody* objB = static_cast<RigidBody*>(children[j].get());
+            
+            if (!Collision(objA, objB, norm, depth)) continue;
+            
+            // objA->OnCollision(objB, norm, depth);
+            // objB->OnCollision(objB, norm, depth);
+            norm *= depth * 0.5f;
+            objA->Move(-norm);
+            objB->Move(norm); 
+        }
+    }
+}
+
+bool PhysicsSystem::Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth) {
+    norm = {0, 0};
+    depth = 0;
+
+    Shape typeA = a->GetPhysicsType();
+    Shape typeB = b->GetPhysicsType();
+
+    if (typeA == Shape::CIRCLE) {
+        if (typeB == Shape::CIRCLE) {
+            return GET_CollisionMgr.IntersectCircle(a->GetCircle(), b->GetCircle(), norm, depth);
+        }
+        else {
+            return GET_CollisionMgr.IntersectPolygonAndCircle(a->GetCircle(), b->GetVertex(), norm, depth);
+        }
+    }
+    else {
+        if (typeB == Shape::CIRCLE) {
+            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(b->GetCircle(), a->GetVertex(), norm, depth);
+            norm = - norm;
+            return result;
+        }
+        else {
+            return GET_CollisionMgr.IntersectPolygon(a->GetVertex(), b->GetVertex(), norm, depth);
+        }
+    }
+
 }
