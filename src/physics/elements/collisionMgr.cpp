@@ -48,7 +48,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
         auto va = a[i].position;
         auto edge = a[(i + 1) % a.size()].position - va;
 
-        glm::vec2 axis = {-edge.y, edge.x};
+        glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
         glm::vec2 pb = GetProject(b, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
@@ -65,7 +65,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
         auto va = b[i].position;
         auto edge = b[(i + 1) % b.size()].position - va;
 
-        glm::vec2 axis = {-edge.y, edge.x};
+        glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
         glm::vec2 pb = GetProject(b, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
@@ -76,10 +76,6 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
             norm = axis;
         }
     }
-
-    depth /= glm::length(norm);
-    norm = glm::normalize(norm);
-
     auto direction = GetArithmeticMean(b) - GetArithmeticMean(a);
     if (glm::dot(direction, norm) < 0.0f)
         norm = -norm;
@@ -99,7 +95,7 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
         auto va = b[i].position;
         auto edge = b[(i + 1) % b.size()].position - va;
 
-        axis = {-edge.y, edge.x};
+        axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         pa = GetProject(b, axis);
         pb = GetProjectCircle(a, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
@@ -114,7 +110,7 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
 
     glm::vec2 closePoint =
         ToGlmVec2(b[GetClosestPointIndexToCircle(a, b)].position);
-    axis = closePoint - a.center;
+    axis = glm::normalize(closePoint - a.center);
     pa = GetProject(b, axis);
     pb = GetProjectCircle(a, axis);
     if (pa.x >= pb.y || pb.x >= pa.y)
@@ -125,9 +121,6 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
         depth = axisDepth;
         norm = axis;
     }
-
-    depth /= glm::length(norm);
-    norm = glm::normalize(norm);
 
     auto direction = GetArithmeticMean(b) - a.center;
     if (glm::dot(direction, norm) < 0.0f)

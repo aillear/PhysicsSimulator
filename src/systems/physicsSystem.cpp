@@ -67,6 +67,7 @@ void PhysicsSystem::UpdateWrapper() {
         SDL_framerateDelay(&fpsm);
         Update();
         CollisionHandler();
+        OutOffBoundCheck();
         for (auto& callBack : AfterUpdateFunctionWrapper) callBack();
         GET_Buffer.Submit();
         fpsc.EndFrame();
@@ -162,14 +163,23 @@ void PhysicsSystem::CollisionHandler() {
         for (int j = i+1; j < childCount; j++) {
             RigidBody* objB = static_cast<RigidBody*>(children[j].get());
             
+            if (objA->GetIsStatic() && objB->GetIsStatic()) continue;
             if (!Collision(objA, objB, norm, depth)) continue;
             
             // objA->OnCollision(objB, norm, depth);
             // objB->OnCollision(objB, norm, depth);
-            auto ds = depth * 0.5f * norm;
-            objA->Move(-norm);
-            objB->Move(norm); 
-
+            if (objA->GetIsStatic()) {
+                objB->Move(norm * depth); 
+            }
+            else if (objB->GetIsStatic()) {
+                objA->Move(-norm * depth);
+            }
+            else {
+                auto ds = depth * 0.5f * norm;
+                objA->Move(-ds);
+                objB->Move(ds); 
+            }
+        
             CollisionResolver(objA, objB, norm, depth);
         }
     }
@@ -205,11 +215,28 @@ bool PhysicsSystem::Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float
 
 void PhysicsSystem::CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth) {
     glm::vec2 relativeV = b->GetVelocity() - a->GetVelocity();
+    float reVdotNorm = glm::dot(relativeV, norm);
+    if (reVdotNorm > 0.0f) return;
+
     float resilience = std::min(a->GetMaterial().resilience, b->GetMaterial().resilience);
 
-    float j = -(1 + resilience) * glm::dot(relativeV, norm);
+    float j = -(1 + resilience) * reVdotNorm;
     j /= a->GetMassR() + b->GetMassR();
 
     a->AddVelocity(-j * a->GetMassR() * norm);
     b->AddVelocity(j * b->GetMassR() * norm);
+}
+
+void PhysicsSystem::OutOffBoundCheck() {
+    for (auto& child : rootNode->GetChildren()) {
+        RigidBody* obj = static_cast<RigidBody*>(child.get());
+        auto position = obj->GetPosition();
+        if (position.x > 4000) position.x = -4000;
+        else if (position.x < -4000) position.x = 4000;
+
+        if (position.y > 2320) position.y = -2320;
+        else if (position.y < -2320) position.y = 2320;
+
+        obj->MoveTo(position);
+    }
 }

@@ -59,6 +59,8 @@ class PhysicsSystem {
     bool Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth);       // this is only should used by CollisionHandler()
     void CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth); // so does this.
 
+    void OutOffBoundCheck();
+
     bool running;
     FPSmanager fpsm;
     float targetDt;

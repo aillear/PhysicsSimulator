@@ -269,6 +269,7 @@ template <typename _CharT> struct std::formatter<SDL_FColor, _CharT> {
 
 
 int RandomInt(int from, int to);
+bool RandomBool();
 
 float RandomFloat(float from, float to);
 float RandomFloat01();

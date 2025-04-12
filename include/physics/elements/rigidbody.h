@@ -32,7 +32,7 @@ class RigidBody : public ObjectWorld {
     void SetVelocity(glm::vec2 v) { velocity_ = v; }
     void AddVelocity(glm::vec2 v) { velocity_ += v;}
     bool GetIsStatic() { return isStatic_; }
-    void SetIsStatic(bool value) { isStatic_ = value; }
+    void SetIsStatic(bool value) ;
     void AddForce(glm::vec2 force) {this->force_ = force;}
     const glm::vec2 GetForce() {return force_;} 
     Material GetMaterial() const { return material_; }

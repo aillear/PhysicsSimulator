@@ -96,3 +96,10 @@ void RigidBody::RotateTo(float rotation) {
     if (rotation_ < 0.0f) rotation += 360.0f;
     rotation_ = rotation;
 }
+
+void RigidBody::SetIsStatic(bool value) {
+    if (isStatic_ == value) return;
+    if (value == true) massR_ = 0;
+    else massR_ = 1.0 / mass_;
+    isStatic_ = value;
+}

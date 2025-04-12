@@ -25,8 +25,7 @@
 #include <memory>
 
 void SomeCustomLogicHere() {
-    auto panel =
-        std::make_shared<UIPanel>(glm::vec2{400, 600});
+    auto panel = std::make_shared<UIPanel>(glm::vec2{400, 600});
 
     panel->SetColor({40, 44, 52, 255});
     panel->SetBarColor({33, 37, 43, 255});
@@ -34,8 +33,7 @@ void SomeCustomLogicHere() {
     panel->SetName("panel1");
     panel->SetEnabled(false);
 
-    auto button2 =
-        std::make_shared<UIButton>(glm::vec2{30, 30});
+    auto button2 = std::make_shared<UIButton>(glm::vec2{30, 30});
     button2->SetColor({157, 42, 18, 255});
 
     button2->SetColorHover({229, 74, 41, 255});
@@ -97,15 +95,16 @@ void SomeCustomLogicHere() {
     label4->SetEnabled(true);
 
     auto label5 = std::make_shared<UILabelReader>();
-    label5->SetFColor({1,1,1,1});
+    label5->SetFColor({1, 1, 1, 1});
     label5->SetName("cameraReader");
     auto &camera = GET_RenderSystem.GetCamera();
-    label5->AddReader([&camera](){
-        return std::format("camera zoom: {}, location: {}", camera.getZoom(), camera.GetPosition());
+    label5->AddReader([&camera]() {
+        return std::format("camera zoom: {}, location: {}", camera.getZoom(),
+                           camera.GetPosition());
     });
     label5->SetAlignMent(UIComponent::TextAlign::START,
-        UIComponent::TextAlign::START, {0, (FONT_SIZE + 5) * 2},
-        {5, 5});
+                         UIComponent::TextAlign::START,
+                         {0, (FONT_SIZE + 5) * 2}, {5, 5});
     label5->SetEnabled(true);
 
     GET_EventSystem.AddEventListener(
@@ -117,8 +116,6 @@ void SomeCustomLogicHere() {
                 panel->SetRelativePos({0, panel->GetBarHeight()});
             }
         });
-    
-    
 
     GET_UIMgr.AddUIComponent(panel);
     // GET_UIMgr.AddUIComponent(button, panel);
@@ -138,25 +135,23 @@ void SomeCustomLogicHere() {
     exitPanel->SetColor({40, 44, 52, 255});
     exitPanel->SetEnabled(false);
 
-    auto button =
-        std::make_shared<UIButton>(glm::vec2{30, 30});
-        button->SetName("button");
+    auto button = std::make_shared<UIButton>(glm::vec2{30, 30});
+    button->SetName("button");
     button->SetColor({157, 42, 18, 255});
     button->SetColorHover({229, 74, 41, 255});
     button->SetColorPressed({233, 125, 102, 255});
-    button->SetCallBack([exitPanel](SDL_Event &event) {
-        exitPanel->SetEnabled(false);
-    });
+    button->SetCallBack(
+        [exitPanel](SDL_Event &event) { exitPanel->SetEnabled(false); });
     button->SetEnabled(true);
 
-    auto exitButton =
-        std::make_shared<UIButton>(glm::vec2{100, 50});
+    auto exitButton = std::make_shared<UIButton>(glm::vec2{100, 50});
     exitButton->SetName("EXIT BUTTON");
     exitButton->SetColor({157, 42, 18, 255});
 
     exitButton->SetColorHover({229, 74, 41, 255});
     exitButton->SetColorPressed({233, 125, 102, 255});
-    exitButton->SetAlignMent(UIComponent::TextAlign::CENTER, UIComponent::TextAlign::CENTER);
+    exitButton->SetAlignMent(UIComponent::TextAlign::CENTER,
+                             UIComponent::TextAlign::CENTER);
     exitButton->SetCallBack([](SDL_Event &) {
         SDL_Event e;
         e.type = SDL_EVENT_QUIT;
@@ -170,31 +165,27 @@ void SomeCustomLogicHere() {
     exitlabel->SetName("exitlabel1");
     exitlabel->SetEnabled(true);
 
-    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN, [exitPanel](SDL_Event& e){
-        if (e.key.key != SDLK_ESCAPE) return;
-        exitPanel->SetEnabled(true);
-    });
+    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN,
+                                     [exitPanel](SDL_Event &e) {
+                                         if (e.key.key != SDLK_ESCAPE)
+                                             return;
+                                         exitPanel->SetEnabled(true);
+                                     });
 
     panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0},
                            {5, 0});
     panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0},
                            {10, 0});
 
-    
-
-    exitPanel->SetBarAlignMent(button, TextAlign::END, TextAlign::CENTER, {0, 0},
-                            {5, 0});
-    exitPanel->SetBarAlignMent(exitlabel, TextAlign::START, TextAlign::CENTER, {0, 0},
-                            {10, 0});
-                           
-
+    exitPanel->SetBarAlignMent(button, TextAlign::END, TextAlign::CENTER,
+                               {0, 0}, {5, 0});
+    exitPanel->SetBarAlignMent(exitlabel, TextAlign::START, TextAlign::CENTER,
+                               {0, 0}, {10, 0});
 
     GET_UIMgr.AddUIComponent(exitPanel);
     GET_UIMgr.AddUIComponent(exitButton, exitPanel);
     GET_UIMgr.AddUIComponent(button, exitPanel);
     GET_UIMgr.AddUIComponent(exitlabel, exitPanel);
-
-
 }
 
 void SomeCustomLogicPHere() {
@@ -205,7 +196,7 @@ void SomeCustomLogicPHere() {
     //     GET_PhysicsSystem.AddObject(circle);
     // }
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 20; i++) {
         auto pos = RandomPos({20, 20}, {780, 580});
         int type = RandomInt(0, 2);
         std::shared_ptr<RigidBody> obj;
@@ -213,8 +204,14 @@ void SomeCustomLogicPHere() {
             obj = std::make_shared<CircleBody>(m, pos, 20);
         else
             obj = std::make_shared<BoxBody>(m, pos, glm::vec2{30, 20});
-        
-        obj->SetFColor(RandomFColor());
+
+        if (i != 0) {
+            obj->SetIsStatic(RandomBool());
+            obj->SetFColor(RandomFColor());
+            if (obj->GetIsStatic()) {
+                obj->SetFColorBoundry({1, 0, 0, 1});
+            }
+        }
         GET_PhysicsSystem.AddObject(obj);
     }
 }
@@ -234,12 +231,11 @@ void SomeCustomLogicPAHere() {
     if (KeyState(SDL_SCANCODE_D))
         dir.x++;
 
-    float forceMagnitude = 60000.0f;
+    float forceMagnitude = 120000.0f;
     if (dir.x != 0 || dir.y != 0) {
         auto firstObj = static_cast<RigidBody *>(children.begin()->get());
         if (firstObj == nullptr)
             return;
         firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     }
-
 }

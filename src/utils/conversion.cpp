@@ -136,6 +136,11 @@ int RandomInt(int from, int to) {
     return dist(gen);
 }
 
+bool RandomBool() {
+    int randomInt = RandomInt(0, 2);
+    return (bool)randomInt;
+}
+
 float RandomFloat(float from, float to) {
     if (to <= from) {
         F_LOG_ERROR("random create error: from:{} is bigger than to{}.", from,
