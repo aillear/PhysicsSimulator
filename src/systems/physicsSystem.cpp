@@ -9,6 +9,8 @@
 #include "renderBufferMgr.h"
 #include "rigidbody.h"
 #include "shape.h"
+#include <algorithm>
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <memory>
 #include <string>
@@ -164,9 +166,11 @@ void PhysicsSystem::CollisionHandler() {
             
             // objA->OnCollision(objB, norm, depth);
             // objB->OnCollision(objB, norm, depth);
-            norm *= depth * 0.5f;
+            auto ds = depth * 0.5f * norm;
             objA->Move(-norm);
             objB->Move(norm); 
+
+            CollisionResolver(objA, objB, norm, depth);
         }
     }
 }
@@ -197,4 +201,15 @@ bool PhysicsSystem::Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float
         }
     }
 
+}
+
+void PhysicsSystem::CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth) {
+    glm::vec2 relativeV = b->GetVelocity() - a->GetVelocity();
+    float resilience = std::min(a->GetMaterial().resilience, b->GetMaterial().resilience);
+
+    float j = -(1 + resilience) * glm::dot(relativeV, norm);
+    j /= a->GetMassR() + b->GetMassR();
+
+    a->AddVelocity(-j * a->GetMassR() * norm);
+    b->AddVelocity(j * b->GetMassR() * norm);
 }

@@ -17,11 +17,13 @@ class BoxBody : public RigidBody {
 
     void Move(glm::vec2 ds) override;
     void MoveTo(glm::vec2 destinaion) override;
+    void Rotate(float angles) override;
+    void RotateTo(float angles) override;
+
 
     void SetPosition(const glm::vec2& position) override;
     void SetPosition(float x, float y) override;
 
-    void SetRotation(float rotation) override;
     void SetColor(SDL_Color color) override;
     void SetFColor(SDL_FColor color) override;
 

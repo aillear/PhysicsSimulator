@@ -13,22 +13,28 @@
 class RigidBody : public ObjectWorld {
   public:
     RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type)
-        : ObjectWorld(position), material_(mate), velocity_({0, 0}), rotation_(0),
-          angularVelocity_(0), type_(type) {
+        : ObjectWorld(position), material_(mate), velocity_(0, 0), rotation_(0),
+          angularVelocity_(0), type_(type), force_(0, 0) {
         ;
     }
 
     virtual void Move(glm::vec2 ds) { position_ += ds; }
     virtual void MoveTo(glm::vec2 destinaion) { position_ = destinaion; }
+    virtual void Rotate(float angle);
+    virtual void RotateTo(float rotation);
     PhysicsShapeType GetType() { return type_; }
-    float GetMass() const { return mass_; }
-    float GetArea() const { return area_; }
-    float GetRotation() const { return rotation_; }
-    float GetAngularVelocity() const { return angularVelocity_; }
+    const float GetMass() const { return mass_; }
+    const float GetMassR() const { return massR_;}
+    const float GetArea() const { return area_; }
+    const float GetRotation() const { return rotation_; }
+    const float GetAngularVelocity() const { return angularVelocity_; }
     glm::vec2 GetVelocity() const { return velocity_; }
     void SetVelocity(glm::vec2 v) { velocity_ = v; }
+    void AddVelocity(glm::vec2 v) { velocity_ += v;}
     bool GetIsStatic() { return isStatic_; }
     void SetIsStatic(bool value) { isStatic_ = value; }
+    void AddForce(glm::vec2 force) {this->force_ = force;}
+    const glm::vec2 GetForce() {return force_;} 
     Material GetMaterial() const { return material_; }
     SDL_FColor GetFColorBoundry() const { return boundaryColor_; }
     SDL_Color GetColorBoundry() const { return ToColor(boundaryColor_); }
@@ -47,23 +53,24 @@ class RigidBody : public ObjectWorld {
     virtual glm::vec2 GetWidthHeight() const;
     virtual void SetWidthHeight(glm::vec2 wh);
 
-    virtual void SetRotation(float rotation) {rotation_ = rotation;}
-
     virtual const std::vector<SDL_Vertex>& GetVertex() const;
 
   protected:
     void Render() override = 0;
-    void PhysicsUpdate(float dt) override = 0;
+    void PhysicsUpdate(float dt) override;
     const std::string ShapeTypeToStr(PhysicsShapeType type) const;
     bool SafeCheck() const;
 
     const PhysicsShapeType type_;
     bool isStatic_;
     float mass_;
+    float massR_;
     float area_;
     float rotation_;
     float angularVelocity_;
     glm::vec2 velocity_;
+    glm::vec2 force_;
+
     Material material_;
     SDL_FColor boundaryColor_;
 };

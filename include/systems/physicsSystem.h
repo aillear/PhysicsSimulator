@@ -5,6 +5,7 @@
 #include "eventSystem.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
+#include <glm/ext/vector_float2.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,7 +57,7 @@ class PhysicsSystem {
     void HandleSDLEvents(SDL_Event &event);
     void CollisionHandler();
     bool Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth);       // this is only should used by CollisionHandler()
-
+    void CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth); // so does this.
 
     bool running;
     FPSmanager fpsm;

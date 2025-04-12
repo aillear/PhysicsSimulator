@@ -76,3 +76,23 @@ void RigidBody::OnCollision(RigidBody* rigidBody, glm::vec2 norm, float depth) {
     // not really to use it now;
     // Move(0.5f * norm * depth);
 }
+
+void RigidBody::PhysicsUpdate(float dt) {
+    this->velocity_ += force_ * massR_ * dt;
+     
+    Move(velocity_ * dt);
+    Rotate(angularVelocity_ * dt);
+    force_ = {0, 0};
+}
+
+void RigidBody::Rotate(float angle) {
+    rotation_ += angle;
+    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
+    if (rotation_ < 0.0f) rotation_ += 360.0f;
+}
+
+void RigidBody::RotateTo(float rotation) {
+    if (rotation >= 360.0f) rotation -= 360.0f;
+    if (rotation_ < 0.0f) rotation += 360.0f;
+    rotation_ = rotation;
+}

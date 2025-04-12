@@ -2,6 +2,7 @@
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
 #include "conversion.h"
+#include "logger.h"
 #include "renderBufferMgr.h"
 #include "renderSystem.h"
 #include "rigidbody.h"
@@ -16,6 +17,8 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
       widthHeight_(widthHeight), transformer(position, 0), needToTransfrom(true) {
     area_ = widthHeight.x * widthHeight.y;
     mass_ = area_ * material_.density;
+    massR_ = 1.0f / mass_;
+    F_LOG_INFO("mass is: {}", mass_);
     SafeCheck();
 
     float Right = widthHeight.x * 0.5f;
@@ -51,8 +54,18 @@ void BoxBody::SetPosition(float x, float y) {
     needToTransfrom = true;
 }
 
-void BoxBody::SetRotation(float rotation) {
+void BoxBody::Rotate(float angle) {
+    rotation_ += angle;
+    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
+    if (rotation_ < 0.0f) rotation_ += 360.0f;
+    transformer.SetAngle(rotation_);
+    needToTransfrom = true;
+}
+
+void BoxBody::RotateTo(float rotation) {
     this->rotation_ = rotation;
+    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
+    if (rotation_ < 0.0f) rotation_ += 360.0f;
     transformer.SetAngle(rotation);
     needToTransfrom = true;
 }
@@ -109,5 +122,6 @@ void BoxBody::Render() {
 
 void BoxBody::PhysicsUpdate(float dt) {
     // SetRotation(rotation_ + 90*dt);
+    RigidBody::PhysicsUpdate(dt);
     GetVertexTransfrom();
 }

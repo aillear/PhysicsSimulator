@@ -16,6 +16,7 @@
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
+#include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
 
@@ -124,7 +125,7 @@ void SomeCustomLogicPHere() {
     //     GET_PhysicsSystem.AddObject(circle);
     // }
 
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 5; i++) {
         auto pos = RandomPos({20, 20}, {780, 580});
         int type = RandomInt(0, 2);
         std::shared_ptr<RigidBody> obj;
@@ -153,11 +154,12 @@ void SomeCustomLogicPAHere() {
     if (KeyState(SDL_SCANCODE_D))
         dir.x++;
 
+    float forceMagnitude = 60000.0f;
     if (dir.x != 0 || dir.y != 0) {
         auto firstObj = static_cast<RigidBody *>(children.begin()->get());
         if (firstObj == nullptr)
             return;
-        firstObj->Move(glm::normalize(dir) * 200.0f * dt);
+        firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     }
 
 }
