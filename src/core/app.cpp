@@ -83,6 +83,7 @@ void App::Run() {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
         GET_EventSystem.HandleEvent();
+        GET_InputSystem.Update();
         GET_UIMgr.Update(fpsc.GetLastFrameTime());
         GET_RenderSystem.Render();
         fpsc.EndFrame();
@@ -91,6 +92,7 @@ void App::Run() {
 }
 
 void App::Destroy() {
+    GET_InputSystem.Destroy();
     GET_UIMgr.Destroy();
     GET_PhysicsSystem.Destroy();
     GET_RenderSystem.Destroy();

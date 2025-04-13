@@ -1,19 +1,14 @@
 #include "physicsSystem.h"
-#include "SDL3/SDL_events.h"
 #include "collisionMgr.h"
-#include "eventSystem.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
-#include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
-#include <memory>
-#include <string>
 
 using Shape = PhysicsShapeType;
 
@@ -25,11 +20,11 @@ PhysicsSystem &PhysicsSystem::Instance() {
 bool PhysicsSystem::Init(int targetFrame) {
 
     SDL_initFramerate(&fpsm);
-    SDL_setFramerate(&fpsm, 100);
+    SDL_setFramerate(&fpsm, targetFrame);
     targetDt = 1.0f / targetFrame;
 
     rootNode = std::make_shared<PhysicsObjectRoot>();
-    rootNode->SetName("rootPhysicsNode");   
+    rootNode->SetName("rootPhysicsNode");
 
     // add event handler, subscribe 6 event
     eventHandler_1 = GET_EventSystem.AddEventListener(
@@ -65,10 +60,14 @@ void PhysicsSystem::UpdateWrapper() {
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
+
+
+        
         Update();
         CollisionHandler();
         OutOffBoundCheck();
-        for (auto& callBack : AfterUpdateFunctionWrapper) callBack();
+        for (auto &callBack : AfterUpdateFunctionWrapper)
+            callBack();
         GET_Buffer.Submit();
         fpsc.EndFrame();
     }
@@ -115,7 +114,7 @@ void PhysicsSystem::AddObject(std::shared_ptr<ObjectWorld> obj,
     physicsObjectsToAdd.push_back(obj);
 }
 
-void PhysicsSystem::RemoveObject(std::shared_ptr<ObjectWorld> obj) {
+void PhysicsSystem::RemoveObject(std::shared_ptr<Object> obj) {
     obj->SetToRemove();
     hasRemoveCalled = true;
 }
@@ -158,34 +157,35 @@ void PhysicsSystem::CollisionHandler() {
     int childCount = children.size();
     glm::vec2 norm{0, 0};
     float depth = 0;
-    for (int i = 0; i < childCount-1; i++) {
-        RigidBody* objA = static_cast<RigidBody*>(children[i].get());
-        for (int j = i+1; j < childCount; j++) {
-            RigidBody* objB = static_cast<RigidBody*>(children[j].get());
-            
-            if (objA->GetIsStatic() && objB->GetIsStatic()) continue;
-            if (!Collision(objA, objB, norm, depth)) continue;
-            
+    for (int i = 0; i < childCount - 1; i++) {
+        RigidBody *objA = static_cast<RigidBody *>(children[i].get());
+        for (int j = i + 1; j < childCount; j++) {
+            RigidBody *objB = static_cast<RigidBody *>(children[j].get());
+
+            if (objA->GetIsStatic() && objB->GetIsStatic())
+                continue;
+            if (!Collision(objA, objB, norm, depth))
+                continue;
+
             // objA->OnCollision(objB, norm, depth);
             // objB->OnCollision(objB, norm, depth);
             if (objA->GetIsStatic()) {
-                objB->Move(norm * depth); 
-            }
-            else if (objB->GetIsStatic()) {
+                objB->Move(norm * depth);
+            } else if (objB->GetIsStatic()) {
                 objA->Move(-norm * depth);
-            }
-            else {
+            } else {
                 auto ds = depth * 0.5f * norm;
                 objA->Move(-ds);
-                objB->Move(ds); 
+                objB->Move(ds);
             }
-        
+
             CollisionResolver(objA, objB, norm, depth);
         }
     }
 }
 
-bool PhysicsSystem::Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth) {
+bool PhysicsSystem::Collision(RigidBody *a, RigidBody *b, glm::vec2 &norm,
+                              float &depth) {
     norm = {0, 0};
     depth = 0;
 
@@ -194,48 +194,59 @@ bool PhysicsSystem::Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float
 
     if (typeA == Shape::CIRCLE) {
         if (typeB == Shape::CIRCLE) {
-            return GET_CollisionMgr.IntersectCircle(a->GetCircle(), b->GetCircle(), norm, depth);
+            return GET_CollisionMgr.IntersectCircle(
+                a->GetCircle(), b->GetCircle(), norm, depth);
+        } else {
+            return GET_CollisionMgr.IntersectPolygonAndCircle(
+                a->GetCircle(), b->GetVertex(), b->GetPosition(), norm, depth);
         }
-        else {
-            return GET_CollisionMgr.IntersectPolygonAndCircle(a->GetCircle(), b->GetVertex(), norm, depth);
-        }
-    }
-    else {
+    } else {
         if (typeB == Shape::CIRCLE) {
-            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(b->GetCircle(), a->GetVertex(), norm, depth);
-            norm = - norm;
+            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(
+                b->GetCircle(), a->GetVertex(), a->GetPosition(), norm, depth);
+            norm = -norm;
             return result;
-        }
-        else {
-            return GET_CollisionMgr.IntersectPolygon(a->GetVertex(), b->GetVertex(), norm, depth);
+        } else {
+            return GET_CollisionMgr.IntersectPolygon(
+                a->GetVertex(), a->GetPosition(), b->GetVertex(),
+                b->GetPosition(), norm, depth);
         }
     }
-
 }
 
-void PhysicsSystem::CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth) {
+void PhysicsSystem::CollisionResolver(RigidBody *a, RigidBody *b,
+                                      glm::vec2 &norm, float &depth) {
     glm::vec2 relativeV = b->GetVelocity() - a->GetVelocity();
     float reVdotNorm = glm::dot(relativeV, norm);
-    if (reVdotNorm > 0.0f) return;
+    if (reVdotNorm > 0.0f)
+        return;
 
-    float resilience = std::min(a->GetMaterial().resilience, b->GetMaterial().resilience);
+    float resilience =
+        std::min(a->GetMaterial().resilience, b->GetMaterial().resilience);
 
-    float j = -(1 + resilience) * reVdotNorm;
+    float j = -(1.0f + resilience) * reVdotNorm;
     j /= a->GetMassR() + b->GetMassR();
 
-    a->AddVelocity(-j * a->GetMassR() * norm);
-    b->AddVelocity(j * b->GetMassR() * norm);
+    glm::vec2 impulse = j * norm;
+
+    a->AddVelocity(-a->GetMassR() * impulse);
+    b->AddVelocity(b->GetMassR() * impulse);
 }
 
+// just for temp test
 void PhysicsSystem::OutOffBoundCheck() {
-    for (auto& child : rootNode->GetChildren()) {
-        RigidBody* obj = static_cast<RigidBody*>(child.get());
+    for (auto &child : rootNode->GetChildren()) {
+        RigidBody *obj = static_cast<RigidBody *>(child.get());
         auto position = obj->GetPosition();
-        if (position.x > 4000) position.x = -4000;
-        else if (position.x < -4000) position.x = 4000;
+        if (position.x > 4000)
+            position.x = -4000;
+        else if (position.x < -4000)
+            position.x = 4000;
 
-        if (position.y > 2320) position.y = -2320;
-        else if (position.y < -2320) position.y = 2320;
+        if (position.y > 2320)
+            position.y = -2320;
+        else if (position.y < -2320)
+            position.y = 2320;
 
         obj->MoveTo(position);
     }

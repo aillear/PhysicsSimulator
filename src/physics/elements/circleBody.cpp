@@ -1,14 +1,14 @@
 #include "circleBody.h"
+#include "configs.h"
 #include "renderBufferMgr.h"
 #include "renderSystem.h"
-#include "rigidbody.h"
 #include <numbers>
 #include <utility>
 
 CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     : RigidBody(center, mate, PhysicsShapeType::CIRCLE), radius_(radius) {
-    area_ = std::numbers::pi * radius * radius;
-    mass_ = area_ * material_.density;
+    area_ = std::numbers::pi * radius * radius * TUAreaFactor;
+    mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0 / mass_;
     SafeCheck();
     SetFColor({1,1,0,1});

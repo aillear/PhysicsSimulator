@@ -177,3 +177,7 @@ glm::vec2 RandomPos(glm::vec2 leftTop, glm::vec2 rightButtom) {
     newPos.y = RandomFloat(leftTop.y, rightButtom.y);
     return newPos;
 }
+
+glm::vec2 RandomSize(int width, int height) {
+    return {RandomInt(0, width), RandomInt(0, height)};
+}

@@ -1,6 +1,7 @@
 #include "test.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_keycode.h"
+#include "SDL3/SDL_scancode.h"
 #include "UIButton.h"
 #include "UIComponent.h"
 #include "UILabelReader.h"
@@ -190,52 +191,98 @@ void SomeCustomLogicHere() {
 
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
-    // for (int i = 0; i < 10; i++) {
-    //     auto circle = std::make_shared<CircleBody>(m, glm::vec2{i * 40, i *
-    //     40}, 20); circle->SetFColor(RandomFColor());
-    //     GET_PhysicsSystem.AddObject(circle);
+
+    // for (int i = 0; i < 20; i++) {
+    //     auto pos = RandomPos({20, 20}, {780, 580});
+    //     int type = RandomInt(0, 2);
+    //     std::shared_ptr<RigidBody> obj;
+    //     if (type == 0)
+    //         obj = std::make_shared<CircleBody>(m, pos, 20);
+    //     else
+    //         obj = std::make_shared<BoxBody>(m, pos, glm::vec2{30, 20});
+
+    //     if (i != 0) {
+    //         obj->SetIsStatic(RandomBool());
+    //         obj->SetFColor(RandomFColor());
+    //         if (obj->GetIsStatic()) {
+    //             obj->SetFColorBoundry({1, 0, 0, 1});
+    //         }
+    //     }
+    //     GET_PhysicsSystem.AddObject(obj);
     // }
+    auto ground = std::make_shared<BoxBody>(m, glm::vec2(0, 800), glm::vec2(2000, 20));
+    ground->SetFColorBoundry({0, 0, 0, 1});
+    ground->SetColor({77, 120, 204, 255});
+    ground->SetIsStatic(true);
+    ground->SetName("ground");
+    GET_PhysicsSystem.AddObject(ground);
 
-    for (int i = 0; i < 20; i++) {
-        auto pos = RandomPos({20, 20}, {780, 580});
-        int type = RandomInt(0, 2);
-        std::shared_ptr<RigidBody> obj;
-        if (type == 0)
-            obj = std::make_shared<CircleBody>(m, pos, 20);
-        else
-            obj = std::make_shared<BoxBody>(m, pos, glm::vec2{30, 20});
+    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(-400, 400), glm::vec2(20, 1000));
+    wallL->SetFColorBoundry({0, 0, 0, 1});
+    wallL->SetColor({77, 120, 204, 255});
+    wallL->SetIsStatic(true);
+    wallL->SetName("wall1");
+    GET_PhysicsSystem.AddObject(wallL);
 
-        if (i != 0) {
-            obj->SetIsStatic(RandomBool());
-            obj->SetFColor(RandomFColor());
-            if (obj->GetIsStatic()) {
-                obj->SetFColorBoundry({1, 0, 0, 1});
-            }
-        }
-        GET_PhysicsSystem.AddObject(obj);
-    }
+    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(400, 400), glm::vec2(20, 1000));
+    wallR->SetFColorBoundry({0, 0, 0, 1});
+    wallR->SetColor({77, 120, 204, 255});
+    wallR->SetIsStatic(true);
+    wallR->SetName("wall2");
+    GET_PhysicsSystem.AddObject(wallR);
 }
 
 void SomeCustomLogicPAHere() {
     auto children = GET_PhysicsSystem.GetRootNode()->GetChildren();
-    const float dt = GET_PhysicsSystem.GetTargetDt();
 
-    glm::vec2 dir = {0, 0};
+    // glm::vec2 dir = {0, 0};
 
-    if (KeyState(SDL_SCANCODE_W))
-        dir.y--;
-    if (KeyState(SDL_SCANCODE_S))
-        dir.y++;
-    if (KeyState(SDL_SCANCODE_A))
-        dir.x--;
-    if (KeyState(SDL_SCANCODE_D))
-        dir.x++;
+    // if (KeyState(SDL_SCANCODE_W))
+    //     dir.y--;
+    // if (KeyState(SDL_SCANCODE_S))
+    //     dir.y++;
+    // if (KeyState(SDL_SCANCODE_A))
+    //     dir.x--;
+    // if (KeyState(SDL_SCANCODE_D))
+    //     dir.x++;
 
-    float forceMagnitude = 120000.0f;
-    if (dir.x != 0 || dir.y != 0) {
-        auto firstObj = static_cast<RigidBody *>(children.begin()->get());
-        if (firstObj == nullptr)
-            return;
-        firstObj->AddForce(forceMagnitude * glm::normalize(dir));
+    // float forceMagnitude = 120000.0f;
+    // if (dir.x != 0 || dir.y != 0) {
+    //     auto firstObj = static_cast<RigidBody *>(children.begin()->get());
+    //     if (firstObj == nullptr)
+    //         return;
+    //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
+    // }
+    Material m{1, 0.2, 0.5};
+    static int counter = 0;
+    static bool isQPressed = false;
+    if (KeyState(SDL_SCANCODE_Q)) {
+        if (!isQPressed){
+            auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0}, RandomPos({10, 10}, {40,40}));
+            obj->SetFColor(RandomFColor());
+            obj->MoveTo(SCREEN2WORLD(MousePos));
+            obj->SetName(std::format("the {}'th object", counter++));
+            GET_PhysicsSystem.AddObject(obj);
+            isQPressed = true;
+        } 
+    }
+    else isQPressed = false;
+
+    static bool isEPressed = false;
+    if (KeyState(SDL_SCANCODE_E)) {
+        if (!isEPressed){
+            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0}, RandomFloat(5, 20));
+            obj->SetFColor(RandomFColor());
+            obj->MoveTo(SCREEN2WORLD(MousePos));
+            obj->SetName(std::format("the {}'th object", counter++));
+            GET_PhysicsSystem.AddObject(obj);
+            isEPressed = true;
+        } 
+    }
+    else isEPressed = false;
+
+    for (auto& child : children) {
+        auto pos = static_cast<RigidBody*>(child.get())->GetPosition();
+        if (pos.y >= 1000) GET_PhysicsSystem.RemoveObject(child);
     }
 }

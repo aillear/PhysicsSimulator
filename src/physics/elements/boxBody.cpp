@@ -1,8 +1,8 @@
 #include "boxBody.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
+#include "configs.h"
 #include "conversion.h"
-#include "logger.h"
 #include "renderBufferMgr.h"
 #include "renderSystem.h"
 #include "rigidbody.h"
@@ -15,14 +15,13 @@
 BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     : RigidBody(position, mate, PhysicsShapeType::BOX),
       widthHeight_(widthHeight), transformer(position, 0), needToTransfrom(true) {
-    area_ = widthHeight.x * widthHeight.y;
-    mass_ = area_ * material_.density;
+    area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
+    mass_ = area_ * material_.density * TUMassFactor; // mass g -> kg
     massR_ = 1.0f / mass_;
-    F_LOG_INFO("mass is: {}", mass_);
     SafeCheck();
 
     float Right = widthHeight.x * 0.5f;
-    float Buttom = widthHeight.y * 0.5f;    
+    float Buttom = widthHeight.y * 0.5f;
     OriginVertex[0] = {-Right, -Buttom};
     OriginVertex[1] = {Right, -Buttom};
     OriginVertex[2] = {Right, Buttom};

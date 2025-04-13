@@ -2,7 +2,9 @@
 
 #include "FPSCounter.h"
 #include "SDL3/SDL_events.h"
+#include "configs.h"
 #include "eventSystem.h"
+#include "object.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
@@ -29,7 +31,7 @@ class PhysicsSystem {
     void AddObject(std::shared_ptr<ObjectWorld> obj, ObjectID targetID);
     void AddObject(std::shared_ptr<ObjectWorld> obj, std::string targetName);
 
-    void RemoveObject(std::shared_ptr<ObjectWorld> obj);
+    void RemoveObject(std::shared_ptr<Object> obj);
     void RemoveObject(ObjectID objId);
     void RemoveObject(std::string objName);
 
@@ -41,11 +43,7 @@ class PhysicsSystem {
     void AddCustomInitFunction(BasicFunctionWrapper callBack) {initFunctionWrapper.emplace_back(std::move(callBack));}
     void AddCustomAfterUpdateFunction(BasicFunctionWrapper callBack) {AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));}
 
-    constexpr static float MinBodySize = 0.01f * 0.01f;
-    constexpr static float MaxBodySize = 64.0f * 64.0f;
-
-    constexpr static float MinDensity = 0.25f;
-    constexpr static float MaxDensity = 21.4f;
+    glm::vec2 gravity = {0, 9.81f * TGForceFactor};
 
     FPSCounter fpsc;
 

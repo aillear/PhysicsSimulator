@@ -278,3 +278,5 @@ SDL_FColor RandomFColor(float r=-1.0f, float g=-1.0f, float b=-1.0f);
 SDL_Color RandomColor(Uint8 r, Uint8 g, Uint8 b);
 
 glm::vec2 RandomPos(glm::vec2 leftTop, glm::vec2 rightButtom);
+
+glm::vec2 RandomSize(int width, int height);

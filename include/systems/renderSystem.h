@@ -172,12 +172,12 @@ class RenderSystem {
     void Render();
 
     const Camera& GetCamera() const {return this->camera;} 
+    SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
+    glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 
   private:
     RenderSystem();
     ~RenderSystem() = default;
-    SDL_FPoint PosWorld2Screen(const glm::vec2 worldPos);
-    glm::vec2 PosScreen2World(const glm::vec2 windowPos);
 
     void HandlePhysicsDrawCommand();
     void HandleUIDrawCommand();

@@ -3,9 +3,6 @@
 #include "exceptions.h"
 #include "logger.h"
 #include "physicsSystem.h"
-#include "shape.h"
-#include <glm/ext/vector_float2.hpp>
-#include <string>
 #include <vector>
 
 float RigidBody::GetRadius() const {
@@ -59,14 +56,14 @@ const std::string RigidBody::ShapeTypeToStr(PhysicsShapeType type) const {
 }
 
 bool RigidBody::SafeCheck() const {
-    if (area_ < GET_PhysicsSystem.MinBodySize) {
+    if (area_ < MinBodySize) {
         F_LOG_ERROR("RigidBody area {} is too small, it must be bigger than {}",
-                    area_, GET_PhysicsSystem.MinBodySize);
+                    area_, MinBodySize);
         throw BodyAreaError(area_);
     }
-    if (area_ > GET_PhysicsSystem.MaxBodySize) {
+    if (area_ > MaxBodySize) {
         F_LOG_ERROR("RigidBody area {} is too big, it must be smaller than {}",
-                    area_, GET_PhysicsSystem.MaxBodySize);
+                    area_, MaxBodySize);
         throw BodyAreaError(area_);
     }
     return true;
@@ -78,7 +75,10 @@ void RigidBody::OnCollision(RigidBody* rigidBody, glm::vec2 norm, float depth) {
 }
 
 void RigidBody::PhysicsUpdate(float dt) {
-    this->velocity_ += force_ * massR_ * dt;
+    if (isStatic_) return;
+    // acc is current not use
+    // this->velocity_ += force_ * massR_ * dt;
+    this->velocity_ += GET_PhysicsSystem.gravity * dt;
      
     Move(velocity_ * dt);
     Rotate(angularVelocity_ * dt);

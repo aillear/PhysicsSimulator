@@ -4,18 +4,20 @@
 #include "conversion.h"
 #include "material.h"
 #include "objectWorld.h"
+#include "configs.h"
 #include "renderSystem.h"
 #include "shape.h"
 #include <glm/ext/vector_float2.hpp>
 #include <string>
 
 // TODO: add more physics properties
+// each pxiel represen 1 cm.
 class RigidBody : public ObjectWorld {
   public:
     RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type)
         : ObjectWorld(position), material_(mate), velocity_(0, 0), rotation_(0),
           angularVelocity_(0), type_(type), force_(0, 0) {
-        ;
+        SetIsStatic(false);
     }
 
     virtual void Move(glm::vec2 ds) { position_ += ds; }
@@ -54,6 +56,15 @@ class RigidBody : public ObjectWorld {
     virtual void SetWidthHeight(glm::vec2 wh);
 
     virtual const std::vector<SDL_Vertex>& GetVertex() const;
+
+    // for universal physics
+    const float GetUMass() const {return mass_;}
+    const float GetUArea() const {return area_;}
+    const glm::vec2 GetUVelocity() const {return velocity_ * TULongitudeFactor;}
+    const glm::vec2 GetUPosition() const {return position_ * TULongitudeFactor;}
+
+
+
 
   protected:
     void Render() override = 0;
