@@ -8,7 +8,7 @@
 CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     : RigidBody(center, mate, PhysicsShapeType::CIRCLE), radius_(radius) {
     area_ = std::numbers::pi * radius * radius * TUAreaFactor;
-    mass_ = area_ * material_.density * TUMassFactor;
+    mass_ = area_ * material_.density;
     massR_ = 1.0 / mass_;
     SafeCheck();
     SetFColor({1,1,0,1});
@@ -32,6 +32,24 @@ void CircleBody::Render() {
     cmd.GetBase().circle = GetCircle();
     cmd.halfLineWidth = 0.5f;
     GET_Buffer.AddCommand(std::move(cmd));
+}
+
+void CircleBody::Move(glm::vec2 ds) {
+    SetPosition(position_ + ds);
+    needToUpdateAABB = true;
+}
+
+void CircleBody::MoveTo(glm::vec2 destination) {
+    SetPosition(destination);
+    needToUpdateAABB = true;
+}
+
+void CircleBody::GetAABBUpdated() {
+    if (!needToUpdateAABB) return;
+
+    aabb_.maxP = {position_.x + radius_, position_.y + radius_};
+    aabb_.minP = {position_.x - radius_, position_.y - radius_};
+    needToUpdateAABB = false;
 }
 
 void CircleBody::PhysicsUpdate(float dt) {

@@ -37,3 +37,6 @@ constexpr float TULongitudeFactor = 0.01f;     // 1 game m = 0.01 m
 constexpr float TGForceFactor = 100.0f;     // 1 N = 100 game N
 constexpr float TGLongitudeFactor = 100.0f; // 1 m = 100 game m
 
+// set the value bound of iteration
+constexpr int MinIteration = 1;
+constexpr int MaxIteration = 64;

@@ -14,9 +14,9 @@
 
 BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     : RigidBody(position, mate, PhysicsShapeType::BOX),
-      widthHeight_(widthHeight), transformer(position, 0), needToTransfrom(true) {
+      widthHeight_(widthHeight), transformer(position, 0) {
     area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
-    mass_ = area_ * material_.density * TUMassFactor; // mass g -> kg
+    mass_ = area_ * material_.density;
     massR_ = 1.0f / mass_;
     SafeCheck();
 
@@ -45,12 +45,14 @@ void BoxBody::SetPosition(const glm::vec2& position) {
     position_ = position;
     transformer.SetOffset(position);
     needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void BoxBody::SetPosition(float x, float y) {
     position_ = {x, y};
     transformer.SetOffset(position_);
     needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void BoxBody::Rotate(float angle) {
@@ -59,6 +61,7 @@ void BoxBody::Rotate(float angle) {
     if (rotation_ < 0.0f) rotation_ += 360.0f;
     transformer.SetAngle(rotation_);
     needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void BoxBody::RotateTo(float rotation) {
@@ -67,6 +70,7 @@ void BoxBody::RotateTo(float rotation) {
     if (rotation_ < 0.0f) rotation_ += 360.0f;
     transformer.SetAngle(rotation);
     needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void BoxBody::SetColor(SDL_Color color) {
@@ -107,6 +111,17 @@ void BoxBody::GetVertexTransfrom() {
     needToTransfrom = false;
 }
 
+void BoxBody::GetAABBUpdated() {
+    if (!needToUpdateAABB) return;
+    for (int i = 0; i < TransformedVertexB.size(); i++) {
+        aabb_.maxP.x = std::max(aabb_.maxP.x, TransformedVertexB[i].position.x);
+        aabb_.maxP.y = std::max(aabb_.maxP.y, TransformedVertexB[i].position.y);
+        aabb_.minP.x = std::min(aabb_.minP.x, TransformedVertexB[i].position.x);
+        aabb_.minP.y = std::min(aabb_.minP.y, TransformedVertexB[i].position.y);
+    }
+    needToUpdateAABB = false;
+}
+
 void BoxBody::Render() {
     // draw it self
     DrawCommand cmd(ShapeType::POLYGON, false);
@@ -122,5 +137,4 @@ void BoxBody::Render() {
 void BoxBody::PhysicsUpdate(float dt) {
     // SetRotation(rotation_ + 90*dt);
     RigidBody::PhysicsUpdate(dt);
-    GetVertexTransfrom();
 }

@@ -25,4 +25,5 @@ void FPSCounter::EndFrame() {
             now - frameStartTime_);
 
     lastFrameTime_ = frameTime.count();
+    lastFrameSecond_ = lastFrameTime_ * 0.001f;
 }

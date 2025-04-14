@@ -36,9 +36,9 @@ class BoxBody : public RigidBody {
     void Render() override;
     void PhysicsUpdate(float dt) override;
 
-    void GetVertexTransfrom();
+    void GetVertexTransfrom() override;
+    void GetAABBUpdated() override;
 
-    bool needToTransfrom = true;
     glm::vec2 widthHeight_;
     Transform2D transformer;
     std::array<glm::vec2, 4> OriginVertex;

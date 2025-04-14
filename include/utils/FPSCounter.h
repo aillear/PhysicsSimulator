@@ -7,6 +7,7 @@ public:
     void EndFrame();
     int GetFPS() const { return currentFPS_; }
     float GetLastFrameTime() const { return lastFrameTime_; }
+    float GetLastFrameSecond() const { return lastFrameSecond_; }
 
 private:
     
@@ -15,4 +16,5 @@ private:
     int frameCount_ = 0;
     int currentFPS_ = 0;
     float lastFrameTime_ = 0;
+    float lastFrameSecond_ = 0;
 };

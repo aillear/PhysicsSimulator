@@ -11,10 +11,16 @@ class CircleBody : public RigidBody {
     void SetRadius(float radius) override {radius_ = radius;}
 
     const GlmCircle GetCircle() const override;
+
+    void Move(glm::vec2 ds) override;
+    void MoveTo(glm::vec2 destinaion) override;
+
     
   protected:
     void Render() override;
     void PhysicsUpdate(float dt) override;
-    
+    void GetAABBUpdated() override;
+
+
     float radius_;
 };

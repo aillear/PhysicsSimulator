@@ -8,6 +8,7 @@
 #include "renderSystem.h"
 #include "shape.h"
 #include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_float4.hpp>
 #include <string>
 
 // TODO: add more physics properties
@@ -57,6 +58,8 @@ class RigidBody : public ObjectWorld {
 
     virtual const std::vector<SDL_Vertex>& GetVertex() const;
 
+    virtual const AABB GetAABB() const {return aabb_;}
+
     // for universal physics
     const float GetUMass() const {return mass_;}
     const float GetUArea() const {return area_;}
@@ -72,7 +75,14 @@ class RigidBody : public ObjectWorld {
     const std::string ShapeTypeToStr(PhysicsShapeType type) const;
     bool SafeCheck() const;
 
+    virtual void GetVertexTransfrom() {needToTransfrom = false;}
+     
+    virtual void GetAABBUpdated() {needToUpdateAABB = false;}
+    
+
     const PhysicsShapeType type_;
+    bool needToTransfrom = true;
+    bool needToUpdateAABB = true;
     bool isStatic_;
     float mass_;
     float massR_;
@@ -81,6 +91,7 @@ class RigidBody : public ObjectWorld {
     float angularVelocity_;
     glm::vec2 velocity_;
     glm::vec2 force_;
+    AABB aabb_;
 
     Material material_;
     SDL_FColor boundaryColor_;

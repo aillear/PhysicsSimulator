@@ -1,27 +1,34 @@
 #include "physicsSystem.h"
 #include "collisionMgr.h"
+#include "configs.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
+#include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
+#include <stdexcept>
 
 using Shape = PhysicsShapeType;
+
+
+bool SortByAABB(const std::shared_ptr<Object> &a,
+                const std::shared_ptr<Object> &b) {
+    auto pa = static_cast<RigidBody*>(a.get());
+    auto pb = static_cast<RigidBody*>(b.get());
+    return pa->GetAABB().minP.x < pb->GetAABB().minP.x;
+}
 
 PhysicsSystem &PhysicsSystem::Instance() {
     static PhysicsSystem instance;
     return instance;
 }
 
-bool PhysicsSystem::Init(int targetFrame) {
-
-    SDL_initFramerate(&fpsm);
-    SDL_setFramerate(&fpsm, targetFrame);
-    targetDt = 1.0f / targetFrame;
+bool PhysicsSystem::Init(int iteration) {
 
     rootNode = std::make_shared<PhysicsObjectRoot>();
     rootNode->SetName("rootPhysicsNode");
@@ -41,6 +48,14 @@ bool PhysicsSystem::Init(int targetFrame) {
     eventHandler_4 = GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_UP,
         [this](SDL_Event &event) { HandleSDLEvents(event); });
+
+    if (iteration < MinIteration || iteration > MaxIteration) {
+        F_LOG_ERROR("PhysicsSystem: iteration is out of range, it must be "
+                  "between {} and {}",
+                  MinIteration, MaxIteration);
+        throw std::out_of_range("iteration is out of range.");
+    }
+    this->iteration_ = iteration;
     return true;
 }
 
@@ -59,22 +74,25 @@ void PhysicsSystem::UpdateWrapper() {
         callBack();
     while (running) {
         fpsc.StartFrame();
-        SDL_framerateDelay(&fpsm);
-
-
-        
-        Update();
-        CollisionHandler();
+        float dt = fpsc.GetLastFrameSecond() / iteration_;
+        ObjManage();
+        for (int i = 0; i < iteration_; i++) {
+            rootNode->PhysicsUpdateWrapper(dt);
+            CollisionHandler();
+        }
         OutOffBoundCheck();
+
         for (auto &callBack : AfterUpdateFunctionWrapper)
             callBack();
+
+        rootNode->RenderWrapper();
         GET_Buffer.Submit();
         fpsc.EndFrame();
     }
     LOG_INFO("physics cycle is end.");
 }
 
-void PhysicsSystem::Update() {
+void PhysicsSystem::ObjManage() {
     if (hasRemoveCalled) {
         rootNode->CheckChildToRemove();
         hasRemoveCalled = false;
@@ -89,9 +107,6 @@ void PhysicsSystem::Update() {
         obj->InitWrapper();
     }
     physicsObjectsToAdd.clear();
-
-    rootNode->PhysicsUpdateWrapper(targetDt);
-    rootNode->RenderWrapper();
 }
 
 void PhysicsSystem::AddObject(std::shared_ptr<ObjectWorld> obj,
@@ -215,7 +230,12 @@ bool PhysicsSystem::Collision(RigidBody *a, RigidBody *b, glm::vec2 &norm,
 }
 
 void PhysicsSystem::CollisionResolver(RigidBody *a, RigidBody *b,
-                                      glm::vec2 &norm, float &depth) {
+                                      glm::vec2 norm, float depth) {
+    if (a == nullptr || b == nullptr) {
+        LOG_ERROR("nullptr in collission resolver.");
+        throw std::runtime_error("null ptr in collision resolver");
+    }
+
     glm::vec2 relativeV = b->GetVelocity() - a->GetVelocity();
     float reVdotNorm = glm::dot(relativeV, norm);
     if (reVdotNorm > 0.0f)
@@ -237,17 +257,14 @@ void PhysicsSystem::CollisionResolver(RigidBody *a, RigidBody *b,
 void PhysicsSystem::OutOffBoundCheck() {
     for (auto &child : rootNode->GetChildren()) {
         RigidBody *obj = static_cast<RigidBody *>(child.get());
-        auto position = obj->GetPosition();
-        if (position.x > 4000)
-            position.x = -4000;
-        else if (position.x < -4000)
-            position.x = 4000;
+        auto aabb = obj->GetAABB();
 
-        if (position.y > 2320)
-            position.y = -2320;
-        else if (position.y < -2320)
-            position.y = 2320;
-
-        obj->MoveTo(position);
+        if (aabb.maxP.x > 4000 || aabb.minP.x < -4000 || aabb.maxP.y > 2320 ||
+            aabb.minP.y < -2320) {
+            F_LOG_INFO("object id: {} out of bound, remove it.", obj->GetID());
+            obj->SetToRemove();
+            hasRemoveCalled = true;
+        }
     }
 }
+

@@ -69,37 +69,49 @@ bool RigidBody::SafeCheck() const {
     return true;
 }
 
-void RigidBody::OnCollision(RigidBody* rigidBody, glm::vec2 norm, float depth) {
+void RigidBody::OnCollision(RigidBody *rigidBody, glm::vec2 norm, float depth) {
     // not really to use it now;
     // Move(0.5f * norm * depth);
 }
 
 void RigidBody::PhysicsUpdate(float dt) {
-    if (isStatic_) return;
-    // acc is current not use
-    // this->velocity_ += force_ * massR_ * dt;
-    this->velocity_ += GET_PhysicsSystem.gravity * dt;
-     
-    Move(velocity_ * dt);
-    Rotate(angularVelocity_ * dt);
-    force_ = {0, 0};
+    if (!isStatic_) {
+
+        // acc is current not use
+        // this->velocity_ += force_ * massR_ * dt;
+        this->velocity_ += GET_PhysicsSystem.gravity * dt;
+
+        Move(velocity_ * dt);
+        Rotate(angularVelocity_ * dt);
+        force_ = {0, 0};
+    }
+
+    GetVertexTransfrom();
+    GetAABBUpdated();
 }
 
 void RigidBody::Rotate(float angle) {
     rotation_ += angle;
-    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
-    if (rotation_ < 0.0f) rotation_ += 360.0f;
+    if (rotation_ >= 360.0f)
+        rotation_ -= 360.0f;
+    if (rotation_ < 0.0f)
+        rotation_ += 360.0f;
 }
 
 void RigidBody::RotateTo(float rotation) {
-    if (rotation >= 360.0f) rotation -= 360.0f;
-    if (rotation_ < 0.0f) rotation += 360.0f;
+    if (rotation >= 360.0f)
+        rotation -= 360.0f;
+    if (rotation_ < 0.0f)
+        rotation += 360.0f;
     rotation_ = rotation;
 }
 
 void RigidBody::SetIsStatic(bool value) {
-    if (isStatic_ == value) return;
-    if (value == true) massR_ = 0;
-    else massR_ = 1.0 / mass_;
+    if (isStatic_ == value)
+        return;
+    if (value == true)
+        massR_ = 0;
+    else
+        massR_ = 1.0 / mass_;
     isStatic_ = value;
 }

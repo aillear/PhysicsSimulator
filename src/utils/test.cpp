@@ -253,17 +253,18 @@ void SomeCustomLogicPAHere() {
     //         return;
     //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     // }
-    Material m{1, 0.2, 0.5};
+    Material m{0.5, 0.5, 0.5};
     static int counter = 0;
     static bool isQPressed = false;
     if (KeyState(SDL_SCANCODE_Q)) {
         if (!isQPressed){
-            auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0}, RandomPos({10, 10}, {40,40}));
+            auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0}, RandomPos({50, 50}, {100,100}));
             obj->SetFColor(RandomFColor());
             obj->MoveTo(SCREEN2WORLD(MousePos));
             obj->SetName(std::format("the {}'th object", counter++));
             GET_PhysicsSystem.AddObject(obj);
             isQPressed = true;
+            F_LOG_INFO("current have {} objects", counter);
         } 
     }
     else isQPressed = false;
@@ -271,18 +272,15 @@ void SomeCustomLogicPAHere() {
     static bool isEPressed = false;
     if (KeyState(SDL_SCANCODE_E)) {
         if (!isEPressed){
-            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0}, RandomFloat(5, 20));
+            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0}, RandomFloat(25, 50));
             obj->SetFColor(RandomFColor());
             obj->MoveTo(SCREEN2WORLD(MousePos));
             obj->SetName(std::format("the {}'th object", counter++));
             GET_PhysicsSystem.AddObject(obj);
             isEPressed = true;
+            F_LOG_INFO("current have {} objects", counter);
         } 
     }
     else isEPressed = false;
 
-    for (auto& child : children) {
-        auto pos = static_cast<RigidBody*>(child.get())->GetPosition();
-        if (pos.y >= 1000) GET_PhysicsSystem.RemoveObject(child);
-    }
 }

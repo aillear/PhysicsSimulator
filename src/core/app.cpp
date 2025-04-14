@@ -43,7 +43,7 @@ void App::Init(int argc, char *argv[]) {
         this->Destroy();
         exit(1);
     }
-    GET_PhysicsSystem.Init(100);
+    GET_PhysicsSystem.Init(20);
     GET_CollisionMgr.Init();
     GET_UIMgr.Init();
 

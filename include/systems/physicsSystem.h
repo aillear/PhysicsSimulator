@@ -18,13 +18,12 @@ class PhysicsSystem {
 
     void SetRunning() { running = true; }
 
-    bool Init(int targetFPS);
+    bool Init(int iteration);
     void Destroy();
     void UpdateWrapper();
-    void Update();
+    void ObjManage();
 
-    const std::shared_ptr<ObjectWorld> GetRootNode() {return rootNode;}
-    const float GetTargetDt() const {return targetDt;}
+    const std::shared_ptr<ObjectWorld> GetRootNode() { return rootNode; }
 
     void AddObject(std::shared_ptr<ObjectWorld> obj,
                    std::shared_ptr<ObjectWorld> target = nullptr);
@@ -38,10 +37,14 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> FindObjectById(ObjectID id);
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
-    const int GetBodyCount() const {return rootNode->GetChildren().size();}
+    const int GetBodyCount() const { return rootNode->GetChildren().size(); }
 
-    void AddCustomInitFunction(BasicFunctionWrapper callBack) {initFunctionWrapper.emplace_back(std::move(callBack));}
-    void AddCustomAfterUpdateFunction(BasicFunctionWrapper callBack) {AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));}
+    void AddCustomInitFunction(BasicFunctionWrapper callBack) {
+        initFunctionWrapper.emplace_back(std::move(callBack));
+    }
+    void AddCustomAfterUpdateFunction(BasicFunctionWrapper callBack) {
+        AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));
+    }
 
     glm::vec2 gravity = {0, 9.81f * TGForceFactor};
 
@@ -54,21 +57,23 @@ class PhysicsSystem {
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
     void HandleSDLEvents(SDL_Event &event);
     void CollisionHandler();
-    bool Collision(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth);       // this is only should used by CollisionHandler()
-    void CollisionResolver(RigidBody* a, RigidBody* b, glm::vec2& norm, float& depth); // so does this.
+    bool
+    Collision(RigidBody *a, RigidBody *b, glm::vec2 &norm,
+              float &depth); // this is only should used by CollisionHandler()
+    void CollisionResolver(RigidBody *a, RigidBody *b, glm::vec2 norm,
+                           float depth); // so does this.
 
     void OutOffBoundCheck();
 
     bool running;
-    FPSmanager fpsm;
-    float targetDt;
     bool hasRemoveCalled = false;
+    int iteration_;
 
     EventHandlerID eventHandler_1;
     EventHandlerID eventHandler_2;
     EventHandlerID eventHandler_3;
     EventHandlerID eventHandler_4;
-    
+
     std::shared_ptr<ObjectWorld> rootNode;
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 
