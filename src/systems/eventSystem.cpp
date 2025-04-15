@@ -1,6 +1,4 @@
 #include "eventSystem.h"
-#include "configs.h"
-#include "logger.h"
 #include <SDL3/SDL_events.h>
 #include <mutex>
 

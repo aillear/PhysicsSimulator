@@ -2,6 +2,7 @@
 #include "conversion.h"
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
+#include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
 #include <limits>
 #include <utility>
@@ -62,22 +63,79 @@ void CollisionMgr::FindContactPoints(RigidBody *a, RigidBody *b,
             FindContactPoints(a->GetCircle(), b->GetCircle(), contactP1);
             count = 1;
         } else {
+            FindContactPoints(a->GetCircle(), b->GetVertex(), b->GetPosition(),
+                              contactP1);
+            count = 1;
         }
     } else {
         if (typeB == Shape::CIRCLE) {
-
+            FindContactPoints(b->GetCircle(), a->GetVertex(), a->GetPosition(), 
+                              contactP1);
+            count = 1;
         } else {
         }
     }
 }
 
-void CollisionMgr::FindContactPoints(GlmCircle a, GlmCircle b,
+void CollisionMgr::PointSegmentDistance(const glm::vec2 &p, const glm::vec2 &a,
+                                        const glm::vec2 &b,
+                                        float &distanceSquired, glm::vec2 &cp) {
+    glm::vec2 ab = b - a;
+    glm::vec2 ap = p - a;
+
+    float proj = glm::dot(ap, ab);
+    float abLenSq = glm::dot(ab, ab);
+    float d = proj / abLenSq;
+
+    if (d <= 0.0f)
+        cp = a;
+    else if (d >= 1.0f)
+        cp = b;
+    else
+        cp = a + d * ab;
+
+    // ab is used to calculate the distance from point to segment.
+    // not it's origin useage.
+    ab = p - cp;
+    distanceSquired = glm::dot(ab, ab);
+}
+
+void CollisionMgr::FindContactPoints(const GlmCircle &a, const GlmCircle &b,
                                      glm::vec2 &contactPoint) {
     contactPoint = a.center + a.radius * glm::normalize((b.center - a.center));
 }
 
-bool CollisionMgr::IntersectCircle(GlmCircle a, GlmCircle b, glm::vec2 &norm,
-                                   float &depth) {
+void CollisionMgr::FindContactPoints(const GlmCircle &a,
+                                     const std::vector<SDL_Vertex> &b,
+                                     const glm::vec2 &centerB, glm::vec2 &cp) {
+    cp = {0, 0};
+    float minD = std::numeric_limits<float>::max();
+    float distSq;
+    glm::vec2 contact;
+
+    glm::vec2 va = ToGlmVec2(b.back().position);
+    glm::vec2 vb = ToGlmVec2(b[0].position);
+    PointSegmentDistance(a.center, va, vb, distSq, contact);
+    if (distSq < minD) {
+        minD = distSq;
+        cp = contact;
+    }
+
+    for (int i = 1; i < b.size(); i++) {
+
+        va = ToGlmVec2(b[i - 1].position);
+        vb = ToGlmVec2(b[i].position);
+
+        PointSegmentDistance(a.center, va, vb, distSq, contact);
+        if (distSq < minD) {
+            minD = distSq;
+            cp = contact;
+        }
+    }
+}
+
+bool CollisionMgr::IntersectCircle(const GlmCircle &a, const GlmCircle &b,
+                                   glm::vec2 &norm, float &depth) {
     float distanceCenter = glm::distance(a.center, b.center);
     float distanceSafe = a.radius + b.radius;
     norm = {0, 0};
@@ -332,4 +390,13 @@ int CollisionMgr::GetClosestPointIndexToCircle(
         }
     }
     return result;
+}
+
+bool CollisionMgr::IntersectAABBs(const AABB &a, const AABB &b) {
+    if (a.maxP.x <= b.minP.x || a.minP.x >= b.maxP.x)
+        return false;
+    if (a.maxP.y <= b.minP.y || a.minP.y >= b.maxP.y)
+        return false;
+
+    return true;
 }

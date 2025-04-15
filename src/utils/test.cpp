@@ -167,7 +167,7 @@ void SomeCustomLogicPAHere() {
     //         return;
     //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     // }
-    Material m{0.5, 1, 0.5};
+    Material m{0.5, 0.8, 0.5};
     static int counter = 0;
     static bool isQPressed = false;
     if (KeyState(SDL_SCANCODE_Q)) {

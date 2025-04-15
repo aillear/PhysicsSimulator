@@ -76,7 +76,7 @@ void PhysicsSystem::UpdateWrapper() {
         fpsc.StartFrame();
 
         ObjManage();
-        
+
         float dt = fpsc.GetLastFrameSecond() / iteration_;
         // execute iteration here.
         for (int i = 0; i < iteration_; i++) {
@@ -85,14 +85,13 @@ void PhysicsSystem::UpdateWrapper() {
         }
         OutOffBoundCheck();
 
-
         for (auto &callBack : AfterUpdateFunctionWrapper)
             callBack();
 
         // render here
         rootNode->RenderWrapper();
-        for (auto& p : contactPoints) {
-            DrawCommand cmd (ShapeType::HOLLOW_RECT, false);
+        for (auto &p : contactPoints) {
+            DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
             cmd.GetBase().color = {1, 0, 1, 1};
             cmd.GetBase().rect = {(p - glm::vec2{5, 5}), (p + glm::vec2{5, 5})};
             cmd.halfLineWidth = 1.5f;
@@ -193,11 +192,16 @@ void PhysicsSystem::CollisionHandler() {
 
             if (objA->GetIsStatic() && objB->GetIsStatic())
                 continue;
+
+            AABB aabbA = objA->GetAABB();
+            AABB aabbB = objB->GetAABB();
+            
+            if (!GET_CollisionMgr.IntersectAABBs(aabbA, aabbB))
+                continue;
+
             if (!GET_CollisionMgr.CollisionCheck(objA, objB, norm, depth))
                 continue;
 
-            // objA->OnCollision(objB, norm, depth);
-            // objB->OnCollision(objB, norm, depth);
             if (objA->GetIsStatic()) {
                 objB->Move(norm * depth);
             } else if (objB->GetIsStatic()) {
