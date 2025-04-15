@@ -25,6 +25,7 @@ file(GLOB SRC
     ${PROJECT_ROOT_PATH}/src/objects/*.cpp
     ${PROJECT_ROOT_PATH}/src/systems/*.cpp
     ${PROJECT_ROOT_PATH}/src/UI/elements/*.cpp
+    ${PROJECT_ROOT_PATH}/src/UI/customedUI/*.cpp
     ${PROJECT_ROOT_PATH}/src/physics/elements/*.cpp
 )
 

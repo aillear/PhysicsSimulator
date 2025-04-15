@@ -10,7 +10,7 @@ class UILabel : public UIComponent {
   public:
     
 
-    UILabel(glm::vec2 leftTop = {0, 0}, SDL_FColor color = {0, 0, 0, 0});
+    UILabel(const std::string& text = "label");
     void Init() override;
     void Render() override;
     void Update(float dt) override;

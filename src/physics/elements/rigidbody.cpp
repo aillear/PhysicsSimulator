@@ -5,6 +5,19 @@
 #include "physicsSystem.h"
 #include <vector>
 
+RigidBody::RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type)
+    : ObjectWorld(position), material_(mate), velocity_(0, 0), rotation_(0),
+      angularVelocity_(0), type_(type), force_(0, 0) {
+    SetIsStatic(false);
+}
+void RigidBody::Init() {
+    SafeCheck();
+    needToTransfrom = true;
+    needToUpdateAABB = true;
+    GetVertexTransfrom();
+    GetAABBUpdated();
+}
+
 float RigidBody::GetRadius() const {
     F_LOG_WARNING("Try to get a NoneCircleBody's({}) radius.",
                   ShapeTypeToStr(type_));

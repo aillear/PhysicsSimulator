@@ -18,7 +18,6 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
     mass_ = area_ * material_.density;
     massR_ = 1.0f / mass_;
-    SafeCheck();
 
     float Right = widthHeight.x * 0.5f;
     float Buttom = widthHeight.y * 0.5f;
@@ -30,7 +29,6 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     TransformedVertexB = std::vector<SDL_Vertex>(4);
     SetFColor({1,1,0,1});
     SetFColorBoundry({1,1,1,1});
-    GetVertexTransfrom();
 }
 
 void BoxBody::Move(glm::vec2 ds) {
@@ -113,7 +111,10 @@ void BoxBody::GetVertexTransfrom() {
 
 void BoxBody::GetAABBUpdated() {
     if (!needToUpdateAABB) return;
-    for (int i = 0; i < TransformedVertexB.size(); i++) {
+    
+    aabb_.maxP = ToGlmVec2(TransformedVertexB.begin()->position);
+    aabb_.minP = aabb_.maxP;
+    for (int i = 1; i < TransformedVertexB.size(); i++) {
         aabb_.maxP.x = std::max(aabb_.maxP.x, TransformedVertexB[i].position.x);
         aabb_.maxP.y = std::max(aabb_.maxP.y, TransformedVertexB[i].position.y);
         aabb_.minP.x = std::min(aabb_.minP.x, TransformedVertexB[i].position.x);

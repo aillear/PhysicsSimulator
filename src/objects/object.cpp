@@ -9,8 +9,8 @@ void Object::InitWrapper() {
     for (auto &callBack : initCallBacks)
         callBack();
     Init();
-    for (auto &child : children)
-        child->InitWrapper();
+    // for (auto &child : children)
+    //     child->InitWrapper();
 }
 
 void Object::RenderWrapper() {
@@ -197,4 +197,10 @@ void Object::ForSelfAndEachChild(TraverseWrapper callBack) {
     for (auto& child : children) {
         child->ForSelfAndEachChild(callBack);
     }
+}
+
+Object* Object::GetTempFather() {
+    Object* res = tempFather;
+    tempFather = nullptr;
+    return res;
 }

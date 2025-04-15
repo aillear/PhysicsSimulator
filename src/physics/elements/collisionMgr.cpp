@@ -1,6 +1,5 @@
 #include "collisionMgr.h"
 #include "conversion.h"
-#include <_mingw_stat64.h>
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/geometric.hpp>
@@ -14,7 +13,68 @@ CollisionMgr &CollisionMgr::Instance() {
 
 void CollisionMgr::Init() {}
 
-void CollisionMgr::Destory() {}
+void CollisionMgr::Destroy() {}
+
+bool CollisionMgr::CollisionCheck(RigidBody *a, RigidBody *b, glm::vec2 &norm,
+                                  float &depth) {
+    using Shape = PhysicsShapeType;
+    norm = {0, 0};
+    depth = 0;
+
+    Shape typeA = a->GetPhysicsType();
+    Shape typeB = b->GetPhysicsType();
+
+    if (typeA == Shape::CIRCLE) {
+        if (typeB == Shape::CIRCLE) {
+            return GET_CollisionMgr.IntersectCircle(
+                a->GetCircle(), b->GetCircle(), norm, depth);
+        } else {
+            return GET_CollisionMgr.IntersectPolygonAndCircle(
+                a->GetCircle(), b->GetVertex(), b->GetPosition(), norm, depth);
+        }
+    } else {
+        if (typeB == Shape::CIRCLE) {
+            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(
+                b->GetCircle(), a->GetVertex(), a->GetPosition(), norm, depth);
+            norm = -norm;
+            return result;
+        } else {
+            return GET_CollisionMgr.IntersectPolygon(
+                a->GetVertex(), a->GetPosition(), b->GetVertex(),
+                b->GetPosition(), norm, depth);
+        }
+    }
+}
+
+void CollisionMgr::FindContactPoints(RigidBody *a, RigidBody *b,
+                                     glm::vec2 &contactP1, glm::vec2 &contactP2,
+                                     int &count) {
+    using Shape = PhysicsShapeType;
+    contactP1 = {0, 0};
+    contactP2 = {0, 0};
+    count = 0;
+
+    Shape typeA = a->GetPhysicsType();
+    Shape typeB = b->GetPhysicsType();
+
+    if (typeA == Shape::CIRCLE) {
+        if (typeB == Shape::CIRCLE) {
+            FindContactPoints(a->GetCircle(), b->GetCircle(), contactP1);
+            count = 1;
+        } else {
+        }
+    } else {
+        if (typeB == Shape::CIRCLE) {
+
+        } else {
+        }
+    }
+}
+
+void CollisionMgr::FindContactPoints(GlmCircle a, GlmCircle b,
+                                     glm::vec2 &contactPoint) {
+    contactPoint = a.center + a.radius * glm::normalize((b.center - a.center));
+}
 
 bool CollisionMgr::IntersectCircle(GlmCircle a, GlmCircle b, glm::vec2 &norm,
                                    float &depth) {
@@ -172,9 +232,9 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
 }
 
 bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
-                               const std::vector<SDL_Vertex> &b,
-                               const glm::vec2 &centerB, glm::vec2 &norm,
-                               float &depth) {
+                                             const std::vector<SDL_Vertex> &b,
+                                             const glm::vec2 &centerB,
+                                             glm::vec2 &norm, float &depth) {
     norm = {0, 0};
     depth = std::numeric_limits<float>::max();
     glm::vec2 axis;

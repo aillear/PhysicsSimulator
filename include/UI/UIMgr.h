@@ -3,7 +3,6 @@
 #include "SDL3/SDL_events.h"
 #include "UIComponent.h"
 #include "eventSystem.h"
-#include "object.h"
 #include <memory>
 
 
@@ -35,8 +34,14 @@ class UIMgr {
         all the UIComponents need to add to the list so that they can be updated and rendered
     */
     void AddUIComponent(std::shared_ptr<UIComponent> component, std::shared_ptr<UIComponent> target = nullptr);
+    void AddUIComponent(std::shared_ptr<UIComponent> component, UIComponent* target);
     void AddUIComponent(std::shared_ptr<UIComponent> component, ObjectID targetID);
     void AddUIComponent(std::shared_ptr<UIComponent> component, std::string targetName);
+
+    void AddUIComponent(UIComponent* component, std::shared_ptr<UIComponent> target = nullptr);
+    void AddUIComponent(UIComponent* component, UIComponent* target);
+    void AddUIComponent(UIComponent* component, ObjectID targetID);
+    void AddUIComponent(UIComponent* component, std::string targetName);
     // if not found, do nothing
     void RemoveUIComponent(std::shared_ptr<UIComponent> component);
     void RemoveUIComponent(ObjectID componentID);

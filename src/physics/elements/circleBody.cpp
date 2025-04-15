@@ -10,7 +10,6 @@ CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     area_ = std::numbers::pi * radius * radius * TUAreaFactor;
     mass_ = area_ * material_.density;
     massR_ = 1.0 / mass_;
-    SafeCheck();
     SetFColor({1,1,0,1});
     SetFColorBoundry({1,1,1,1});
 }

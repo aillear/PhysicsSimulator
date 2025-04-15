@@ -29,11 +29,8 @@ bar is additional height of the panel, you can click it to drag the panel.
 
 class UIPanel : public UIComponent {
   public:
-    UIPanel(glm::vec2 widthHeight = {0, 0}, glm::vec2 leftTop = {0, 0},
-            SDL_FColor color = {0, 0, 0, 0}, float barHeight = 40.0f,
-            SDL_FColor barColor = {255, 255, 255, 255})
-        : UIComponent(leftTop, widthHeight, color), barHeight(barHeight),
-          barColor(barColor) {
+    UIPanel(glm::vec2 widthHeight = {0, 0}, float barHeight = 40.0f)
+        : UIComponent(widthHeight), barHeight(barHeight) {
         ;
     }
 
@@ -47,19 +44,30 @@ class UIPanel : public UIComponent {
     // hit test only test the bar area, for drag event.
     // detect these two points:
     //           +-----------+ <- p2
-    //           |    bar    |   
+    //           |    bar    |
     //    p1 ->  +-----------+
     bool HitTest(glm::vec2 MousePos) override;
 
     float GetBarHeight() const { return barHeight; }
-    void SetBarHeight(float barHeight) { this->barHeight = glm::max(barHeight, 40.0f); }
+
+    virtual void SetBarHeight(float barHeight) {
+        this->barHeight = std::max(barHeight, 40.0f);
+    }
+
     SDL_FColor GetBarColor() const { return barColor; }
     void SetBarFColor(SDL_FColor barColor) { this->barColor = barColor; }
-    void SetBarColor(SDL_Color barColor) {this->barColor = ToFColor(barColor);}
+    void SetBarColor(SDL_Color barColor) {
+        this->barColor = ToFColor(barColor);
+    }
 
-    void SetBarAlignMent(std::shared_ptr<UIComponent> child, TextAlign xAlign, TextAlign yAlign, glm::vec2 offset, glm::vec2 margin);
+    // when using this method, please make sure the child is a real child of this panel.
+    void SetBarAlignMent(std::shared_ptr<UIComponent> child, TextAlign xAlign,
+                         TextAlign yAlign, glm::vec2 margin, glm::vec2 offset);
+    // when using this method, please make sure the child is a real child of this panel.
+    void SetBarAlignMent(UIComponent* child, TextAlign xAlign,
+                         TextAlign yAlign, glm::vec2 margin, glm::vec2 offset);
 
-  private:
+  protected:
     float barHeight;         // bar's height.
     SDL_FColor barColor;     // bar's color
     bool isDragging = false; // is the panel being dragged

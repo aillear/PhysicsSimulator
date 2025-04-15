@@ -6,6 +6,7 @@
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
+#include "renderSystem.h"
 #include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
@@ -15,11 +16,10 @@
 
 using Shape = PhysicsShapeType;
 
-
 bool SortByAABB(const std::shared_ptr<Object> &a,
                 const std::shared_ptr<Object> &b) {
-    auto pa = static_cast<RigidBody*>(a.get());
-    auto pb = static_cast<RigidBody*>(b.get());
+    auto pa = static_cast<RigidBody *>(a.get());
+    auto pb = static_cast<RigidBody *>(b.get());
     return pa->GetAABB().minP.x < pb->GetAABB().minP.x;
 }
 
@@ -51,8 +51,8 @@ bool PhysicsSystem::Init(int iteration) {
 
     if (iteration < MinIteration || iteration > MaxIteration) {
         F_LOG_ERROR("PhysicsSystem: iteration is out of range, it must be "
-                  "between {} and {}",
-                  MinIteration, MaxIteration);
+                    "between {} and {}",
+                    MinIteration, MaxIteration);
         throw std::out_of_range("iteration is out of range.");
     }
     this->iteration_ = iteration;
@@ -74,19 +74,33 @@ void PhysicsSystem::UpdateWrapper() {
         callBack();
     while (running) {
         fpsc.StartFrame();
-        float dt = fpsc.GetLastFrameSecond() / iteration_;
+
         ObjManage();
+        
+        float dt = fpsc.GetLastFrameSecond() / iteration_;
+        // execute iteration here.
         for (int i = 0; i < iteration_; i++) {
             rootNode->PhysicsUpdateWrapper(dt);
             CollisionHandler();
         }
         OutOffBoundCheck();
 
+
         for (auto &callBack : AfterUpdateFunctionWrapper)
             callBack();
 
+        // render here
         rootNode->RenderWrapper();
+        for (auto& p : contactPoints) {
+            DrawCommand cmd (ShapeType::HOLLOW_RECT, false);
+            cmd.GetBase().color = {1, 0, 1, 1};
+            cmd.GetBase().rect = {(p - glm::vec2{5, 5}), (p + glm::vec2{5, 5})};
+            cmd.halfLineWidth = 1.5f;
+            GET_Buffer.AddCommand(std::move(cmd));
+        }
+        contactPoints.clear();
         GET_Buffer.Submit();
+
         fpsc.EndFrame();
     }
     LOG_INFO("physics cycle is end.");
@@ -179,7 +193,7 @@ void PhysicsSystem::CollisionHandler() {
 
             if (objA->GetIsStatic() && objB->GetIsStatic())
                 continue;
-            if (!Collision(objA, objB, norm, depth))
+            if (!GET_CollisionMgr.CollisionCheck(objA, objB, norm, depth))
                 continue;
 
             // objA->OnCollision(objB, norm, depth);
@@ -194,43 +208,32 @@ void PhysicsSystem::CollisionHandler() {
                 objB->Move(ds);
             }
 
-            CollisionResolver(objA, objB, norm, depth);
+            Collision collision{objA, objB, norm, depth, {0, 0}, {0, 0}, 0};
+            GET_CollisionMgr.FindContactPoints(objA, objB, collision.point1,
+                                               collision.point2,
+                                               collision.collisionCount);
+            collisions.emplace_back(collision);
         }
     }
-}
 
-bool PhysicsSystem::Collision(RigidBody *a, RigidBody *b, glm::vec2 &norm,
-                              float &depth) {
-    norm = {0, 0};
-    depth = 0;
-
-    Shape typeA = a->GetPhysicsType();
-    Shape typeB = b->GetPhysicsType();
-
-    if (typeA == Shape::CIRCLE) {
-        if (typeB == Shape::CIRCLE) {
-            return GET_CollisionMgr.IntersectCircle(
-                a->GetCircle(), b->GetCircle(), norm, depth);
-        } else {
-            return GET_CollisionMgr.IntersectPolygonAndCircle(
-                a->GetCircle(), b->GetVertex(), b->GetPosition(), norm, depth);
-        }
-    } else {
-        if (typeB == Shape::CIRCLE) {
-            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(
-                b->GetCircle(), a->GetVertex(), a->GetPosition(), norm, depth);
-            norm = -norm;
-            return result;
-        } else {
-            return GET_CollisionMgr.IntersectPolygon(
-                a->GetVertex(), a->GetPosition(), b->GetVertex(),
-                b->GetPosition(), norm, depth);
+    for (auto &collision : collisions) {
+        CollisionResolver(collision);
+        if (collision.collisionCount > 0) {
+            contactPoints.push_back(collision.point1);
+            if (collision.collisionCount > 1) {
+                contactPoints.push_back(collision.point2);
+            }
         }
     }
+    collisions.clear();
 }
 
-void PhysicsSystem::CollisionResolver(RigidBody *a, RigidBody *b,
-                                      glm::vec2 norm, float depth) {
+void PhysicsSystem::CollisionResolver(const Collision &collision) {
+    auto a = collision.objA;
+    auto b = collision.objB;
+    auto norm = collision.norm;
+    auto depth = collision.depth;
+
     if (a == nullptr || b == nullptr) {
         LOG_ERROR("nullptr in collission resolver.");
         throw std::runtime_error("null ptr in collision resolver");
@@ -259,12 +262,11 @@ void PhysicsSystem::OutOffBoundCheck() {
         RigidBody *obj = static_cast<RigidBody *>(child.get());
         auto aabb = obj->GetAABB();
 
-        if (aabb.maxP.x > 4000 || aabb.minP.x < -4000 || aabb.maxP.y > 2320 ||
-            aabb.minP.y < -2320) {
+        if (aabb.minP.x > 4000 || aabb.maxP.x < -4000 || aabb.minP.y > 2320 ||
+            aabb.maxP.y < -2320) {
             F_LOG_INFO("object id: {} out of bound, remove it.", obj->GetID());
             obj->SetToRemove();
             hasRemoveCalled = true;
         }
     }
 }
-

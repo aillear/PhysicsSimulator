@@ -22,9 +22,10 @@
  *
  *  it also provide a basic layout system. you can see it in the guide.md
  */
+
+enum class TextAlign : Uint8 { DEFAULT = 0, START, CENTER, END };
 class UIComponent : public Object {
   public:
-    enum class TextAlign : Uint8 { DEFAULT = 0, START, CENTER, END };
     // TODO:only handle mouse event? may change in the future.
     void HandleEvent(SDL_Event &event) override;
 
@@ -62,8 +63,8 @@ class UIComponent : public Object {
     TextAlign GetXAlign() const { return xAlign_; }
     TextAlign GetYAlign() const { return yAlign_; }
     // those set methods will change the position of the component.
-    void SetAlignMent(TextAlign xAlign, TextAlign yAlign, glm::vec2 offset = {0, 0},
-                      glm::vec2 margin= {0, 0});
+    void SetAlignMent(TextAlign xAlign, TextAlign yAlign,
+                      glm::vec2 margin = {0, 0}, glm::vec2 offset = {0, 0});
     void SetMargin(glm::vec2 margin);
     void SetMarginX(float marginX);
     void SetMarginY(float marginY);
@@ -77,14 +78,13 @@ class UIComponent : public Object {
 
     // so that it's children don't need to implement these functions
 
-    UIComponent(glm::vec2 leftTop = {0, 0}, glm::vec2 widthHeight = {0, 0},
-                SDL_FColor color = {0, 0, 0, 0});
+    UIComponent(glm::vec2 widthHeight = {0, 0});
 
   protected:
     void Render() override = 0;
     void Update(float dt) override = 0;
-    void Init() override {;}
-    void Destroy() override {;}
+    void Init() override { ; }
+    void Destroy() override { ; }
     void PhysicsUpdate(float dt) override { ; }
     void OnMouseMove(SDL_Event &event) override { ; }
     void OnMouseDown(SDL_Event &event) override { ; }
@@ -111,5 +111,3 @@ class UIComponent : public Object {
     bool needToImplementAlignment =
         false; // if true, need to implement alignment
 };
-
-using TextAlign = UIComponent::TextAlign;

@@ -6,7 +6,7 @@
 #include "UIComponent.h"
 #include "UILabelReader.h"
 #include "UIMgr.h"
-#include "UIPanel.h"
+#include "UIPanelLines.h"
 #include "app.h"
 #include "boxBody.h"
 #include "circleBody.h"
@@ -17,96 +17,65 @@
 #include "material.h"
 #include "physicsSystem.h"
 #include "renderSystem.h"
-#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <format>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <memory>
+#include <utility>
 
 void SomeCustomLogicHere() {
-    auto panel = std::make_shared<UIPanel>(glm::vec2{400, 600});
 
+    auto panel = std::make_shared<UIPanelLines>(glm::vec2{500, 800}, 40.0f,
+                                                "信息面板", 5.0f);
     panel->SetColor({40, 44, 52, 255});
     panel->SetBarColor({33, 37, 43, 255});
-    panel->SetBarHeight(40.0f);
-    panel->SetName("panel1");
-    panel->SetEnabled(false);
+    panel->SetEnabled(true);
 
-    auto button2 = std::make_shared<UIButton>(glm::vec2{30, 30});
-    button2->SetColor({157, 42, 18, 255});
+    auto bt = panel->GetCloseButton();
+    bt->SetColor({157, 42, 18, 255});
+    bt->SetColorHover({229, 74, 41, 255});
+    bt->SetColorPressed({233, 125, 102, 255});
 
-    button2->SetColorHover({229, 74, 41, 255});
-    button2->SetColorPressed({233, 125, 102, 255});
-    button2->SetCallBack([panel](SDL_Event &event) {
-        LOG_INFO("Button2 clicked!");
-        panel->SetEnabled(false);
-    });
-    button2->SetName("button2");
-    button2->SetEnabled(true);
+    auto lb = panel->GetTitleLabel();
+    lb->SetFColor({0, 255, 255, 255});
 
-    auto label = std::make_shared<UILabel>();
-    label->ChangeText("Information");
-    label->SetColor({0, 255, 255, 255});
-    label->SetName("label1");
-    label->SetEnabled(true);
-
-    auto label1 = std::make_shared<UILabelReader>();
-    label1->SetFColor({1, 1, 1, 1});
-    label1->SetName("frame time reader");
+    auto label = std::make_shared<UILabelReader>();
     auto &readerRender = GET_App.fpsc;
-    label1->AddReader([&readerRender]() {
-        return std::format("{:.2f}ms", readerRender.GetLastFrameTime());
+    label->AddReader([&readerRender]() {
+        return std::format("渲染帧生成时: {:.2f}ms",
+                           readerRender.GetLastFrameTime());
     });
-    label1->SetAlignMent(UIComponent::TextAlign::END,
-                         UIComponent::TextAlign::START, {0, 0}, {5, 5});
-    label1->SetEnabled(true);
+    panel->AddNewContent(std::move(label), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
 
     auto label2 = std::make_shared<UILabelReader>();
-    label2->SetFColor({1, 1, 1, 1});
-    label2->SetName("frame rate reader");
     label2->AddReader([&readerRender]() {
-        return std::format("{}FPS", readerRender.GetFPS());
+        return std::format("渲染帧率: {}FPS", readerRender.GetFPS());
     });
-    label2->SetAlignMent(UIComponent::TextAlign::END,
-                         UIComponent::TextAlign::START, {0, FONT_SIZE + 5},
-                         {5, 5});
-    label2->SetEnabled(true);
+    panel->AddNewContent(std::move(label2), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
 
     auto label3 = std::make_shared<UILabelReader>();
-    label3->SetFColor({1, 1, 1, 1});
-    label3->SetName("frame time reader");
-    auto &reader = GET_PhysicsSystem.fpsc;
-    label3->AddReader([&reader]() {
-        return std::format("{:.2f}ms", reader.GetLastFrameTime());
+    label3->AddReader([]() {
+        return std::format("物理帧生成时： {:.2f}ms", GET_PhysicsSystem.GetFrameTime());
     });
-    label3->SetAlignMent(UIComponent::TextAlign::START,
-                         UIComponent::TextAlign::START, {0, 0}, {5, 5});
-    label3->SetEnabled(true);
+    panel->AddNewContent(std::move(label3), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
 
     auto label4 = std::make_shared<UILabelReader>();
-    label4->SetFColor({1, 1, 1, 1});
-    label4->SetName("frame time reader");
     label4->AddReader(
-        [&reader]() { return std::format("{}FPS", reader.GetFPS()); });
-    label4->SetAlignMent(UIComponent::TextAlign::START,
-                         UIComponent::TextAlign::START, {0, FONT_SIZE + 5},
-                         {5, 5});
-    label4->SetEnabled(true);
+        []() { return std::format("物理帧率: {}FPS", GET_PhysicsSystem.GetFPS()); });
+    panel->AddNewContent(std::move(label4), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
 
     auto label5 = std::make_shared<UILabelReader>();
-    label5->SetFColor({1, 1, 1, 1});
-    label5->SetName("cameraReader");
-    auto &camera = GET_RenderSystem.GetCamera();
-    label5->AddReader([&camera]() {
-        return std::format("camera zoom: {}, location: {}", camera.getZoom(),
-                           camera.GetPosition());
+    label5->AddReader([]() {
+        return std::format("Body count: {}", GET_PhysicsSystem.GetBodyCount());
     });
-    label5->SetAlignMent(UIComponent::TextAlign::START,
-                         UIComponent::TextAlign::START,
-                         {0, (FONT_SIZE + 5) * 2}, {5, 5});
-    label5->SetEnabled(true);
+    panel->AddNewContent(std::move(label5), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
 
     GET_EventSystem.AddEventListener(
         SDL_EVENT_MOUSE_BUTTON_DOWN, [panel](SDL_Event &event) {
@@ -119,74 +88,16 @@ void SomeCustomLogicHere() {
         });
 
     GET_UIMgr.AddUIComponent(panel);
-    // GET_UIMgr.AddUIComponent(button, panel);
-    GET_UIMgr.AddUIComponent(button2, panel);
-    GET_UIMgr.AddUIComponent(label, panel);
-    GET_UIMgr.AddUIComponent(label1, panel);
-    GET_UIMgr.AddUIComponent(label2, panel);
-    GET_UIMgr.AddUIComponent(label3, panel);
-    GET_UIMgr.AddUIComponent(label4, panel);
-    GET_UIMgr.AddUIComponent(label5, panel);
 
-    auto exitPanel = std::make_shared<UIPanel>(glm::vec2{320, 240});
-    exitPanel->SetName("exit menu");
-    exitPanel->SetBarHeight(40.0f);
-    exitPanel->SetAlignMent(TextAlign::CENTER, TextAlign::CENTER);
-    exitPanel->SetBarColor({33, 37, 43, 255});
-    exitPanel->SetColor({40, 44, 52, 255});
-    exitPanel->SetEnabled(false);
 
-    auto button = std::make_shared<UIButton>(glm::vec2{30, 30});
-    button->SetName("button");
-    button->SetColor({157, 42, 18, 255});
-    button->SetColorHover({229, 74, 41, 255});
-    button->SetColorPressed({233, 125, 102, 255});
-    button->SetCallBack(
-        [exitPanel](SDL_Event &event) { exitPanel->SetEnabled(false); });
-    button->SetEnabled(true);
 
-    auto exitButton = std::make_shared<UIButton>(glm::vec2{100, 50});
-    exitButton->SetName("EXIT BUTTON");
-    exitButton->SetColor({157, 42, 18, 255});
-
-    exitButton->SetColorHover({229, 74, 41, 255});
-    exitButton->SetColorPressed({233, 125, 102, 255});
-    exitButton->SetAlignMent(UIComponent::TextAlign::CENTER,
-                             UIComponent::TextAlign::CENTER);
-    exitButton->SetCallBack([](SDL_Event &) {
-        SDL_Event e;
-        e.type = SDL_EVENT_QUIT;
-        SDL_PushEvent(&e);
+    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN, [](SDL_Event &e) {
+        if (e.key.key != SDLK_ESCAPE)
+            return;
+        SDL_Event quitEvent;
+        quitEvent.type = SDL_EVENT_QUIT;
+        SDL_PushEvent(&quitEvent);
     });
-    exitButton->SetEnabled(true);
-
-    auto exitlabel = std::make_shared<UILabel>();
-    exitlabel->ChangeText("menu");
-    exitlabel->SetColor({0, 255, 255, 255});
-    exitlabel->SetName("exitlabel1");
-    exitlabel->SetEnabled(true);
-
-    GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN,
-                                     [exitPanel](SDL_Event &e) {
-                                         if (e.key.key != SDLK_ESCAPE)
-                                             return;
-                                         exitPanel->SetEnabled(true);
-                                     });
-
-    panel->SetBarAlignMent(button2, TextAlign::END, TextAlign::CENTER, {0, 0},
-                           {5, 0});
-    panel->SetBarAlignMent(label, TextAlign::START, TextAlign::CENTER, {0, 0},
-                           {10, 0});
-
-    exitPanel->SetBarAlignMent(button, TextAlign::END, TextAlign::CENTER,
-                               {0, 0}, {5, 0});
-    exitPanel->SetBarAlignMent(exitlabel, TextAlign::START, TextAlign::CENTER,
-                               {0, 0}, {10, 0});
-
-    GET_UIMgr.AddUIComponent(exitPanel);
-    GET_UIMgr.AddUIComponent(exitButton, exitPanel);
-    GET_UIMgr.AddUIComponent(button, exitPanel);
-    GET_UIMgr.AddUIComponent(exitlabel, exitPanel);
 }
 
 void SomeCustomLogicPHere() {
@@ -203,28 +114,31 @@ void SomeCustomLogicPHere() {
 
     //     if (i != 0) {
     //         obj->SetIsStatic(RandomBool());
-    //         obj->SetFColor(RandomFColor());
+    //         obj->SetFColor(RandomFColor());s
     //         if (obj->GetIsStatic()) {
     //             obj->SetFColorBoundry({1, 0, 0, 1});
     //         }
     //     }
     //     GET_PhysicsSystem.AddObject(obj);
     // }
-    auto ground = std::make_shared<BoxBody>(m, glm::vec2(0, 800), glm::vec2(2000, 20));
+    auto ground =
+        std::make_shared<BoxBody>(m, glm::vec2(0, 800), glm::vec2(2000, 20));
     ground->SetFColorBoundry({0, 0, 0, 1});
     ground->SetColor({77, 120, 204, 255});
     ground->SetIsStatic(true);
     ground->SetName("ground");
     GET_PhysicsSystem.AddObject(ground);
 
-    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(-400, 400), glm::vec2(20, 1000));
+    auto wallL =
+        std::make_shared<BoxBody>(m, glm::vec2(-400, 400), glm::vec2(20, 1000));
     wallL->SetFColorBoundry({0, 0, 0, 1});
     wallL->SetColor({77, 120, 204, 255});
     wallL->SetIsStatic(true);
     wallL->SetName("wall1");
     GET_PhysicsSystem.AddObject(wallL);
 
-    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(400, 400), glm::vec2(20, 1000));
+    auto wallR =
+        std::make_shared<BoxBody>(m, glm::vec2(400, 400), glm::vec2(20, 1000));
     wallR->SetFColorBoundry({0, 0, 0, 1});
     wallR->SetColor({77, 120, 204, 255});
     wallR->SetIsStatic(true);
@@ -253,34 +167,35 @@ void SomeCustomLogicPAHere() {
     //         return;
     //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     // }
-    Material m{0.5, 0.5, 0.5};
+    Material m{0.5, 0.95, 0.5};
     static int counter = 0;
     static bool isQPressed = false;
     if (KeyState(SDL_SCANCODE_Q)) {
-        if (!isQPressed){
-            auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0}, RandomPos({50, 50}, {100,100}));
+        if (!isQPressed) {
+            auto obj = std::make_shared<BoxBody>(
+                m, glm::vec2{0, 0}, RandomPos({50, 50}, {100, 100}));
             obj->SetFColor(RandomFColor());
             obj->MoveTo(SCREEN2WORLD(MousePos));
             obj->SetName(std::format("the {}'th object", counter++));
             GET_PhysicsSystem.AddObject(obj);
             isQPressed = true;
             F_LOG_INFO("current have {} objects", counter);
-        } 
-    }
-    else isQPressed = false;
+        }
+    } else
+        isQPressed = false;
 
     static bool isEPressed = false;
     if (KeyState(SDL_SCANCODE_E)) {
-        if (!isEPressed){
-            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0}, RandomFloat(25, 50));
+        if (!isEPressed) {
+            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0},
+                                                    RandomFloat(25, 50));
             obj->SetFColor(RandomFColor());
             obj->MoveTo(SCREEN2WORLD(MousePos));
             obj->SetName(std::format("the {}'th object", counter++));
             GET_PhysicsSystem.AddObject(obj);
             isEPressed = true;
             F_LOG_INFO("current have {} objects", counter);
-        } 
-    }
-    else isEPressed = false;
-
+        }
+    } else
+        isEPressed = false;
 }

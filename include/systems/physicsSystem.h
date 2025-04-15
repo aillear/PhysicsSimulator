@@ -2,10 +2,9 @@
 
 #include "FPSCounter.h"
 #include "SDL3/SDL_events.h"
+#include "collisionMgr.h"
 #include "configs.h"
 #include "eventSystem.h"
-#include "object.h"
-#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <memory>
@@ -38,7 +37,9 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
     const int GetBodyCount() const { return rootNode->GetChildren().size(); }
-
+    const int GetIteration() const { return iteration_; }
+    const float GetFrameTime() const { return fpsc.GetLastFrameTime(); }
+    const int GetFPS() const { return fpsc.GetFPS(); }
     void AddCustomInitFunction(BasicFunctionWrapper callBack) {
         initFunctionWrapper.emplace_back(std::move(callBack));
     }
@@ -57,11 +58,8 @@ class PhysicsSystem {
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
     void HandleSDLEvents(SDL_Event &event);
     void CollisionHandler();
-    bool
-    Collision(RigidBody *a, RigidBody *b, glm::vec2 &norm,
-              float &depth); // this is only should used by CollisionHandler()
-    void CollisionResolver(RigidBody *a, RigidBody *b, glm::vec2 norm,
-                           float depth); // so does this.
+
+    void CollisionResolver(const Collision &collision); // so does this.
 
     void OutOffBoundCheck();
 
@@ -77,8 +75,12 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> rootNode;
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 
+    std::vector<Collision> collisions;
+
     std::vector<BasicFunctionWrapper> initFunctionWrapper;
     std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
+
+    std::vector<glm::vec2> contactPoints; // temp for test
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()

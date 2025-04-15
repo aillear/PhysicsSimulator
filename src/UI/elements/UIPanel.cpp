@@ -58,27 +58,54 @@ bool UIPanel::HitTest(glm::vec2 MousePos) {
     return true;
 }
 
-void UIPanel::SetBarAlignMent(std::shared_ptr<UIComponent> child, TextAlign xAlign,
-                     TextAlign yAlign, glm::vec2 offset, glm::vec2 margin) {
+void UIPanel::SetBarAlignMent(std::shared_ptr<UIComponent> child,
+                              TextAlign xAlign, TextAlign yAlign,
+                              glm::vec2 margin, glm::vec2 offset) {
 
     auto childWH = child->GetWidthHeight();
     switch (yAlign) {
-        case TextAlign::START: {
-            offset.y -= barHeight;
-            break;
-        }
-        case TextAlign::CENTER: {
-            offset.y -= 0.5f * (barHeight + childWH.y);
-            // reulate margin to 0
-            margin.y = 0;
-            break;
-        }
-        case TextAlign::END: {
-            offset.y -= childWH.y;
-            break;
-        }
-        default:
-            break;
+    case TextAlign::START: {
+        offset.y -= barHeight;
+        break;
     }
-    child->SetAlignMent(xAlign, TextAlign::START, offset, margin);
+    case TextAlign::CENTER: {
+        offset.y -= 0.5f * (barHeight + childWH.y);
+        // reulate margin to 0
+        margin.y = 0;
+        break;
+    }
+    case TextAlign::END: {
+        offset.y -= childWH.y;
+        break;
+    }
+    default:
+        break;
+    }
+    child->SetAlignMent(xAlign, TextAlign::START, margin, offset);
+}
+
+void UIPanel::SetBarAlignMent(UIComponent* child,
+                              TextAlign xAlign, TextAlign yAlign,
+                              glm::vec2 margin, glm::vec2 offset) {
+    if (child == nullptr) return;
+    auto childWH = child->GetWidthHeight();
+    switch (yAlign) {
+    case TextAlign::START: {
+        offset.y -= barHeight;
+        break;
+    }
+    case TextAlign::CENTER: {
+        offset.y -= 0.5f * (barHeight + childWH.y);
+        // reulate margin to 0
+        margin.y = 0;
+        break;
+    }
+    case TextAlign::END: {
+        offset.y -= childWH.y;
+        break;
+    }
+    default:
+        break;
+    }
+    child->SetAlignMent(xAlign, TextAlign::START, margin, offset);
 }

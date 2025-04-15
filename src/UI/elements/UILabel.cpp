@@ -4,13 +4,14 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cstddef>
 
-UILabel::UILabel(glm::vec2 leftTop, SDL_FColor color)
-    : UIComponent(leftTop, {0, 0}, color), textLength(0) {
-    textObj = GET_RenderSystem.CreateText("default text", 0);
+UILabel::UILabel(const std::string &text)
+    : textLength(0) {
+    textObj = GET_RenderSystem.CreateText(text, 0);
     int w, h;
     TTF_GetTextSize(textObj.get(), &w, &h);
     widthHeight.x = static_cast<float>(w);
     widthHeight.y = static_cast<float>(h);
+    SetFColor({1,1,1,1});
 }
 
 void UILabel::ChangeText(const std::string &text, size_t length) {

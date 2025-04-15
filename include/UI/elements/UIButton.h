@@ -13,26 +13,18 @@ class UIButton : public UIComponent {
         HOVER,
         PRESSED,
     };
-    UIButton(glm::vec2 widthHeight = {0, 0}, glm::vec2 leftTop = {0, 0},
-             SDL_FColor color = {0, 0, 0, 0},
-             SDL_FColor colorHover = {0, 0, 0, 0},
-             SDL_FColor colorPressed = {0, 0, 0, 0})
-        : UIComponent(leftTop, widthHeight, color), colorHover(colorHover),
-          colorPressed(colorPressed) {
-        ;
-    }
+    UIButton(glm::vec2 widthHeight = {0, 0}) : UIComponent(widthHeight) { ; }
     ~UIButton() override = default;
 
     void SetCallBack(ClickCallback call) { callback = std::move(call); }
-    void SetColorHover(SDL_Color color) {colorHover = ToFColor(color);}
-    void SetColorPressed(SDL_Color color) {colorPressed = ToFColor(color);}
+    void SetColorHover(SDL_Color color) { colorHover = ToFColor(color); }
+    void SetColorPressed(SDL_Color color) { colorPressed = ToFColor(color); }
     void SetFColorHover(SDL_FColor color) { colorHover = color; }
     void SetFColorPressed(SDL_FColor color) { colorPressed = color; }
     SDL_FColor GetColorHover() const { return colorHover; }
     SDL_FColor GetColorPressed() const { return colorPressed; }
 
   protected:
-  
     void Render() override;
     void Update(float dt) override;
     void OnMouseMove(SDL_Event &event) override;

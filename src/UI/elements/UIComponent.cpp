@@ -5,13 +5,15 @@
 #include "renderSystem.h"
 #include <glm/ext/vector_float2.hpp>
 
-UIComponent::UIComponent(glm::vec2 leftTop, glm::vec2 widthHeight,
-    SDL_FColor color) : leftTopPos(leftTop), widthHeight(widthHeight), color(color), xAlign_(TextAlign::START), yAlign_(TextAlign::START) {
-    AddUpdateCallBack([this](float){
-        if (!this->needToImplementAlignment) return;
+UIComponent::UIComponent(glm::vec2 widthHeight)
+    : leftTopPos({0, 0}), widthHeight(widthHeight), color({0, 0, 0, 0}),
+      xAlign_(TextAlign::START), yAlign_(TextAlign::START) {
+    AddUpdateCallBack([this](float) {
+        if (!this->needToImplementAlignment)
+            return;
         needToImplementAlignment = false;
         ImplementAlignment();
-    } );
+    });
 #ifdef _DEBUG_MODE
     AddInitCallBack([this]() {
         F_LOG_DEBUG("UIcomponent id: {}, name: {} inited.", objectID, name);
@@ -29,71 +31,75 @@ bool UIComponent::HitTest(glm::vec2 MousePos) {
 }
 
 glm::vec2 UIComponent::GetScreenPos() const {
-    if (parent == nullptr || !relateToParent) return leftTopPos;
-    return static_cast<UIComponent*>(parent)->GetScreenPos() + leftTopPos;
+    if (parent == nullptr || !relateToParent)
+        return leftTopPos;
+    return static_cast<UIComponent *>(parent)->GetScreenPos() + leftTopPos;
 }
 
-void UIComponent::HandleEvent(SDL_Event& event) {
+void UIComponent::HandleEvent(SDL_Event &event) {
     // current only handle mouse event
     switch (event.type) {
-        case SDL_EVENT_MOUSE_MOTION: {
-            OnMouseMove(event);
-            break;
-        }
-        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-            OnMouseDown(event);
-            break;
-        }
-        case SDL_EVENT_MOUSE_BUTTON_UP: {
-            OnMouseUp(event);
-            break;
-        }
+    case SDL_EVENT_MOUSE_MOTION: {
+        OnMouseMove(event);
+        break;
+    }
+    case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+        OnMouseDown(event);
+        break;
+    }
+    case SDL_EVENT_MOUSE_BUTTON_UP: {
+        OnMouseUp(event);
+        break;
+    }
     }
 }
 
 glm::vec2 UIComponent::GetParentRelativePos() const {
-    if (parent == nullptr) return {0, 0};
-    return static_cast<UIComponent*>(parent)->GetRelativePos();
+    if (parent == nullptr)
+        return {0, 0};
+    return static_cast<UIComponent *>(parent)->GetRelativePos();
 }
 
 glm::vec2 UIComponent::GetParentScreenPos() const {
-    if (parent == nullptr) return {0, 0};
-    return static_cast<UIComponent*>(parent)->GetScreenPos();
+    if (parent == nullptr)
+        return {0, 0};
+    return static_cast<UIComponent *>(parent)->GetScreenPos();
 }
 
 glm::vec2 UIComponent::GetParentWidthHeight() const {
-    if (parent == nullptr) return GET_RenderSystem.GetWindowSize();
-    return static_cast<UIComponent*>(parent)->GetWidthHeight();
+    if (parent == nullptr)
+        return GET_RenderSystem.GetWindowSize();
+    return static_cast<UIComponent *>(parent)->GetWidthHeight();
 }
 
 void UIComponent::ImplementAlignment() {
     auto parentWH = GetParentWidthHeight();
     switch (xAlign_) {
-        case TextAlign::START:
-            leftTopPos.x = margin.x + offset.x;
-            break;
-        case TextAlign::CENTER:
-            leftTopPos.x = (parentWH.x - widthHeight.x) * 0.5f + offset.x;
-            break;
-        case TextAlign::END:
-            leftTopPos.x = parentWH.x - widthHeight.x - margin.x + offset.x;
-            break;
-        default:
-            break;
+    case TextAlign::START:
+        leftTopPos.x = margin.x + offset.x;
+        break;
+    case TextAlign::CENTER:
+        leftTopPos.x = (parentWH.x - widthHeight.x) * 0.5f + offset.x;
+        break;
+    case TextAlign::END:
+        leftTopPos.x = parentWH.x - widthHeight.x - margin.x + offset.x;
+        break;
+    default:
+        break;
     }
 
     switch (yAlign_) {
-        case TextAlign::START:
-            leftTopPos.y = margin.y + offset.y;
-            break;
-        case TextAlign::CENTER:
-            leftTopPos.y = (parentWH.y - widthHeight.y) * 0.5f + offset.y;
-            break;
-        case TextAlign::END:
-            leftTopPos.y = parentWH.y - widthHeight.y - margin.y + offset.y;
-            break;
-        default:
-            break;
+    case TextAlign::START:
+        leftTopPos.y = margin.y + offset.y;
+        break;
+    case TextAlign::CENTER:
+        leftTopPos.y = (parentWH.y - widthHeight.y) * 0.5f + offset.y;
+        break;
+    case TextAlign::END:
+        leftTopPos.y = parentWH.y - widthHeight.y - margin.y + offset.y;
+        break;
+    default:
+        break;
     }
 }
 
@@ -138,10 +144,10 @@ void UIComponent::SetOffsetY(float offsetY) {
 }
 
 void UIComponent::SetAlignMent(TextAlign xAlign, TextAlign yAlign,
-                                glm::vec2 offset, glm::vec2 margin) {
+                               glm::vec2 margin, glm::vec2 offset) {
     this->xAlign_ = xAlign;
     this->yAlign_ = yAlign;
-    this->offset = offset;
     this->margin = margin;
+    this->offset = offset;
     needToImplementAlignment = true;
 }

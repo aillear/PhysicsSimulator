@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_events.h>
 #include <cstddef>
@@ -52,14 +53,14 @@ class Object {
     const ObjectID GetID() const { return objectID; }
 
     // child management
-    void AddChild(std::shared_ptr<Object> child);
+    virtual void AddChild(std::shared_ptr<Object> child);
     // remove first child by pointer, id or name
     // do not recursively remove child
     // remove child my be reconscruct in the future.
-    void RemoveChild(std::shared_ptr<Object> child);
-    void RemoveChildByID(ObjectID id);
-    void RemoveChildByName(const std::string &name);
-    void RemoveAllChildren();
+    virtual void RemoveChild(std::shared_ptr<Object> child);
+    virtual void RemoveChildByID(ObjectID id);
+    virtual void RemoveChildByName(const std::string &name);
+    virtual void RemoveAllChildren();
 
     // get first child by id or name, if not found, return nullptr
     // it will recursively search all children
@@ -73,10 +74,10 @@ class Object {
 
     Object *GetParent() const { return parent; }
     void SetParent(Object *parent) { this->parent = parent; }
-
-
-  protected:
-
+    
+    
+    protected:
+    
     // live cycle interface
     virtual void Init() = 0;
     virtual void Render() = 0;
@@ -84,7 +85,7 @@ class Object {
     virtual void PhysicsUpdate(float dt) = 0;
     virtual void HandleEvent(SDL_Event &event) = 0;
     virtual void Destroy() = 0;
-
+    
     // you can add addition logic to update here
     void AddInitCallBack(BasicFunctionWrapper callBack);
     void AddRenderCallBack(BasicFunctionWrapper callBack);
@@ -92,18 +93,22 @@ class Object {
     void AddPhysicsUpdateCallBack(UpdateFunctionWrapper callBack);
     void AddHandleEventCallBack(EventFunctionWrapper callBack);
     void AddDestroyCallBack(BasicFunctionWrapper callBack);
-
-
+    
+    
     bool enabled = true;
     bool removedMark = false;
     std::string name;
-
+    
     ObjectID objectID;
     static ObjectID objectCount; // I believe that size_t is enough for the number of objects in the game
     Object *parent = nullptr;
     std::vector<std::shared_ptr<Object>> children;
-
-  private:
+    
+    private:
+    friend class UIMgr;
+    friend class PhysicsSystem;
+    Object *GetTempFather();
+    Object *tempFather = nullptr; // used to store temp father relationship.
     // release all children and itself recursively.
     void ReleaseAllChildren();
     // call back, so that child can easily add new logic to life cycle.
