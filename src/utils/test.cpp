@@ -31,7 +31,7 @@ void SomeCustomLogicHere() {
                                                 "信息面板", 5.0f);
     panel->SetColor({40, 44, 52, 255});
     panel->SetBarColor({33, 37, 43, 255});
-    panel->SetEnabled(true);
+    panel->SetEnabled(false);
 
     auto bt = panel->GetCloseButton();
     bt->SetColor({157, 42, 18, 255});
@@ -167,7 +167,7 @@ void SomeCustomLogicPAHere() {
     //         return;
     //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
     // }
-    Material m{0.5, 0.95, 0.5};
+    Material m{0.5, 1, 0.5};
     static int counter = 0;
     static bool isQPressed = false;
     if (KeyState(SDL_SCANCODE_Q)) {

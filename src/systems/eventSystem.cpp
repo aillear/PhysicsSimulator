@@ -1,4 +1,6 @@
 #include "eventSystem.h"
+#include "configs.h"
+#include "logger.h"
 #include <SDL3/SDL_events.h>
 #include <mutex>
 
@@ -8,7 +10,7 @@ EventSystem &EventSystem::Instance() {
     return instance;
 }
 
-bool EventSystem::RemoveEventListener(SDL_EventType type, EventHandlerID id) {
+bool EventSystem::RemoveEventListener(Uint32 type, EventHandlerID id) {
     // write lock
     std::unique_lock lock(mutex_);
     auto it = eventMap_.find(type);
@@ -26,7 +28,7 @@ bool EventSystem::RemoveEventListener(SDL_EventType type, EventHandlerID id) {
 void EventSystem::EventDispatcher(SDL_Event &event) {
     // read lock
     std::shared_lock lock(mutex_);
-    auto& delegate = eventMap_[static_cast<SDL_EventType>(event.type)];
+    auto& delegate = eventMap_[static_cast<Uint32>(event.type)];
     for (auto& handler : delegate) {
         handler.callback(event);
     }

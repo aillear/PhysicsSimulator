@@ -46,7 +46,7 @@ void App::Init(int argc, char *argv[]) {
     GET_PhysicsSystem.Init(20);
     GET_CollisionMgr.Init();
     GET_UIMgr.Init();
-
+    GET_Configer.Init();
     SDL_initFramerate(&fpsm);
     SDL_setFramerate(&fpsm, 100);
 
@@ -79,9 +79,23 @@ void App::Run() {
         GET_PhysicsSystem.UpdateWrapper();
     });
     physicsThreadMutex.unlock();
+
+    SDL_Event slowUpdateEvent;
+    slowUpdateEvent.type = USER_EVENT_SLOW_UPDATE;
+    SDL_PushEvent(&slowUpdateEvent);
+
     while (running) {
         fpsc.StartFrame();
         SDL_framerateDelay(&fpsm);
+
+        timer_ += fpsc.GetLastFrameTime();
+        if (timer_ >= 500) {
+            timer_ -= 500;
+            SDL_Event slowUpdateEvent;
+            slowUpdateEvent.type = USER_EVENT_SLOW_UPDATE;
+            SDL_PushEvent(&slowUpdateEvent);
+        }
+
         GET_EventSystem.HandleEvent();
         GET_InputSystem.Update();
         GET_UIMgr.Update(fpsc.GetLastFrameTime());

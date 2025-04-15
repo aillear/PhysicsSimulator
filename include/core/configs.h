@@ -20,6 +20,7 @@
 
 
 
+#include "SDL3/SDL_stdinc.h"
 constexpr float TUAreaFactor = 0.0001f; // from cm^2 -> m^2
 constexpr float TUMassFactor = 10.0f;   // density(g/cm^2) * area(m^2) = mass()
 // this is using meter ^ 2
@@ -40,3 +41,23 @@ constexpr float TGLongitudeFactor = 100.0f; // 1 m = 100 game m
 // set the value bound of iteration
 constexpr int MinIteration = 1;
 constexpr int MaxIteration = 64;
+
+/**
+ * @brief event here
+ * 
+ */
+
+ // this is slow update which is triggered by every 500ms.
+extern Uint32 USER_EVENT_SLOW_UPDATE;
+
+ 
+
+
+class Configer {
+    public:
+        static Configer &Instance();
+        void Init();
+        void Destroy();
+};
+
+#define GET_Configer Configer::Instance()

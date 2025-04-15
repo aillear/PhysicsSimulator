@@ -7,28 +7,36 @@
 #include <utility>
 #include <vector>
 
-
 class App {
   public:
-    static App& Instance();
-    void Init(int argc, char* argv[]);
-    void SetRunning() {running = true;};
+    static App &Instance();
+    void Init(int argc, char *argv[]);
+    void SetRunning() { running = true; };
     void Run();
     void Destroy();
-    void AddFuntionWhenInit(BasicFunctionWrapper callBack) {initFunctionWrapper_.emplace_back(std::move(callBack));}
-    void AddFuntionBeforeRun(BasicFunctionWrapper callBack) {beforeRunFunctionWrapper_.emplace_back(std::move(callBack));}
+    void AddFuntionWhenInit(BasicFunctionWrapper callBack) {
+        initFunctionWrapper_.emplace_back(std::move(callBack));
+    }
+    void AddFuntionBeforeRun(BasicFunctionWrapper callBack) {
+        beforeRunFunctionWrapper_.emplace_back(std::move(callBack));
+    }
+    void AddFuntionSlowUpdate(BasicFunctionWrapper callBack) {
+        slowUpdateWrapper_.emplace_back(std::move(callBack));
+    }
 
     FPSCounter fpsc;
+
   private:
     App();
 
+    float timer_;
     bool running;
     FPSmanager fpsm;
     std::thread physicsThread;
 
     std::vector<BasicFunctionWrapper> initFunctionWrapper_;
     std::vector<BasicFunctionWrapper> beforeRunFunctionWrapper_;
+    std::vector<BasicFunctionWrapper> slowUpdateWrapper_;
 };
 
-
-# define GET_App App::Instance()
+#define GET_App App::Instance()
