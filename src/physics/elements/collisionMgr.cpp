@@ -2,8 +2,11 @@
 #include "conversion.h"
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/vector_relational.hpp>
 #include <limits>
 #include <utility>
 
@@ -69,10 +72,12 @@ void CollisionMgr::FindContactPoints(RigidBody *a, RigidBody *b,
         }
     } else {
         if (typeB == Shape::CIRCLE) {
-            FindContactPoints(b->GetCircle(), a->GetVertex(), a->GetPosition(), 
+            FindContactPoints(b->GetCircle(), a->GetVertex(), a->GetPosition(),
                               contactP1);
             count = 1;
         } else {
+            FindContactPoints(a->GetVertex(), b->GetVertex(), contactP1,
+                              contactP2, count);
         }
     }
 }
@@ -130,6 +135,97 @@ void CollisionMgr::FindContactPoints(const GlmCircle &a,
         if (distSq < minD) {
             minD = distSq;
             cp = contact;
+        }
+    }
+}
+
+void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
+                                     const std::vector<SDL_Vertex> &b,
+                                     glm::vec2 &contactPoint1,
+                                     glm::vec2 &contactPoint2, int &count) {
+
+    contactPoint1 = {0, 0};
+    contactPoint2 = {0, 0};
+    count = 0;
+
+    float minD = std::numeric_limits<float>::max();
+    float distSq;
+    glm::vec2 cp;
+
+    for (int i = 0; i < a.size(); i++) {
+        glm::vec2 p = ToGlmVec2(a[i].position);
+
+        glm::vec2 va = ToGlmVec2(b.back().position);
+        glm::vec2 vb = ToGlmVec2(b[0].position);
+
+        // pre step
+        {
+            PointSegmentDistance(p, va, vb, distSq, cp);
+            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+                    contactPoint2 = cp;
+                    count = 2;
+                }
+            } else if (distSq < minD) {
+                minD = distSq;
+                contactPoint1 = cp;
+                count = 1;
+            }
+        }
+        for (int j = 1; j < b.size(); j++) {
+            glm::vec2 va = ToGlmVec2(b[j - 1].position);
+            glm::vec2 vb = ToGlmVec2(b[j].position);
+
+            PointSegmentDistance(p, va, vb, distSq, cp);
+            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+                    contactPoint2 = cp;
+                    count = 2;
+                }
+            } else if (distSq < minD) {
+                minD = distSq;
+                contactPoint1 = cp;
+                count = 1;
+            }
+        }
+    }
+
+
+    for (int i = 0; i < b.size(); i++) {
+        glm::vec2 p = ToGlmVec2(b[i].position);
+
+        glm::vec2 va = ToGlmVec2(a.back().position);
+        glm::vec2 vb = ToGlmVec2(a[0].position);
+
+        // pre step
+        {
+            PointSegmentDistance(p, va, vb, distSq, cp);
+            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+                    contactPoint2 = cp;
+                    count = 2;
+                }
+            } else if (distSq < minD) {
+                minD = distSq;
+                contactPoint1 = cp;
+                count = 1;
+            }
+        }
+        for (int j = 1; j < a.size(); j++) {
+            glm::vec2 va = ToGlmVec2(a[j - 1].position);
+            glm::vec2 vb = ToGlmVec2(a[j].position);
+
+            PointSegmentDistance(p, va, vb, distSq, cp);
+            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+                    contactPoint2 = cp;
+                    count = 2;
+                }
+            } else if (distSq < minD) {
+                minD = distSq;
+                contactPoint1 = cp;
+                count = 1;
+            }
         }
     }
 }

@@ -169,7 +169,7 @@ void SomeCustomLogicPAHere() {
     // }
     Material m{0.5, 0.8, 0.5};
     static int counter = 0;
-    if (PKeyDown(SDL_SCANCODE_E)) {
+    if (PKeyDown(SDL_SCANCODE_Q)) {
         auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0},
                                              RandomPos({50, 50}, {100, 100}));
         obj->SetFColor(RandomFColor());
@@ -179,7 +179,7 @@ void SomeCustomLogicPAHere() {
         F_LOG_INFO("current have {} objects", counter);
     }
 
-    if (PKeyUp(SDL_SCANCODE_E)) {
+    if (PKeyDown(SDL_SCANCODE_E)) {
         auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0},
                                                 RandomFloat(25, 50));
         obj->SetFColor(RandomFColor());
