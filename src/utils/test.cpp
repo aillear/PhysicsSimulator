@@ -13,7 +13,6 @@
 #include "conversion.h"
 #include "eventSystem.h"
 #include "inputSystem.h"
-#include "logger.h"
 #include "material.h"
 #include "physicsSystem.h"
 #include "renderSystem.h"

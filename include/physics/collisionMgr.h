@@ -14,7 +14,7 @@ struct Collision {
     float depth;
     glm::vec2 point1;
     glm::vec2 point2;
-    int collisionCount;
+    int count;
 };
 
 class CollisionMgr {

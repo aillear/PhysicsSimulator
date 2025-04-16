@@ -10,6 +10,7 @@
 #include <glm/ext/vector_float2.hpp>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 class PhysicsSystem {
@@ -58,7 +59,8 @@ class PhysicsSystem {
     PhysicsSystem(const PhysicsSystem &) = delete;
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
     void HandleSDLEvents(SDL_Event &event);
-    void CollisionHandler(int iteration);
+    void ConllisionBroadPhase();
+    void ConllisionNarrowPhase();
     void SeperateBodies(RigidBody* a, RigidBody* b, glm::vec2 mtv);
 
     void CollisionResolver(const Collision &collision); // so does this.
@@ -77,12 +79,10 @@ class PhysicsSystem {
     std::shared_ptr<ObjectWorld> rootNode;
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 
-    std::vector<Collision> collisions;
-
     std::vector<BasicFunctionWrapper> initFunctionWrapper;
     std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
 
-    std::vector<glm::vec2> contactPoints; // temp for test
+    std::vector<std::pair<int, int>> collisionPairs; // for broad phase
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()

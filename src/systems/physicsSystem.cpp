@@ -6,7 +6,6 @@
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
-#include "renderSystem.h"
 #include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
@@ -80,8 +79,10 @@ void PhysicsSystem::UpdateWrapper() {
         float dt = fpsc.GetLastFrameSecond() / iteration_;
         // execute iteration here.
         for (int i = 0; i < iteration_; i++) {
+            collisionPairs.clear();
             rootNode->PhysicsUpdateWrapper(dt);
-            CollisionHandler(i);
+            ConllisionBroadPhase();
+            ConllisionNarrowPhase();
         }
         OutOffBoundCheck();
 
@@ -90,14 +91,6 @@ void PhysicsSystem::UpdateWrapper() {
 
         // render here
         rootNode->RenderWrapper();
-        for (auto &p : contactPoints) {
-            DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
-            cmd.GetBase().color = {1, 0, 1, 1};
-            cmd.GetBase().rect = {(p - glm::vec2{5, 5}), (p + glm::vec2{5, 5})};
-            cmd.halfLineWidth = 1.5f;
-            GET_Buffer.AddCommand(std::move(cmd));
-        }
-        contactPoints.clear();
         GET_Buffer.Submit();
 
         fpsc.EndFrame();
@@ -180,11 +173,10 @@ std::shared_ptr<ObjectWorld> PhysicsSystem::FindObjectByName(std::string name) {
         rootNode->GetChildByName(name));
 }
 
-void PhysicsSystem::CollisionHandler(int iteration) {
+void PhysicsSystem::ConllisionBroadPhase() {
     auto children = rootNode->GetChildren();
     int childCount = children.size();
-    glm::vec2 norm{0, 0};
-    float depth = 0;
+
     for (int i = 0; i < childCount - 1; i++) {
         RigidBody *objA = static_cast<RigidBody *>(children[i].get());
         for (int j = i + 1; j < childCount; j++) {
@@ -195,37 +187,36 @@ void PhysicsSystem::CollisionHandler(int iteration) {
 
             AABB aabbA = objA->GetAABB();
             AABB aabbB = objB->GetAABB();
-            
+
             if (!GET_CollisionMgr.IntersectAABBs(aabbA, aabbB))
                 continue;
 
-            if (!GET_CollisionMgr.CollisionCheck(objA, objB, norm, depth))
-                continue;
-
-            SeperateBodies(objA, objB, norm * depth);
-            
-            Collision collision{objA, objB, norm, depth, {0, 0}, {0, 0}, 0};
-            GET_CollisionMgr.FindContactPoints(objA, objB, collision.point1,
-                                               collision.point2,
-                                               collision.collisionCount);
-            collisions.emplace_back(collision);
+            collisionPairs.emplace_back(i, j);
         }
     }
+}
+void PhysicsSystem::ConllisionNarrowPhase() {
+    auto children = rootNode->GetChildren();
 
-    for (auto &collision : collisions) {
-        CollisionResolver(collision);
-        if (iteration != iteration_-1) continue;
-        if (collision.collisionCount > 0) {
-            contactPoints.push_back(collision.point1);
-            if (collision.collisionCount > 1) {
-                contactPoints.push_back(collision.point2);
-            }
-        }
+    glm::vec2 norm;
+    float depth;
+    for (auto [i, j] : collisionPairs) {
+        RigidBody *objA = static_cast<RigidBody *>(children[i].get());
+        RigidBody *objB = static_cast<RigidBody *>(children[j].get());
+
+        if (!GET_CollisionMgr.CollisionCheck(objA, objB, norm, depth))
+            continue;
+
+        SeperateBodies(objA, objB, norm * depth);
+        Collision c{objA, objB, norm, depth, {0, 0}, {0, 0}, 0};
+        GET_CollisionMgr.FindContactPoints(objA, objB, c.point1, c.point2,
+                                           c.count);
+        CollisionResolver(c);
     }
-    collisions.clear();
 }
 
-void PhysicsSystem::SeperateBodies(RigidBody* objA, RigidBody* objB, glm::vec2 mtv) {
+void PhysicsSystem::SeperateBodies(RigidBody *objA, RigidBody *objB,
+                                   glm::vec2 mtv) {
     if (objA->GetIsStatic()) {
         objB->Move(mtv);
     } else if (objB->GetIsStatic()) {
@@ -236,7 +227,6 @@ void PhysicsSystem::SeperateBodies(RigidBody* objA, RigidBody* objB, glm::vec2 m
         objB->Move(ds);
     }
 }
-
 
 void PhysicsSystem::CollisionResolver(const Collision &collision) {
     auto a = collision.objA;
