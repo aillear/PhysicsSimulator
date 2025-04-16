@@ -59,14 +59,16 @@ void SomeCustomLogicHere() {
 
     auto label3 = std::make_shared<UILabelReader>();
     label3->AddReader([]() {
-        return std::format("物理帧生成时： {:.2f}ms", GET_PhysicsSystem.GetFrameTime());
+        return std::format("物理帧生成时： {:.2f}ms",
+                           GET_PhysicsSystem.GetFrameTime());
     });
     panel->AddNewContent(std::move(label3), TextAlign::START, TextAlign::START,
                          true, {5, 5});
 
     auto label4 = std::make_shared<UILabelReader>();
-    label4->AddReader(
-        []() { return std::format("物理帧率: {}FPS", GET_PhysicsSystem.GetFPS()); });
+    label4->AddReader([]() {
+        return std::format("物理帧率: {}FPS", GET_PhysicsSystem.GetFPS());
+    });
     panel->AddNewContent(std::move(label4), TextAlign::START, TextAlign::START,
                          true, {5, 5});
 
@@ -88,8 +90,6 @@ void SomeCustomLogicHere() {
         });
 
     GET_UIMgr.AddUIComponent(panel);
-
-
 
     GET_EventSystem.AddEventListener(SDL_EVENT_KEY_DOWN, [](SDL_Event &e) {
         if (e.key.key != SDLK_ESCAPE)
@@ -169,33 +169,23 @@ void SomeCustomLogicPAHere() {
     // }
     Material m{0.5, 0.8, 0.5};
     static int counter = 0;
-    static bool isQPressed = false;
-    if (KeyState(SDL_SCANCODE_Q)) {
-        if (!isQPressed) {
-            auto obj = std::make_shared<BoxBody>(
-                m, glm::vec2{0, 0}, RandomPos({50, 50}, {100, 100}));
-            obj->SetFColor(RandomFColor());
-            obj->MoveTo(SCREEN2WORLD(MousePos));
-            obj->SetName(std::format("the {}'th object", counter++));
-            GET_PhysicsSystem.AddObject(obj);
-            isQPressed = true;
-            F_LOG_INFO("current have {} objects", counter);
-        }
-    } else
-        isQPressed = false;
+    if (PKeyDown(SDL_SCANCODE_E)) {
+        auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0},
+                                             RandomPos({50, 50}, {100, 100}));
+        obj->SetFColor(RandomFColor());
+        obj->MoveTo(SCREEN2WORLD(MousePos));
+        obj->SetName(std::format("the {}'th object", counter++));
+        GET_PhysicsSystem.AddObject(obj);
+        F_LOG_INFO("current have {} objects", counter);
+    }
 
-    static bool isEPressed = false;
-    if (KeyState(SDL_SCANCODE_E)) {
-        if (!isEPressed) {
-            auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0},
-                                                    RandomFloat(25, 50));
-            obj->SetFColor(RandomFColor());
-            obj->MoveTo(SCREEN2WORLD(MousePos));
-            obj->SetName(std::format("the {}'th object", counter++));
-            GET_PhysicsSystem.AddObject(obj);
-            isEPressed = true;
-            F_LOG_INFO("current have {} objects", counter);
-        }
-    } else
-        isEPressed = false;
+    if (PKeyUp(SDL_SCANCODE_E)) {
+        auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0},
+                                                RandomFloat(25, 50));
+        obj->SetFColor(RandomFColor());
+        obj->MoveTo(SCREEN2WORLD(MousePos));
+        obj->SetName(std::format("the {}'th object", counter++));
+        GET_PhysicsSystem.AddObject(obj);
+        F_LOG_INFO("current have {} objects", counter);
+    }
 }
