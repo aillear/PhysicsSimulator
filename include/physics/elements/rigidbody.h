@@ -22,19 +22,26 @@ class RigidBody : public ObjectWorld {
     virtual void Rotate(float angle);
     virtual void RotateTo(float rotation);
     PhysicsShapeType GetType() { return type_; }
+
     const float GetMass() const { return mass_; }
     const float GetMassR() const { return massR_; }
     const float GetArea() const { return area_; }
     const float GetRotation() const { return rotation_; }
     const float GetAngularVelocity() const { return angularVelocity_; }
+    const float GetRotateIntertia() const { return rotateIntertia_; }
+    const float GetRotateIntertiaR() const { return rotateIntertiaR_; }
+    Material GetMaterial() const { return material_; }
     glm::vec2 GetVelocity() const { return velocity_; }
+
     void SetVelocity(glm::vec2 v) { velocity_ = v; }
     void AddVelocity(glm::vec2 v) { velocity_ += v; }
-    bool GetIsStatic() { return isStatic_; }
-    void SetIsStatic(bool value);
+
     void AddForce(glm::vec2 force) { this->force_ = force; }
     const glm::vec2 GetForce() { return force_; }
-    Material GetMaterial() const { return material_; }
+
+    bool GetIsStatic() { return isStatic_; }
+    void SetIsStatic(bool value);
+
     SDL_FColor GetFColorBoundry() const { return boundaryColor_; }
     SDL_Color GetColorBoundry() const { return ToColor(boundaryColor_); }
     virtual void SetFColorBoundry(SDL_FColor color) { boundaryColor_ = color; }
@@ -79,6 +86,8 @@ class RigidBody : public ObjectWorld {
 
     virtual void GetAABBUpdated() { needToUpdateAABB = false; }
 
+    virtual void CalRotateIntertia();
+
     const PhysicsShapeType type_;
     bool needToTransfrom = true;
     bool needToUpdateAABB = true;
@@ -88,6 +97,8 @@ class RigidBody : public ObjectWorld {
     float area_;
     float rotation_;
     float angularVelocity_;
+    float rotateIntertia_; // moment of inertia
+    float rotateIntertiaR_; // moment of inertia inverse
     glm::vec2 velocity_;
     glm::vec2 force_;
     AABB aabb_;

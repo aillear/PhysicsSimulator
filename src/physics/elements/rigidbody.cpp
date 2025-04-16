@@ -16,6 +16,7 @@ void RigidBody::Init() {
     needToUpdateAABB = true;
     GetVertexTransfrom();
     GetAABBUpdated();
+    CalRotateIntertia();
 }
 
 float RigidBody::GetRadius() const {
@@ -46,6 +47,12 @@ glm::vec2 RigidBody::GetWidthHeight() const {
 void RigidBody::SetWidthHeight(glm::vec2) {
     F_LOG_WARNING("Try to set a NoneBoxBody's({}) width and height.",
                   ShapeTypeToStr(type_));
+}
+
+void RigidBody::CalRotateIntertia() {
+    // not really to use it now;
+    throw std::runtime_error("CalRotateIntertia is not implemented for type " +
+                             ShapeTypeToStr(type_) + ".");
 }
 
 const std::vector<SDL_Vertex> &RigidBody::GetVertex() const {

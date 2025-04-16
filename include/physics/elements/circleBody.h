@@ -20,6 +20,7 @@ class CircleBody : public RigidBody {
     void Render() override;
     void PhysicsUpdate(float dt) override;
     void GetAABBUpdated() override;
+    void CalRotateIntertia() override;
 
 
     float radius_;

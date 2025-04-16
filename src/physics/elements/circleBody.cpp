@@ -8,15 +8,13 @@
 CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
     : RigidBody(center, mate, PhysicsShapeType::CIRCLE), radius_(radius) {
     area_ = std::numbers::pi * radius * radius * TUAreaFactor;
-    mass_ = area_ * material_.density;
+    mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0 / mass_;
-    SetFColor({1,1,0,1});
-    SetFColorBoundry({1,1,1,1});
+    SetFColor({1, 1, 0, 1});
+    SetFColorBoundry({1, 1, 1, 1});
 }
 
-const GlmCircle CircleBody::GetCircle() const  {
-    return {position_, radius_};
-}
+const GlmCircle CircleBody::GetCircle() const { return {position_, radius_}; }
 
 void CircleBody::Render() {
     // draw it self
@@ -44,13 +42,19 @@ void CircleBody::MoveTo(glm::vec2 destination) {
 }
 
 void CircleBody::GetAABBUpdated() {
-    if (!needToUpdateAABB) return;
+    if (!needToUpdateAABB)
+        return;
 
     aabb_.maxP = {position_.x + radius_, position_.y + radius_};
     aabb_.minP = {position_.x - radius_, position_.y - radius_};
     needToUpdateAABB = false;
 }
 
-void CircleBody::PhysicsUpdate(float dt) {
-    RigidBody::PhysicsUpdate(dt);
+void CircleBody::CalRotateIntertia() {
+    rotateIntertia_ = 0.5f * mass_ * radius_ * radius_;
+    rotateIntertiaR_ = 1.0f / rotateIntertia_;
 }
+
+
+
+void CircleBody::PhysicsUpdate(float dt) { RigidBody::PhysicsUpdate(dt); }

@@ -38,6 +38,7 @@ class BoxBody : public RigidBody {
 
     void GetVertexTransfrom() override;
     void GetAABBUpdated() override;
+    void CalRotateIntertia() override;
 
     glm::vec2 widthHeight_;
     Transform2D transformer;

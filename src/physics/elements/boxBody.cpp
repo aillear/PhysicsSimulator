@@ -8,6 +8,7 @@
 #include "rigidbody.h"
 #include "shape.h"
 #include "transform.h"
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <utility>
 #include <vector>
@@ -16,7 +17,7 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     : RigidBody(position, mate, PhysicsShapeType::BOX),
       widthHeight_(widthHeight), transformer(position, 0) {
     area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
-    mass_ = area_ * material_.density;
+    mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0f / mass_;
 
     float Right = widthHeight.x * 0.5f;
@@ -134,6 +135,14 @@ void BoxBody::Render() {
     cmd.GetComplex().data = TransformedVertexB;
     GET_Buffer.AddCommand(std::move(cmd));
 }
+
+void BoxBody::CalRotateIntertia() {
+    // 0.833333f == 1/12
+    // formula is : J = 1/12 * m * (w^2 + h^2)
+    rotateIntertia_ = 0.833333f * mass_ * glm::dot(widthHeight_, widthHeight_);
+    rotateIntertiaR_ = 1.0f / rotateIntertia_;
+}
+
 
 void BoxBody::PhysicsUpdate(float dt) {
     // SetRotation(rotation_ + 90*dt);
