@@ -1,5 +1,4 @@
 #include "collisionMgr.h"
-#include "conversion.h"
 #include <algorithm>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -111,15 +110,15 @@ void CollisionMgr::FindContactPoints(const GlmCircle &a, const GlmCircle &b,
 }
 
 void CollisionMgr::FindContactPoints(const GlmCircle &a,
-                                     const std::vector<SDL_Vertex> &b,
+                                     const std::vector<glm::vec2> &b,
                                      const glm::vec2 &centerB, glm::vec2 &cp) {
     cp = {0, 0};
     float minD = std::numeric_limits<float>::max();
     float distSq;
     glm::vec2 contact;
 
-    glm::vec2 va = ToGlmVec2(b.back().position);
-    glm::vec2 vb = ToGlmVec2(b[0].position);
+    glm::vec2 va = b.back();
+    glm::vec2 vb = b[0];
     PointSegmentDistance(a.center, va, vb, distSq, contact);
     if (distSq < minD) {
         minD = distSq;
@@ -128,8 +127,8 @@ void CollisionMgr::FindContactPoints(const GlmCircle &a,
 
     for (int i = 1; i < b.size(); i++) {
 
-        va = ToGlmVec2(b[i - 1].position);
-        vb = ToGlmVec2(b[i].position);
+        va = b[i - 1];
+        vb = b[i];
 
         PointSegmentDistance(a.center, va, vb, distSq, contact);
         if (distSq < minD) {
@@ -139,8 +138,8 @@ void CollisionMgr::FindContactPoints(const GlmCircle &a,
     }
 }
 
-void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
-                                     const std::vector<SDL_Vertex> &b,
+void CollisionMgr::FindContactPoints(const std::vector<glm::vec2> &a,
+                                     const std::vector<glm::vec2> &b,
                                      glm::vec2 &contactPoint1,
                                      glm::vec2 &contactPoint2, int &count) {
 
@@ -153,16 +152,16 @@ void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
     glm::vec2 cp;
 
     for (int i = 0; i < a.size(); i++) {
-        glm::vec2 p = ToGlmVec2(a[i].position);
+        glm::vec2 p = a[i];
 
-        glm::vec2 va = ToGlmVec2(b.back().position);
-        glm::vec2 vb = ToGlmVec2(b[0].position);
+        glm::vec2 va = b.back();
+        glm::vec2 vb = b[0];
 
         // pre step
         {
             PointSegmentDistance(p, va, vb, distSq, cp);
-            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
-                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+            if (glm::epsilonEqual(distSq, minD, 0.0001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.0001f))) {
                     contactPoint2 = cp;
                     count = 2;
                 }
@@ -173,12 +172,12 @@ void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
             }
         }
         for (int j = 1; j < b.size(); j++) {
-            glm::vec2 va = ToGlmVec2(b[j - 1].position);
-            glm::vec2 vb = ToGlmVec2(b[j].position);
+            glm::vec2 va = b[j - 1];
+            glm::vec2 vb = b[j];
 
             PointSegmentDistance(p, va, vb, distSq, cp);
-            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
-                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+            if (glm::epsilonEqual(distSq, minD, 0.0001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.0001f))) {
                     contactPoint2 = cp;
                     count = 2;
                 }
@@ -190,18 +189,17 @@ void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
         }
     }
 
-
     for (int i = 0; i < b.size(); i++) {
-        glm::vec2 p = ToGlmVec2(b[i].position);
+        glm::vec2 p = b[i];
 
-        glm::vec2 va = ToGlmVec2(a.back().position);
-        glm::vec2 vb = ToGlmVec2(a[0].position);
+        glm::vec2 va = a.back();
+        glm::vec2 vb = a[0];
 
         // pre step
         {
             PointSegmentDistance(p, va, vb, distSq, cp);
-            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
-                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+            if (glm::epsilonEqual(distSq, minD, 0.0001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.0001f))) {
                     contactPoint2 = cp;
                     count = 2;
                 }
@@ -212,12 +210,12 @@ void CollisionMgr::FindContactPoints(const std::vector<SDL_Vertex> &a,
             }
         }
         for (int j = 1; j < a.size(); j++) {
-            glm::vec2 va = ToGlmVec2(a[j - 1].position);
-            glm::vec2 vb = ToGlmVec2(a[j].position);
+            glm::vec2 va = a[j - 1];
+            glm::vec2 vb = a[j];
 
             PointSegmentDistance(p, va, vb, distSq, cp);
-            if (glm::epsilonEqual(distSq, minD, 0.00001f)) {
-                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.00001f))) {
+            if (glm::epsilonEqual(distSq, minD, 0.0001f)) {
+                if (!glm::all(glm::epsilonEqual(cp, contactPoint1, 0.0001f))) {
                     contactPoint2 = cp;
                     count = 2;
                 }
@@ -247,16 +245,16 @@ bool CollisionMgr::IntersectCircle(const GlmCircle &a, const GlmCircle &b,
 }
 
 // SAT collision detect.
-bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
-                                    const std::vector<SDL_Vertex> &b,
+bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
+                                    const std::vector<glm::vec2> &b,
                                     glm::vec2 &norm, float &depth) {
 
     norm = {0, 0};
     depth = std::numeric_limits<float>::max();
 
     for (int i = 0; i < a.size(); i++) {
-        auto va = a[i].position;
-        auto edge = a[(i + 1) % a.size()].position - va;
+        auto va = a[i];
+        auto edge = a[(i + 1) % a.size()] - va;
 
         glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
@@ -272,8 +270,8 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
     }
 
     for (int i = 0; i < b.size(); i++) {
-        auto va = b[i].position;
-        auto edge = b[(i + 1) % b.size()].position - va;
+        auto va = b[i];
+        auto edge = b[(i + 1) % b.size()] - va;
 
         glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
@@ -292,17 +290,17 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
     return true;
 }
 
-bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
+bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
                                     const glm::vec2 &centerA,
-                                    const std::vector<SDL_Vertex> &b,
+                                    const std::vector<glm::vec2> &b,
                                     const glm::vec2 &centerB, glm::vec2 &norm,
                                     float &depth) {
     norm = {0, 0};
     depth = std::numeric_limits<float>::max();
 
     for (int i = 0; i < a.size(); i++) {
-        auto va = a[i].position;
-        auto edge = a[(i + 1) % a.size()].position - va;
+        auto va = a[i];
+        auto edge = a[(i + 1) % a.size()] - va;
 
         glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
@@ -318,8 +316,8 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
     }
 
     for (int i = 0; i < b.size(); i++) {
-        auto va = b[i].position;
-        auto edge = b[(i + 1) % b.size()].position - va;
+        auto va = b[i];
+        auto edge = b[(i + 1) % b.size()] - va;
 
         glm::vec2 axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         glm::vec2 pa = GetProject(a, axis);
@@ -339,7 +337,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<SDL_Vertex> &a,
 }
 
 bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
-                                             const std::vector<SDL_Vertex> &b,
+                                             const std::vector<glm::vec2> &b,
                                              glm::vec2 &norm, float &depth) {
     norm = {0, 0};
     depth = std::numeric_limits<float>::max();
@@ -348,8 +346,8 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
     glm::vec2 pa, pb;
 
     for (int i = 0; i < b.size(); i++) {
-        auto va = b[i].position;
-        auto edge = b[(i + 1) % b.size()].position - va;
+        auto va = b[i];
+        auto edge = b[(i + 1) % b.size()] - va;
 
         axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         pa = GetProject(b, axis);
@@ -364,8 +362,7 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
         }
     }
 
-    glm::vec2 closePoint =
-        ToGlmVec2(b[GetClosestPointIndexToCircle(a, b)].position);
+    glm::vec2 closePoint = b[GetClosestPointIndexToCircle(a, b)];
     axis = glm::normalize(closePoint - a.center);
     pa = GetProject(b, axis);
     pb = GetProjectCircle(a, axis);
@@ -386,7 +383,7 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
 }
 
 bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
-                                             const std::vector<SDL_Vertex> &b,
+                                             const std::vector<glm::vec2> &b,
                                              const glm::vec2 &centerB,
                                              glm::vec2 &norm, float &depth) {
     norm = {0, 0};
@@ -396,8 +393,8 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
     glm::vec2 pa, pb;
 
     for (int i = 0; i < b.size(); i++) {
-        auto va = b[i].position;
-        auto edge = b[(i + 1) % b.size()].position - va;
+        auto va = b[i];
+        auto edge = b[(i + 1) % b.size()] - va;
 
         axis = glm::normalize(glm::vec2{-edge.y, edge.x});
         pa = GetProject(b, axis);
@@ -412,8 +409,7 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
         }
     }
 
-    glm::vec2 closePoint =
-        ToGlmVec2(b[GetClosestPointIndexToCircle(a, b)].position);
+    glm::vec2 closePoint = b[GetClosestPointIndexToCircle(a, b)];
     axis = glm::normalize(closePoint - a.center);
     pa = GetProject(b, axis);
     pb = GetProjectCircle(a, axis);
@@ -447,13 +443,13 @@ glm::vec2 CollisionMgr::GetProjectCircle(const GlmCircle &circle,
     return res;
 }
 
-glm::vec2 CollisionMgr::GetProject(const std::vector<SDL_Vertex> &vertices,
+glm::vec2 CollisionMgr::GetProject(const std::vector<glm::vec2> &vertices,
                                    glm::vec2 axis) {
     glm::vec2 res = {std::numeric_limits<float>::max(),
                      std::numeric_limits<float>::min()};
 
     for (auto &vertex : vertices) {
-        glm::vec2 v = ToGlmVec2(vertex.position);
+        glm::vec2 v = vertex;
         float proj = glm::dot(v, axis);
 
         res.x = std::min(res.x, proj);
@@ -463,23 +459,22 @@ glm::vec2 CollisionMgr::GetProject(const std::vector<SDL_Vertex> &vertices,
 }
 
 glm::vec2
-CollisionMgr::GetArithmeticMean(const std::vector<SDL_Vertex> &vertices) {
+CollisionMgr::GetArithmeticMean(const std::vector<glm::vec2> &vertices) {
     glm::vec2 center = {0, 0};
     for (auto &vertex : vertices) {
-        center.x += vertex.position.x;
-        center.y += vertex.position.y;
+        center.x += vertex.x;
+        center.y += vertex.y;
     }
     int size = vertices.size();
     return center / (float)size;
 }
 
 int CollisionMgr::GetClosestPointIndexToCircle(
-    const GlmCircle &circle, const std::vector<SDL_Vertex> &vertices) {
+    const GlmCircle &circle, const std::vector<glm::vec2> &vertices) {
     int result = 0;
-    float minD = glm::distance(circle.center, ToGlmVec2(vertices[0].position));
+    float minD = glm::distance(circle.center, vertices[0]);
     for (int i = 1; i < vertices.size(); i++) {
-        float dist =
-            glm::distance(circle.center, ToGlmVec2(vertices[i].position));
+        float dist = glm::distance(circle.center, vertices[i]);
         if (dist < minD) {
             dist = minD;
             result = i;

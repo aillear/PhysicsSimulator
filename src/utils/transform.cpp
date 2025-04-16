@@ -4,16 +4,21 @@
 #include <glm/trigonometric.hpp>
 
 void Transform2D::Update() {
-    float rAngle = glm::radians(angle_);
-    float cosA = glm::cos(rAngle);
-    float sinA = glm::sin(rAngle);
+    float cosA = glm::cos(angle_);
+    float sinA = glm::sin(angle_);
     rotation_matrix = glm::mat2(cosA, -sinA, sinA, cosA);
 }
 
 void Transform2D::SetAngle(float angle) {
+    angle_ = glm::radians(angle);
+    Update();
+}
+
+void Transform2D::SetRAngle(float angle) {
     angle_ = angle;
     Update();
 }
+
 
 void Transform2D::Tranaform(glm::vec2& target) {
     target = rotation_matrix * target + offset_;

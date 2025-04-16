@@ -16,9 +16,10 @@
 BoxBody::BoxBody(Material mate, glm::vec2 widthHeight)
     : RigidBody(mate, PhysicsShapeType::BOX),
       widthHeight_(widthHeight) {
-    area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
+    area_ = widthHeight.x * widthHeight.y;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0f / mass_;
+    CalRotateIntertia();
 
     float Right = widthHeight.x * 0.5f;
     float Buttom = widthHeight.y * 0.5f;
@@ -26,6 +27,7 @@ BoxBody::BoxBody(Material mate, glm::vec2 widthHeight)
     OriginVertex[1] = {Right, -Buttom};
     OriginVertex[2] = {Right, Buttom};
     OriginVertex[3] = {-Right, Buttom};
+    TransformedVertex = std::vector<glm::vec2>(4);
     TransformedVertexF = std::vector<SDL_Vertex>(4);
     TransformedVertexB = std::vector<SDL_Vertex>(4);
     
@@ -65,9 +67,10 @@ void BoxBody::SetFColorBoundry(SDL_FColor color) {
 void BoxBody::GetVertexTransfrom() {
     if (!needToTransfrom) return;
     for (int i = 0; i < 4; i++) {
-        auto afterTransformed = ToFPoint(transformer.TransfromR(OriginVertex[i]));
-        TransformedVertexB[i].position = afterTransformed;
-        TransformedVertexF[i].position = afterTransformed;
+        TransformedVertex[i] = transformer.TransfromR(OriginVertex[i]);
+        auto temp = ToFPoint(TransformedVertex[i]);
+        TransformedVertexB[i].position = temp;
+        TransformedVertexF[i].position = temp;
     } 
     needToTransfrom = false;
 }
@@ -75,13 +78,13 @@ void BoxBody::GetVertexTransfrom() {
 void BoxBody::GetAABBUpdated() {
     if (!needToUpdateAABB) return;
     
-    aabb_.maxP = ToGlmVec2(TransformedVertexB.begin()->position);
+    aabb_.maxP = TransformedVertex[0];
     aabb_.minP = aabb_.maxP;
-    for (int i = 1; i < TransformedVertexB.size(); i++) {
-        aabb_.maxP.x = std::max(aabb_.maxP.x, TransformedVertexB[i].position.x);
-        aabb_.maxP.y = std::max(aabb_.maxP.y, TransformedVertexB[i].position.y);
-        aabb_.minP.x = std::min(aabb_.minP.x, TransformedVertexB[i].position.x);
-        aabb_.minP.y = std::min(aabb_.minP.y, TransformedVertexB[i].position.y);
+    for (int i = 1; i < TransformedVertex.size(); i++) {
+        aabb_.maxP.x = std::max(aabb_.maxP.x, TransformedVertex[i].x);
+        aabb_.maxP.y = std::max(aabb_.maxP.y, TransformedVertex[i].y);
+        aabb_.minP.x = std::min(aabb_.minP.x, TransformedVertex[i].x);
+        aabb_.minP.y = std::min(aabb_.minP.y, TransformedVertex[i].y);
     }
     needToUpdateAABB = false;
 }
@@ -99,9 +102,9 @@ void BoxBody::Render() {
 }
 
 void BoxBody::CalRotateIntertia() {
-    // 0.833333f == 1/12
+    // 0.0833333f == 1/12
     // formula is : J = 1/12 * m * (w^2 + h^2)
-    rotateIntertia_ = 0.833333f * mass_ * glm::dot(widthHeight_, widthHeight_);
+    rotateIntertia_ = 0.083333333333f * mass_ * glm::dot(widthHeight_, widthHeight_);
     rotateIntertiaR_ = 1.0f / rotateIntertia_;
 }
 

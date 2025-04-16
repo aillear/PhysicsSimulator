@@ -21,6 +21,7 @@
 
 
 #include "SDL3/SDL_stdinc.h"
+#include <numbers>
 constexpr float TUAreaFactor = 0.0001f; // from cm^2 -> m^2
 constexpr float TUMassFactor = 10.0f;   // density(g/cm^2) * area(m^2) = mass()
 // this is using meter ^ 2
@@ -41,6 +42,12 @@ constexpr float TGLongitudeFactor = 100.0f; // 1 m = 100 game m
 // set the value bound of iteration
 constexpr int MinIteration = 1;
 constexpr int MaxIteration = 64;
+
+constexpr float MaxRadian = std::numbers::pi * 2.0f;    // 360 degree
+constexpr float MinRadian = 0.0f;                       // 0 degree
+
+constexpr float WorldToScreenPosFactor = 100.0f; // 1 m = 100 pxiel
+constexpr float ScreenToWorldPosFactor = 0.01f; // 1 pxiel = 0.01 m
 
 /**
  * @brief event here

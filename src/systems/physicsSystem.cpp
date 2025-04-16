@@ -1,6 +1,7 @@
 #include "physicsSystem.h"
 #include "collisionMgr.h"
 #include "configs.h"
+#include "conversion.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
@@ -9,6 +10,7 @@
 #include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
+#include <array>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <stdexcept>
@@ -211,7 +213,7 @@ void PhysicsSystem::ConllisionNarrowPhase() {
         Collision c{objA, objB, norm, depth, {0, 0}, {0, 0}, 0};
         GET_CollisionMgr.FindContactPoints(objA, objB, c.point1, c.point2,
                                            c.count);
-        CollisionResolver(c);
+        FCollisionResolver(c);
     }
 }
 
@@ -254,6 +256,72 @@ void PhysicsSystem::CollisionResolver(const Collision &collision) {
 
     a->AddVelocity(-a->GetMassR() * impulse);
     b->AddVelocity(b->GetMassR() * impulse);
+}
+
+void PhysicsSystem::FCollisionResolver(const Collision &collision) {
+    auto objA = collision.objA;
+    auto objB = collision.objB;
+    auto norm = collision.norm;
+    auto contactCount = collision.count;
+
+    if (objA == nullptr || objB == nullptr) {
+        LOG_ERROR("nullptr in collission resolver.");
+        throw std::runtime_error("null ptr in collision resolver");
+    }
+
+    auto resilience = std::min(objA->GetMaterial().resilience,
+                               objB->GetMaterial().resilience);
+
+    std::array<glm::vec2, 2> contactPoints {collision.point1, collision.point2};
+    std::array<glm::vec2, 2> impulses{};
+    std::array<glm::vec2, 2> raList{};
+    std::array<glm::vec2, 2> rbList{};
+
+
+
+    for (int i = 0; i < contactCount; i++) { 
+        glm::vec2 ra = contactPoints[i] - objA->GetPosition();
+        glm::vec2 rb = contactPoints[i] - objB->GetPosition();
+        raList[i] = ra;
+        rbList[i] = rb;
+
+        glm::vec2 raPerp = {-ra.y, ra.x};
+        glm::vec2 rbPerp = {-rb.y, rb.x};
+ 
+        glm::vec2 angularLinearVA = objA->GetRAngularVelocity() * raPerp;
+        glm::vec2 angularLinearVB = objB->GetRAngularVelocity() * rbPerp;
+
+        glm::vec2 relativeV = (objB->GetVelocity() + angularLinearVB) -
+                              (objA->GetVelocity() + angularLinearVA); 
+
+        float reVdotNorm = glm::dot(relativeV, norm);
+        if (reVdotNorm > 0.0f) {
+            continue;
+        }
+        
+        float raPerpDotNorm = glm::dot(raPerp, norm);
+        float rbPerpDotNorm = glm::dot(rbPerp, norm);
+
+        float denom = objA->GetMassR() + objB->GetMassR() +
+                      (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateIntertiaR() +
+                      (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateIntertiaR();
+        
+        float j = -(1.0f + resilience) * reVdotNorm;
+        j /= denom;
+        j /= contactCount;
+
+        impulses[i] = j * norm;
+    }
+
+    for (int i = 0; i < contactCount; i++) {
+        glm::vec2 impulse = impulses[i];
+
+        objA->AddVelocity(-objA->GetMassR() * impulse);
+        objA->AddRAngularVelocity(-Cross(raList[i], impulse) * objA->GetRotateIntertiaR());
+        
+        objB->AddVelocity(objB->GetMassR() * impulse);
+        objB->AddRAngularVelocity(Cross(rbList[i], impulse) * objB->GetRotateIntertiaR());
+    }
 }
 
 // just for temp test

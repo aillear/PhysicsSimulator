@@ -7,9 +7,10 @@
 
 CircleBody::CircleBody(Material mate, float radius)
     : RigidBody(mate, PhysicsShapeType::CIRCLE), radius_(radius) {
-    area_ = std::numbers::pi * radius * radius * TUAreaFactor;
+    area_ = std::numbers::pi * radius * radius;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0 / mass_;
+    CalRotateIntertia();
     
     SetFColor({1, 1, 0, 1});
     SetFColorBoundry({1, 1, 1, 1});

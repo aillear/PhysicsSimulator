@@ -1,22 +1,21 @@
 #include "rigidbody.h"
-#include "SDL3/SDL_render.h"
+#include "configs.h"
 #include "exceptions.h"
 #include "logger.h"
 #include "physicsSystem.h"
+#include <glm/gtc/epsilon.hpp>
+#include <glm/trigonometric.hpp>
 #include <vector>
 
 RigidBody::RigidBody(Material mate, PhysicsShapeType type)
     : ObjectWorld(), material_(mate), velocity_(0, 0), rotation_(0),
-      angularVelocity_(0), type_(type), force_(0, 0) {
-
-}
+      angularVelocity_(0), type_(type), force_(0, 0) {}
 void RigidBody::Init() {
     SafeCheck();
     needToTransfrom = true;
     needToUpdateAABB = true;
     GetVertexTransfrom();
     GetAABBUpdated();
-    CalRotateIntertia();
 }
 
 float RigidBody::GetRadius() const {
@@ -55,10 +54,10 @@ void RigidBody::CalRotateIntertia() {
                              ShapeTypeToStr(type_) + ".");
 }
 
-const std::vector<SDL_Vertex> &RigidBody::GetVertex() const {
+const std::vector<glm::vec2> &RigidBody::GetVertex() const {
     F_LOG_WARNING("Try to get a NoneBox/PolygonBody's({}) vertces.",
                   ShapeTypeToStr(type_));
-    static std::vector<SDL_Vertex> __empty_vector__;
+    static std::vector<glm::vec2> __empty_vector__;
     return __empty_vector__;
 }
 
@@ -102,7 +101,7 @@ void RigidBody::PhysicsUpdate(float dt) {
         this->velocity_ += GET_PhysicsSystem.gravity * dt;
 
         Move(velocity_ * dt);
-        Rotate(angularVelocity_ * dt);
+        RRotate(angularVelocity_ * dt);
         force_ = {0, 0};
     }
 
@@ -110,36 +109,55 @@ void RigidBody::PhysicsUpdate(float dt) {
     GetAABBUpdated();
 }
 
-void RigidBody::Rotate(float angle) {
+void RigidBody::Rotate(float angleDegree) {
+    RRotate(glm::radians(angleDegree));
+}
+
+void RigidBody::RotateTo(float angleDegree) {
+    RRotateTo(glm::radians(angleDegree));
+}
+
+void RigidBody::RRotate(float angle) {
     rotation_ += angle;
-    if (rotation_ >= 360.0f)
-        rotation_ -= 360.0f;
-    if (rotation_ < 0.0f)
-        rotation_ += 360.0f;
-    transformer.SetAngle(rotation_);
+    if (rotation_ >= MaxRadian)
+        rotation_ -= MaxRadian;
+    if (rotation_ < MinRadian)
+        rotation_ += MaxRadian;
+    transformer.SetRAngle(rotation_);
+
+    // if (glm::epsilonEqual(angle, 0.0f, 0.01f))
+    //     return;
+
     needToTransfrom = true;
     needToUpdateAABB = true;
 }
 
-void RigidBody::RotateTo(float rotation) {
-    if (rotation >= 360.0f)
-        rotation -= 360.0f;
-    if (rotation_ < 0.0f)
-        rotation += 360.0f;
-    rotation_ = rotation;
-    transformer.SetAngle(rotation);
-    needToTransfrom = true;
-    needToUpdateAABB = true;
+void RigidBody::RRotateTo(float angle) {
+    if (angle >= MaxRadian)
+        angle -= MaxRadian;
+    if (angle < MinRadian)
+        angle += MaxRadian;
+    transformer.SetRAngle(rotation_);
+    // if (glm::epsilonEqual(angle, rotation_, 0.01f))
+    //     return;
+
+    rotation_ = angle;
 }
 
 void RigidBody::Move(glm::vec2 ds) {
     position_ += ds;
     transformer.SetOffset(position_);
+    // if (glm::all(glm::epsilonEqual(ds, {0, 0}, 0.0001f))) {
+    //     return;
+    // }
     needToTransfrom = true;
     needToUpdateAABB = true;
 }
 
 void RigidBody::MoveTo(glm::vec2 destination) {
+    // if (glm::all(glm::epsilonEqual(destination, position_, 0.0001f))) {
+    //     return;
+    // }
     position_ = destination;
     transformer.SetOffset(position_);
     needToTransfrom = true;

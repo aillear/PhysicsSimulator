@@ -3,6 +3,7 @@
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_video.h"
+#include "configs.h"
 #include "conversion.h"
 #include "eventSystem.h"
 #include "logger.h"
@@ -83,7 +84,8 @@ bool RenderSystem::Init(const RenderSystemIniter &initer) {
     }
 
     Uint64 flag = SDL_WINDOW_RESIZABLE;
-    if (initer.isFullScreen) flag |= SDL_WINDOW_FULLSCREEN;
+    if (initer.isFullScreen)
+        flag |= SDL_WINDOW_FULLSCREEN;
     // create window and renderer
     window = SDL_CreateWindow(initer.windowName.c_str(), initer.windowSize.x,
                               initer.windowSize.y, flag);
@@ -200,13 +202,14 @@ std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
-    auto temp =
-        (worldPos - camera.GetPosition()) * camera.getZoom() + halfWindowSize;
+    glm::vec2 temp =
+        (worldPos - camera.GetPosition()) * camera.getZoom() * WorldToScreenPosFactor + halfWindowSize;
+
     return {temp.x, temp.y};
 }
 
 glm::vec2 RenderSystem::PosScreen2World(glm::vec2 screenPos) {
-    return (screenPos - halfWindowSize) * camera.getZoomR() +
+    return (screenPos - halfWindowSize) * camera.getZoomR() * ScreenToWorldPosFactor +
            camera.GetPosition();
 }
 
@@ -328,7 +331,8 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
     glm::vec2 dir = command.rect.p2 - command.rect.p1;
     dir = {dir.y, -dir.x};
     dir = glm::normalize(dir) * cmd.halfLineWidth;
-    if (cmd.scaleWithZoom) dir *= camera.getZoom();
+    if (cmd.scaleWithZoom)
+        dir *= camera.getZoom();
     p[2] = ToFPoint(dir);
 
     // if not UI mode, convert the position to screen space
@@ -461,7 +465,7 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
     float radius;
     if (cmd.UIMode_ == false) {
         center = PosWorld2Screen(cmd.GetBase().circle.center);
-        radius = cmd.GetBase().circle.radius * camera.getZoom();
+        radius = cmd.GetBase().circle.radius * camera.getZoom() * WorldToScreenPosFactor;
     } else {
         center = ToFPoint(cmd.GetBase().circle.center);
         radius = cmd.GetBase().circle.radius;
@@ -518,7 +522,7 @@ void RenderSystem::CircleHollowCommand(DrawCommand &cmd) {
     float radius;
     if (cmd.UIMode_ == false) {
         center = PosWorld2Screen(cmd.GetBase().circle.center);
-        radius = cmd.GetBase().circle.radius * camera.getZoom();
+        radius = cmd.GetBase().circle.radius * camera.getZoom() * WorldToScreenPosFactor;
     } else {
         center = ToFPoint(cmd.GetBase().circle.center);
         radius = cmd.GetBase().circle.radius;
@@ -587,7 +591,7 @@ void RenderSystem::PolygonCommand(DrawCommand &cmd) {
     }
     int i = vertexBufferSize;
     vertexBufferSize += n + 2;
-    
+
     // directly coordition tranfrom in buffer.
     if (cmd.UIMode_ == false) {
         for (; i < vertexBufferSize; i++) {
@@ -614,7 +618,8 @@ void RenderSystem::PolygonHollowCommand(DrawCommand &cmd) {
 
     bool zoomWithCamera = cmd.scaleWithZoom;
     for (int i = 1; i < n; i++) {
-        LineCommand(vertexs[i - 1], vertexs[i], cmd.halfLineWidth, zoomWithCamera);
+        LineCommand(vertexs[i - 1], vertexs[i], cmd.halfLineWidth,
+                    zoomWithCamera);
     }
     LineCommand(vertexs[n - 1], vertexs[0], cmd.halfLineWidth, zoomWithCamera);
 }

@@ -28,7 +28,7 @@ void Camera::Init() {
             if (isDragging) {
 
                 const glm::vec2 newMousePos = {event.motion.x, event.motion.y};
-                position_ += (lastPosition - newMousePos) * zoomR;
+                position_ += (lastPosition - newMousePos) * zoomR * 0.01f;
                 lastPosition = newMousePos;
             }
         });
@@ -47,11 +47,11 @@ void Camera::Init() {
             glm::vec2 windowCenter = GET_RenderSystem.GetWindowCenter();
 
             glm::vec2 mouseOffset = mouseScreenPos - windowCenter;
-            glm::vec2 worldPosBeforeZoom = mouseOffset * zoomR + position_;
+            glm::vec2 worldPosBeforeZoom = mouseOffset * zoomR + position_ * 100.0f;
             constexpr float zoomFactor[2] =  {1.05f, 0.952381f};
             int index = (event.wheel.y > 0) ? 0 : 1; // 0: zoom in, 1: zoom out
             if (ZoomClamp(zoom, zoomFactor[index])) zoomR *= zoomFactor[(index + 1) & 1];
-            position_ = worldPosBeforeZoom - mouseOffset * zoomR;
-        });
+            position_ =( worldPosBeforeZoom - mouseOffset * zoomR) * 0.01f;
+        }); 
 }
 

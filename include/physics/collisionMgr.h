@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SDL3/SDL_render.h"
 #include "renderSystem.h"
 #include "rigidbody.h"
 #include "shape.h"
@@ -31,20 +30,20 @@ class CollisionMgr {
 
     bool IntersectCircle(const GlmCircle &a, const GlmCircle &b,
                          glm::vec2 &norm, float &depth);
-    bool IntersectPolygon(const std::vector<SDL_Vertex> &a,
-                          const std::vector<SDL_Vertex> &b, glm::vec2 &norm,
+    bool IntersectPolygon(const std::vector<glm::vec2> &a,
+                          const std::vector<glm::vec2> &b, glm::vec2 &norm,
                           float &depth);
-    bool IntersectPolygon(const std::vector<SDL_Vertex> &a,
+    bool IntersectPolygon(const std::vector<glm::vec2> &a,
                           const glm::vec2 &centerA,
-                          const std::vector<SDL_Vertex> &b,
+                          const std::vector<glm::vec2> &b,
                           const glm::vec2 &centerB, glm::vec2 &norm,
                           float &depth);
     bool IntersectPolygonAndCircle(const GlmCircle &a,
-                                   const std::vector<SDL_Vertex> &b,
+                                   const std::vector<glm::vec2> &b,
                                    glm::vec2 &norm, float &depth);
 
     bool IntersectPolygonAndCircle(const GlmCircle &a,
-                                   const std::vector<SDL_Vertex> &b,
+                                   const std::vector<glm::vec2> &b,
                                    const glm::vec2 &centerB, glm::vec2 &norm,
                                    float &depth);
 
@@ -57,18 +56,18 @@ class CollisionMgr {
   private:
     void FindContactPoints(const GlmCircle &a, const GlmCircle &b,
                            glm::vec2 &contactPoint);
-    void FindContactPoints(const GlmCircle &a, const std::vector<SDL_Vertex> &b,
+    void FindContactPoints(const GlmCircle &a, const std::vector<glm::vec2> &b,
                            const glm::vec2 &centerB, glm::vec2 &contactPoint);
-    void FindContactPoints(const std::vector<SDL_Vertex> &a,
-                           const std::vector<SDL_Vertex> &b,
+    void FindContactPoints(const std::vector<glm::vec2> &a,
+                           const std::vector<glm::vec2> &b,
                            glm::vec2 &contactPoint1, glm::vec2 &contactPoint2,
                            int &count);
-    glm::vec2 GetProject(const std::vector<SDL_Vertex> &vertices,
+    glm::vec2 GetProject(const std::vector<glm::vec2> &vertices,
                          glm::vec2 axis);
     glm::vec2 GetProjectCircle(const GlmCircle &circle, glm::vec2 axis);
-    glm::vec2 GetArithmeticMean(const std::vector<SDL_Vertex> &vertices);
+    glm::vec2 GetArithmeticMean(const std::vector<glm::vec2> &vertices);
     int GetClosestPointIndexToCircle(const GlmCircle &circle,
-                                     const std::vector<SDL_Vertex> &vertices);
+                                     const std::vector<glm::vec2> &vertices);
 
     CollisionMgr() = default;
     ~CollisionMgr() = default;

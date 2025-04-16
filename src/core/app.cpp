@@ -1,5 +1,6 @@
 #include "app.h"
 #include "UIMgr.h"
+#include "configs.h"
 #include "eventSystem.h"
 #include "inputSystem.h"
 #include "collisionMgr.h"

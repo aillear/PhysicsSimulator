@@ -5,6 +5,7 @@
 #include <SDL3/SDL_rect.h>
 #include <format>
 #include <glm/detail/qualifier.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <ostream>
 
@@ -280,3 +281,7 @@ SDL_Color RandomColor(Uint8 r, Uint8 g, Uint8 b);
 glm::vec2 RandomPos(glm::vec2 leftTop, glm::vec2 rightButtom);
 
 glm::vec2 RandomSize(int width, int height);
+
+inline float Cross(const glm::vec2 &v1, const glm::vec2 &v2) {
+    return v1.x * v2.y - v1.y * v2.x;
+}

@@ -73,7 +73,15 @@ void SomeCustomLogicHere() {
 
     auto label5 = std::make_shared<UILabelReader>();
     label5->AddReader([]() {
-        return std::format("Body count: {}", GET_PhysicsSystem.GetBodyCount());
+        return std::format("刚体数量: {}", GET_PhysicsSystem.GetBodyCount());
+    });
+    panel->AddNewContent(std::move(label5), TextAlign::START, TextAlign::START,
+                         true, {5, 5});
+
+    label5 = std::make_shared<UILabelReader>();
+    label5->AddReader([]() {
+        auto& camera = GET_RenderSystem.GetCamera();
+        return std::format("相机位置:{}\n缩放:{}", camera.GetPosition(), camera.getZoom());
     });
     panel->AddNewContent(std::move(label5), TextAlign::START, TextAlign::START,
                          true, {5, 5});
@@ -100,26 +108,26 @@ void SomeCustomLogicHere() {
 }
 
 void SomeCustomLogicPHere() {
-    Material m{1, 1, 0.5};
+    Material m{1, 0.8, 0.5};
     
-    auto ground = std::make_shared<BoxBody>(m, glm::vec2(2000, 20));
-    ground->MoveTo({0, 800});
+    auto ground = std::make_shared<BoxBody>(m, glm::vec2(20, 0.2));
+    ground->MoveTo({0, 8});
     ground->SetFColorBoundry({0, 0, 0, 1});
     ground->SetColor({77, 120, 204, 255});
     ground->SetIsStatic(true);
     ground->SetName("ground");
     GET_PhysicsSystem.AddObject(ground);
 
-    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(20, 1000));
-    wallL->MoveTo({-400, 400});
+    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
+    wallL->MoveTo({-4, 4});
     wallL->SetFColorBoundry({0, 0, 0, 1});
     wallL->SetColor({77, 120, 204, 255});
     wallL->SetIsStatic(true);
     wallL->SetName("wall1");
     GET_PhysicsSystem.AddObject(wallL);
 
-    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(20, 1000));
-    wallR->MoveTo({400, 400});
+    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
+    wallR->MoveTo({4, 4});
     wallR->SetFColorBoundry({0, 0, 0, 1});
     wallR->SetColor({77, 120, 204, 255});
     wallR->SetIsStatic(true);
@@ -134,7 +142,7 @@ void SomeCustomLogicPAHere() {
     static int counter = 0;
     if (PKeyDown(SDL_SCANCODE_Q)) {
         auto obj =
-            std::make_shared<BoxBody>(m, RandomPos({50, 50}, {100, 100}));
+            std::make_shared<BoxBody>(m, RandomPos({0.5, 0.5}, {1, 1}));
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));
@@ -143,7 +151,7 @@ void SomeCustomLogicPAHere() {
     }
 
     if (PKeyDown(SDL_SCANCODE_E)) {
-        auto obj = std::make_shared<CircleBody>(m, RandomFloat(25, 50));
+        auto obj = std::make_shared<CircleBody>(m, RandomFloat(0.25, 0.5));
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));

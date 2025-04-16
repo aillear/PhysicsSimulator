@@ -3,7 +3,6 @@
 #include "FPSCounter.h"
 #include "SDL3/SDL_events.h"
 #include "collisionMgr.h"
-#include "configs.h"
 #include "eventSystem.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
@@ -49,7 +48,7 @@ class PhysicsSystem {
         AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));
     }
 
-    glm::vec2 gravity = {0, 9.81f * TGForceFactor};
+    glm::vec2 gravity = {0, 9.81f};
 
     FPSCounter fpsc;
 
@@ -63,7 +62,8 @@ class PhysicsSystem {
     void ConllisionNarrowPhase();
     void SeperateBodies(RigidBody* a, RigidBody* b, glm::vec2 mtv);
 
-    void CollisionResolver(const Collision &collision); // so does this.
+    void CollisionResolver(const Collision &collision);
+    void FCollisionResolver(const Collision &collision); 
 
     void OutOffBoundCheck();
 

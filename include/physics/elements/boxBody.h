@@ -20,7 +20,7 @@ class BoxBody : public RigidBody {
     void SetColorBoundry(SDL_Color color) override;
     void SetFColorBoundry(SDL_FColor color) override;
 
-    const std::vector<SDL_Vertex>& GetVertex() const override {return TransformedVertexB;}
+    const std::vector<glm::vec2>& GetVertex() const override {return TransformedVertex;}
 
   protected:
     void Render() override;
@@ -32,6 +32,7 @@ class BoxBody : public RigidBody {
 
     glm::vec2 widthHeight_;
     std::array<glm::vec2, 4> OriginVertex;
+    std::vector<glm::vec2> TransformedVertex;
     std::vector<SDL_Vertex> TransformedVertexF;
     std::vector<SDL_Vertex> TransformedVertexB;
 };
