@@ -5,6 +5,7 @@
 #include "collisionMgr.h"
 #include "configs.h"
 #include "eventSystem.h"
+#include "rigidbody.h"
 #include <SDL3_framerate.h>
 #include <glm/ext/vector_float2.hpp>
 #include <memory>
@@ -57,7 +58,8 @@ class PhysicsSystem {
     PhysicsSystem(const PhysicsSystem &) = delete;
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
     void HandleSDLEvents(SDL_Event &event);
-    void CollisionHandler();
+    void CollisionHandler(int iteration);
+    void SeperateBodies(RigidBody* a, RigidBody* b, glm::vec2 mtv);
 
     void CollisionResolver(const Collision &collision); // so does this.
 

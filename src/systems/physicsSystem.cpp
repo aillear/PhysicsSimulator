@@ -81,7 +81,7 @@ void PhysicsSystem::UpdateWrapper() {
         // execute iteration here.
         for (int i = 0; i < iteration_; i++) {
             rootNode->PhysicsUpdateWrapper(dt);
-            CollisionHandler();
+            CollisionHandler(i);
         }
         OutOffBoundCheck();
 
@@ -180,7 +180,7 @@ std::shared_ptr<ObjectWorld> PhysicsSystem::FindObjectByName(std::string name) {
         rootNode->GetChildByName(name));
 }
 
-void PhysicsSystem::CollisionHandler() {
+void PhysicsSystem::CollisionHandler(int iteration) {
     auto children = rootNode->GetChildren();
     int childCount = children.size();
     glm::vec2 norm{0, 0};
@@ -202,16 +202,8 @@ void PhysicsSystem::CollisionHandler() {
             if (!GET_CollisionMgr.CollisionCheck(objA, objB, norm, depth))
                 continue;
 
-            if (objA->GetIsStatic()) {
-                objB->Move(norm * depth);
-            } else if (objB->GetIsStatic()) {
-                objA->Move(-norm * depth);
-            } else {
-                auto ds = depth * 0.5f * norm;
-                objA->Move(-ds);
-                objB->Move(ds);
-            }
-
+            SeperateBodies(objA, objB, norm * depth);
+            
             Collision collision{objA, objB, norm, depth, {0, 0}, {0, 0}, 0};
             GET_CollisionMgr.FindContactPoints(objA, objB, collision.point1,
                                                collision.point2,
@@ -222,6 +214,7 @@ void PhysicsSystem::CollisionHandler() {
 
     for (auto &collision : collisions) {
         CollisionResolver(collision);
+        if (iteration != iteration_-1) continue;
         if (collision.collisionCount > 0) {
             contactPoints.push_back(collision.point1);
             if (collision.collisionCount > 1) {
@@ -231,6 +224,19 @@ void PhysicsSystem::CollisionHandler() {
     }
     collisions.clear();
 }
+
+void PhysicsSystem::SeperateBodies(RigidBody* objA, RigidBody* objB, glm::vec2 mtv) {
+    if (objA->GetIsStatic()) {
+        objB->Move(mtv);
+    } else if (objB->GetIsStatic()) {
+        objA->Move(-mtv);
+    } else {
+        auto ds = mtv * 0.5f;
+        objA->Move(-ds);
+        objB->Move(ds);
+    }
+}
+
 
 void PhysicsSystem::CollisionResolver(const Collision &collision) {
     auto a = collision.objA;

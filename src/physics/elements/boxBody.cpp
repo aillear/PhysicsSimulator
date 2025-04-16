@@ -13,9 +13,9 @@
 #include <utility>
 #include <vector>
 
-BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
-    : RigidBody(position, mate, PhysicsShapeType::BOX),
-      widthHeight_(widthHeight), transformer(position, 0) {
+BoxBody::BoxBody(Material mate, glm::vec2 widthHeight)
+    : RigidBody(mate, PhysicsShapeType::BOX),
+      widthHeight_(widthHeight) {
     area_ = widthHeight.x * widthHeight.y * TUAreaFactor;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0f / mass_;
@@ -28,48 +28,10 @@ BoxBody::BoxBody(Material mate, glm::vec2 position, glm::vec2 widthHeight)
     OriginVertex[3] = {-Right, Buttom};
     TransformedVertexF = std::vector<SDL_Vertex>(4);
     TransformedVertexB = std::vector<SDL_Vertex>(4);
-    SetFColor({1,1,0,1});
-    SetFColorBoundry({1,1,1,1});
-}
-
-void BoxBody::Move(glm::vec2 ds) {
-    SetPosition(position_ + ds);
-}
-
-void BoxBody::MoveTo(glm::vec2 destination) {
-    SetPosition(destination);
-}
-
-void BoxBody::SetPosition(const glm::vec2& position) {
-    position_ = position;
-    transformer.SetOffset(position);
-    needToTransfrom = true;
-    needToUpdateAABB = true;
-}
-
-void BoxBody::SetPosition(float x, float y) {
-    position_ = {x, y};
-    transformer.SetOffset(position_);
-    needToTransfrom = true;
-    needToUpdateAABB = true;
-}
-
-void BoxBody::Rotate(float angle) {
-    rotation_ += angle;
-    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
-    if (rotation_ < 0.0f) rotation_ += 360.0f;
-    transformer.SetAngle(rotation_);
-    needToTransfrom = true;
-    needToUpdateAABB = true;
-}
-
-void BoxBody::RotateTo(float rotation) {
-    this->rotation_ = rotation;
-    if (rotation_ >= 360.0f) rotation_ -= 360.0f;
-    if (rotation_ < 0.0f) rotation_ += 360.0f;
-    transformer.SetAngle(rotation);
-    needToTransfrom = true;
-    needToUpdateAABB = true;
+    
+    // have to set color there, due to change color need to change vertex color
+    SetFColor({1, 1, 0, 1});
+    SetFColorBoundry({1, 1, 1, 1});
 }
 
 void BoxBody::SetColor(SDL_Color color) {

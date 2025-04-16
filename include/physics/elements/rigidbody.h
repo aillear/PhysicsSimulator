@@ -7,6 +7,7 @@
 #include "objectWorld.h"
 #include "renderSystem.h"
 #include "shape.h"
+#include "transform.h"
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float4.hpp>
 #include <string>
@@ -15,14 +16,19 @@
 // each pxiel represen 1 cm.
 class RigidBody : public ObjectWorld {
   public:
-    RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type);
+    RigidBody(Material mate, PhysicsShapeType type);
 
-    virtual void Move(glm::vec2 ds) { position_ += ds; }
-    virtual void MoveTo(glm::vec2 destinaion) { position_ = destinaion; }
+    virtual void Move(glm::vec2 ds);
+    virtual void MoveTo(glm::vec2 destinaion);
     virtual void Rotate(float angle);
     virtual void RotateTo(float rotation);
-    PhysicsShapeType GetType() { return type_; }
+    void SetVelocity(glm::vec2 v) { velocity_ = v; }
+    void AddVelocity(glm::vec2 v) { velocity_ += v; }
 
+    void AddForce(glm::vec2 force) { this->force_ = force; }
+    const glm::vec2 GetForce() { return force_; }
+    
+    PhysicsShapeType GetType() { return type_; }
     const float GetMass() const { return mass_; }
     const float GetMassR() const { return massR_; }
     const float GetArea() const { return area_; }
@@ -32,12 +38,6 @@ class RigidBody : public ObjectWorld {
     const float GetRotateIntertiaR() const { return rotateIntertiaR_; }
     Material GetMaterial() const { return material_; }
     glm::vec2 GetVelocity() const { return velocity_; }
-
-    void SetVelocity(glm::vec2 v) { velocity_ = v; }
-    void AddVelocity(glm::vec2 v) { velocity_ += v; }
-
-    void AddForce(glm::vec2 force) { this->force_ = force; }
-    const glm::vec2 GetForce() { return force_; }
 
     bool GetIsStatic() { return isStatic_; }
     void SetIsStatic(bool value);
@@ -105,4 +105,10 @@ class RigidBody : public ObjectWorld {
 
     Material material_;
     SDL_FColor boundaryColor_;
+    Transform2D transformer;
+
+    private:
+    // hide these functions
+    void SetPosition(const glm::vec2 &pos) override{;}
+    void SetPosition(float x, float y) override{;}
 };

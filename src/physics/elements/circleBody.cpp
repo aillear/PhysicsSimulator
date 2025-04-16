@@ -5,11 +5,12 @@
 #include <numbers>
 #include <utility>
 
-CircleBody::CircleBody(Material mate, glm::vec2 center, float radius)
-    : RigidBody(center, mate, PhysicsShapeType::CIRCLE), radius_(radius) {
+CircleBody::CircleBody(Material mate, float radius)
+    : RigidBody(mate, PhysicsShapeType::CIRCLE), radius_(radius) {
     area_ = std::numbers::pi * radius * radius * TUAreaFactor;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0 / mass_;
+    
     SetFColor({1, 1, 0, 1});
     SetFColorBoundry({1, 1, 1, 1});
 }
@@ -31,15 +32,6 @@ void CircleBody::Render() {
     GET_Buffer.AddCommand(std::move(cmd));
 }
 
-void CircleBody::Move(glm::vec2 ds) {
-    SetPosition(position_ + ds);
-    needToUpdateAABB = true;
-}
-
-void CircleBody::MoveTo(glm::vec2 destination) {
-    SetPosition(destination);
-    needToUpdateAABB = true;
-}
 
 void CircleBody::GetAABBUpdated() {
     if (!needToUpdateAABB)

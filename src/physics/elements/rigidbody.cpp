@@ -5,10 +5,10 @@
 #include "physicsSystem.h"
 #include <vector>
 
-RigidBody::RigidBody(glm::vec2 position, Material mate, PhysicsShapeType type)
-    : ObjectWorld(position), material_(mate), velocity_(0, 0), rotation_(0),
+RigidBody::RigidBody(Material mate, PhysicsShapeType type)
+    : ObjectWorld(), material_(mate), velocity_(0, 0), rotation_(0),
       angularVelocity_(0), type_(type), force_(0, 0) {
-    SetIsStatic(false);
+
 }
 void RigidBody::Init() {
     SafeCheck();
@@ -116,6 +116,9 @@ void RigidBody::Rotate(float angle) {
         rotation_ -= 360.0f;
     if (rotation_ < 0.0f)
         rotation_ += 360.0f;
+    transformer.SetAngle(rotation_);
+    needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void RigidBody::RotateTo(float rotation) {
@@ -124,14 +127,32 @@ void RigidBody::RotateTo(float rotation) {
     if (rotation_ < 0.0f)
         rotation += 360.0f;
     rotation_ = rotation;
+    transformer.SetAngle(rotation);
+    needToTransfrom = true;
+    needToUpdateAABB = true;
+}
+
+void RigidBody::Move(glm::vec2 ds) {
+    position_ += ds;
+    transformer.SetOffset(position_);
+    needToTransfrom = true;
+    needToUpdateAABB = true;
+}
+
+void RigidBody::MoveTo(glm::vec2 destination) {
+    position_ = destination;
+    transformer.SetOffset(position_);
+    needToTransfrom = true;
+    needToUpdateAABB = true;
 }
 
 void RigidBody::SetIsStatic(bool value) {
-    if (isStatic_ == value)
-        return;
-    if (value == true)
+    if (value == true) {
         massR_ = 0;
-    else
+        rotateIntertiaR_ = 0;
+    } else {
         massR_ = 1.0 / mass_;
+        rotateIntertiaR_ = 1.0 / rotateIntertia_;
+    }
     isStatic_ = value;
 }

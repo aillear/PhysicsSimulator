@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 struct Transform2D {
-    Transform2D(glm::vec2 offset, float angle) : offset_(offset), angle_(angle) {
+    Transform2D(glm::vec2 offset = {0, 0}, float angle = 0) : offset_(offset), angle_(angle) {
         Update();
     }
 

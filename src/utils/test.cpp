@@ -102,43 +102,25 @@ void SomeCustomLogicHere() {
 
 void SomeCustomLogicPHere() {
     Material m{1, 1, 0.5};
-
-    // for (int i = 0; i < 20; i++) {
-    //     auto pos = RandomPos({20, 20}, {780, 580});
-    //     int type = RandomInt(0, 2);
-    //     std::shared_ptr<RigidBody> obj;
-    //     if (type == 0)
-    //         obj = std::make_shared<CircleBody>(m, pos, 20);
-    //     else
-    //         obj = std::make_shared<BoxBody>(m, pos, glm::vec2{30, 20});
-
-    //     if (i != 0) {
-    //         obj->SetIsStatic(RandomBool());
-    //         obj->SetFColor(RandomFColor());s
-    //         if (obj->GetIsStatic()) {
-    //             obj->SetFColorBoundry({1, 0, 0, 1});
-    //         }
-    //     }
-    //     GET_PhysicsSystem.AddObject(obj);
-    // }
-    auto ground =
-        std::make_shared<BoxBody>(m, glm::vec2(0, 800), glm::vec2(2000, 20));
+    
+    auto ground = std::make_shared<BoxBody>(m, glm::vec2(2000, 20));
+    ground->MoveTo({0, 800});
     ground->SetFColorBoundry({0, 0, 0, 1});
     ground->SetColor({77, 120, 204, 255});
     ground->SetIsStatic(true);
     ground->SetName("ground");
     GET_PhysicsSystem.AddObject(ground);
 
-    auto wallL =
-        std::make_shared<BoxBody>(m, glm::vec2(-400, 400), glm::vec2(20, 1000));
+    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(20, 1000));
+    wallL->MoveTo({-400, 400});
     wallL->SetFColorBoundry({0, 0, 0, 1});
     wallL->SetColor({77, 120, 204, 255});
     wallL->SetIsStatic(true);
     wallL->SetName("wall1");
     GET_PhysicsSystem.AddObject(wallL);
 
-    auto wallR =
-        std::make_shared<BoxBody>(m, glm::vec2(400, 400), glm::vec2(20, 1000));
+    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(20, 1000));
+    wallR->MoveTo({400, 400});
     wallR->SetFColorBoundry({0, 0, 0, 1});
     wallR->SetColor({77, 120, 204, 255});
     wallR->SetIsStatic(true);
@@ -149,43 +131,24 @@ void SomeCustomLogicPHere() {
 void SomeCustomLogicPAHere() {
     auto children = GET_PhysicsSystem.GetRootNode()->GetChildren();
 
-    // glm::vec2 dir = {0, 0};
-
-    // if (KeyState(SDL_SCANCODE_W))
-    //     dir.y--;
-    // if (KeyState(SDL_SCANCODE_S))
-    //     dir.y++;
-    // if (KeyState(SDL_SCANCODE_A))
-    //     dir.x--;
-    // if (KeyState(SDL_SCANCODE_D))
-    //     dir.x++;
-
-    // float forceMagnitude = 120000.0f;
-    // if (dir.x != 0 || dir.y != 0) {
-    //     auto firstObj = static_cast<RigidBody *>(children.begin()->get());
-    //     if (firstObj == nullptr)
-    //         return;
-    //     firstObj->AddForce(forceMagnitude * glm::normalize(dir));
-    // }
     Material m{0.5, 0.8, 0.5};
     static int counter = 0;
     if (PKeyDown(SDL_SCANCODE_Q)) {
-        auto obj = std::make_shared<BoxBody>(m, glm::vec2{0, 0},
-                                             RandomPos({50, 50}, {100, 100}));
+        auto obj =
+            std::make_shared<BoxBody>(m, RandomPos({50, 50}, {100, 100}));
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));
+        obj->SetIsStatic(false);
         GET_PhysicsSystem.AddObject(obj);
-        F_LOG_INFO("current have {} objects", counter);
     }
 
     if (PKeyDown(SDL_SCANCODE_E)) {
-        auto obj = std::make_shared<CircleBody>(m, glm::vec2{0, 0},
-                                                RandomFloat(25, 50));
+        auto obj = std::make_shared<CircleBody>(m, RandomFloat(25, 50));
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));
+        obj->SetIsStatic(false);
         GET_PhysicsSystem.AddObject(obj);
-        F_LOG_INFO("current have {} objects", counter);
     }
 }
