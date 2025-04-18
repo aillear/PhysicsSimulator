@@ -66,6 +66,7 @@ class PhysicsSystem {
 
     void CollisionResolver(const Collision &collision);
     void FCollisionResolver(const Collision &collision); 
+    void FFCollisionResolver(const Collision &collision); // it's the last version for real
 
     void OutOffBoundCheck();
 

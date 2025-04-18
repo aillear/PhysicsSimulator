@@ -336,6 +336,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
     return true;
 }
 
+// obsolete
 bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
                                              const std::vector<glm::vec2> &b,
                                              glm::vec2 &norm, float &depth) {
