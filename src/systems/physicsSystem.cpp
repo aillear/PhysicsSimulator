@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/vector_relational.hpp>
 #include <stdexcept>
@@ -383,6 +384,7 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
     std::array<glm::vec2, 2> impulses{};
     std::array<glm::vec2, 2> raList{};
     std::array<glm::vec2, 2> rbList{};
+    std::array<float, 2> jList{};
 
     for (int i = 0; i < contactCount; i++) {
         glm::vec2 ra = contactPoints[i] - objA->GetPosition();
@@ -400,51 +402,27 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
                               (objA->GetVelocity() + angularLinearVA);
 
         float reVdotNorm = glm::dot(relativeV, norm);
-        float j;
-        if (reVdotNorm < 0.0f) {
-            float raPerpDotNorm = glm::dot(raPerp, norm);
-            float rbPerpDotNorm = glm::dot(rbPerp, norm);
-
-            float denom =
-                objA->GetMassR() + objB->GetMassR() +
-                (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateIntertiaR() +
-                (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateIntertiaR();
-
-            j = -(1.0f + resilience) * reVdotNorm;
-            j /= denom;
-            j /= contactCount;
-
-            impulses[i] = j * norm;
+        if (reVdotNorm > 0.0f) {
+            continue;
         }
 
-        // friction here
-        glm::vec2 tangent = relativeV - reVdotNorm * norm;
-        if (!glm::all(glm::epsilonEqual(tangent, glm::vec2(0.0f), 0.0001f))) {
-            tangent = glm::normalize(tangent);
+        float raPerpDotNorm = glm::dot(raPerp, norm);
+        float rbPerpDotNorm = glm::dot(rbPerp, norm);
 
-            float raPerpDotTangent = glm::dot(raPerp, tangent);
-            float rbPerpDotTangent = glm::dot(rbPerp, tangent);
+        float denom =
+            objA->GetMassR() + objB->GetMassR() +
+            (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateIntertiaR() +
+            (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateIntertiaR();
 
-            float denom = objA->GetMassR() + objB->GetMassR() +
-                          (raPerpDotTangent * raPerpDotTangent) *
-                              objA->GetRotateIntertiaR() +
-                          (rbPerpDotTangent * rbPerpDotTangent) *
-                              objB->GetRotateIntertiaR();
-
-            float jt = -glm::dot(relativeV, tangent);
-            jt /= denom;
-            jt /= contactCount;
-
-            if (abs(jt) <= j * sf)
-                frictionImpulses[i] = jt * tangent;
-            else
-                frictionImpulses[i] = -j * df * tangent;
-        }
+        float j = -(1.0f + resilience) * reVdotNorm;
+        j /= denom;
+        j /= contactCount;
+        jList[i] = j;
+        impulses[i] = j * norm;
     }
 
     for (int i = 0; i < contactCount; i++) {
         glm::vec2 impulse = impulses[i];
-        glm::vec2 frictionImpulse = frictionImpulses[i];
         glm::vec2 ra = raList[i];
         glm::vec2 rb = rbList[i];
 
@@ -455,13 +433,61 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
         objB->AddVelocity(impulse * objB->GetMassR());
         objB->AddAngularVelocity(Cross(rb, impulse) *
                                  objB->GetRotateIntertiaR());
+    }
+    
+    for (int i = 0; i < contactCount; i++) {
+        glm::vec2 ra = contactPoints[i] - objA->GetPosition();
+        glm::vec2 rb = contactPoints[i] - objB->GetPosition();
+        raList[i] = ra;
+        rbList[i] = rb;
 
-        objA->AddVelocity(-frictionImpulse * objA->GetMassR());
-        objA->AddAngularVelocity(-Cross(ra, frictionImpulse) *
+        glm::vec2 raPerp = {-ra.y, ra.x};
+        glm::vec2 rbPerp = {-rb.y, rb.x};
+
+        glm::vec2 angularLinearVA = objA->GetAngularVelocity() * raPerp;
+        glm::vec2 angularLinearVB = objB->GetAngularVelocity() * rbPerp;
+
+        glm::vec2 relativeV = (objB->GetVelocity() + angularLinearVB) -
+                              (objA->GetVelocity() + angularLinearVA);
+
+        glm::vec2 tagent = relativeV - glm::dot(relativeV, norm) * norm;
+        if (glm::all(glm::epsilonEqual(tagent, {0, 0}, 0.001f))) {
+            continue;
+        }
+        tagent = glm::normalize(tagent);
+
+        float raPerpDotTangent = glm::dot(raPerp, tagent);
+        float rbPerpDotTangent = glm::dot(rbPerp, tagent);
+
+        float denom = objA->GetMassR() + objB->GetMassR() +
+                      (raPerpDotTangent * raPerpDotTangent) *
+                          objA->GetRotateIntertiaR() +
+                      (rbPerpDotTangent * rbPerpDotTangent) *
+                          objB->GetRotateIntertiaR();
+
+        float jt = -glm::dot(relativeV, tagent);
+        jt /= denom;
+        jt /= contactCount;
+
+        glm::vec2 frictionImpulse;
+        float j = jList[i];
+        if (abs(jt) < j * sf) frictionImpulse = jt * tagent;
+        else
+            frictionImpulse = -j * df * tagent;
+        frictionImpulses[i] = frictionImpulse;
+    }
+
+    for (int i = 0; i < contactCount; i++) {
+        glm::vec2 impulse = frictionImpulses[i];
+        glm::vec2 ra = raList[i];
+        glm::vec2 rb = rbList[i];
+
+        objA->AddVelocity(-impulse * objA->GetMassR());
+        objA->AddAngularVelocity(-Cross(ra, impulse) *
                                  objA->GetRotateIntertiaR());
 
-        objB->AddVelocity(frictionImpulse * objB->GetMassR());
-        objB->AddAngularVelocity(Cross(rb, frictionImpulse) *
+        objB->AddVelocity(impulse * objB->GetMassR());
+        objB->AddAngularVelocity(Cross(rb, impulse) *
                                  objB->GetRotateIntertiaR());
     }
 }
