@@ -1,12 +1,15 @@
 #include "physicsSystem.h"
+#include "SDL3/SDL_scancode.h"
 #include "collisionMgr.h"
 #include "configs.h"
 #include "conversion.h"
+#include "inputSystem.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
 #include "physicsObjectRoot.h"
 #include "renderBufferMgr.h"
+#include "renderSystem.h"
 #include "rigidbody.h"
 #include "shape.h"
 #include <algorithm>
@@ -93,6 +96,16 @@ void PhysicsSystem::UpdateWrapper() {
 
         // render here
         rootNode->RenderWrapper();
+
+        for (auto& point : collisionPoints) {
+            DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
+            cmd.GetBase().rect.p1 = point - glm::vec2(0.05f, 0.05f);
+            cmd.GetBase().rect.p2 = point + glm::vec2(0.05f, 0.05f);
+            cmd.GetBase().color = {1,0, 1, 1};
+            cmd.halfLineWidth = 0.5f;
+            GET_Buffer.AddCommand(std::move(cmd));
+        }
+        collisionPoints.clear();
         GET_Buffer.Submit();
 
         fpsc.EndFrame();
@@ -107,7 +120,7 @@ void PhysicsSystem::ObjManage() {
     }
 
     for (auto &obj : physicsObjectsToAdd) {
-        auto parent = obj->GetParent();
+        auto parent = obj->GetTempFather();
         if (parent == nullptr) {
             rootNode->AddChild(obj);
         } else
@@ -119,21 +132,21 @@ void PhysicsSystem::ObjManage() {
 
 void PhysicsSystem::AddObject(std::shared_ptr<ObjectWorld> obj,
                               std::shared_ptr<ObjectWorld> target) {
-    obj->SetParent(target.get());
+    obj->tempFather = target.get();
     physicsObjectsToAdd.push_back(obj);
 }
 
 void PhysicsSystem::AddObject(std::shared_ptr<ObjectWorld> obj,
                               ObjectID targetID) {
     Object *target = FindObjectById(targetID).get();
-    obj->SetParent(target);
+    obj->tempFather = target;
     physicsObjectsToAdd.push_back(obj);
 }
 
 void PhysicsSystem::AddObject(std::shared_ptr<ObjectWorld> obj,
                               std::string targetName) {
     Object *target = FindObjectByName(targetName).get();
-    obj->SetParent(target);
+    obj->tempFather = target;
     physicsObjectsToAdd.push_back(obj);
 }
 
@@ -181,13 +194,13 @@ void PhysicsSystem::ConllisionBroadPhase() {
 
     for (int i = 0; i < childCount - 1; i++) {
         RigidBody *objA = static_cast<RigidBody *>(children[i].get());
+        AABB aabbA = objA->GetAABB();
         for (int j = i + 1; j < childCount; j++) {
             RigidBody *objB = static_cast<RigidBody *>(children[j].get());
 
             if (objA->GetIsStatic() && objB->GetIsStatic())
                 continue;
 
-            AABB aabbA = objA->GetAABB();
             AABB aabbB = objB->GetAABB();
 
             if (!GET_CollisionMgr.IntersectAABBs(aabbA, aabbB))
@@ -197,6 +210,7 @@ void PhysicsSystem::ConllisionBroadPhase() {
         }
     }
 }
+
 void PhysicsSystem::ConllisionNarrowPhase() {
     auto children = rootNode->GetChildren();
 
@@ -214,6 +228,12 @@ void PhysicsSystem::ConllisionNarrowPhase() {
         GET_CollisionMgr.FindContactPoints(objA, objB, c.point1, c.point2,
                                            c.count);
         FCollisionResolver(c);
+
+        // debug
+        collisionPoints.push_back(c.point1);
+        if (c.count == 2) {
+            collisionPoints.push_back(c.point2);
+        }
     }
 }
 
@@ -278,6 +298,14 @@ void PhysicsSystem::FCollisionResolver(const Collision &collision) {
     std::array<glm::vec2, 2> rbList{};
 
 
+    if (PKeyPress(SDL_SCANCODE_SPACE)) {
+        if (objB->GetAngularVelocity() > 0 && objB->GetRotationDegrees() < 30 && objB->GetRotationDegrees() > 0) {
+            int a;
+        }
+        if (objB->GetAngularVelocity() < 0 && objB->GetRotationDegrees() < 360 && objB->GetRotationDegrees() > 330) {
+            int a;
+        }
+    }
 
     for (int i = 0; i < contactCount; i++) { 
         glm::vec2 ra = contactPoints[i] - objA->GetPosition();
@@ -288,13 +316,13 @@ void PhysicsSystem::FCollisionResolver(const Collision &collision) {
         glm::vec2 raPerp = {-ra.y, ra.x};
         glm::vec2 rbPerp = {-rb.y, rb.x};
  
-        glm::vec2 angularLinearVA = objA->GetRAngularVelocity() * raPerp;
-        glm::vec2 angularLinearVB = objB->GetRAngularVelocity() * rbPerp;
+        glm::vec2 angularLinearVA = objA->GetAngularVelocity() * raPerp;
+        glm::vec2 angularLinearVB = objB->GetAngularVelocity() * rbPerp;
 
         glm::vec2 relativeV = (objB->GetVelocity() + angularLinearVB) -
                               (objA->GetVelocity() + angularLinearVA); 
 
-        float reVdotNorm = glm::dot(relativeV, norm);
+        float reVdotNorm =glm::dot(relativeV, norm);
         if (reVdotNorm > 0.0f) {
             continue;
         }
@@ -315,12 +343,18 @@ void PhysicsSystem::FCollisionResolver(const Collision &collision) {
 
     for (int i = 0; i < contactCount; i++) {
         glm::vec2 impulse = impulses[i];
+        glm::vec2 ra = raList[i];
+        glm::vec2 rb = rbList[i];
 
-        objA->AddVelocity(-objA->GetMassR() * impulse);
-        objA->AddRAngularVelocity(-Cross(raList[i], impulse) * objA->GetRotateIntertiaR());
-        
-        objB->AddVelocity(objB->GetMassR() * impulse);
-        objB->AddRAngularVelocity(Cross(rbList[i], impulse) * objB->GetRotateIntertiaR());
+        auto v1 = -impulse * objA->GetMassR();
+        auto av1 = -Cross(ra, impulse) * objA->GetRotateIntertiaR();
+        objA->AddVelocity(v1);
+        objA->AddAngularVelocity(av1);
+
+        auto v2 = impulse * objB->GetMassR();
+        auto av2 = Cross(rb, impulse) * objB->GetRotateIntertiaR();
+        objB->AddVelocity(v2);
+        objB->AddAngularVelocity(av2);
     }
 }
 

@@ -3,7 +3,8 @@
 struct Material {
     float density;
     float resilience;
-    float frictionFactor;
+    float StaticfrictionFactor;
+    float DynamicfrictionFactor;
 
-    Material(float density, float resilience, float frictionFactor);
+    Material(float density, float resilience, float StaticfrictionFactor, float DynamicfrictionFactor);
 };

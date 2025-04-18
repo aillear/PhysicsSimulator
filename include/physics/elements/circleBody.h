@@ -4,6 +4,7 @@
 #include "renderSystem.h"
 #include "rigidbody.h"
 #include <glm/ext/vector_float2.hpp>
+#include <glm/geometric.hpp>
 class CircleBody : public RigidBody {
   public:
     CircleBody(Material mate, float radius);
@@ -12,12 +13,17 @@ class CircleBody : public RigidBody {
 
     const GlmCircle GetCircle() const override;
 
+    const AABB & GetAABB() override;
+
   protected:
     void Render() override;
     void PhysicsUpdate(float dt) override;
-    void GetAABBUpdated() override;
     void CalRotateIntertia() override;
 
 
     float radius_;
+  private:
+    GlmRect GetDrawline();
+    GlmRect drawLine_;
+    GlmRect originalDrawLine_;
 };

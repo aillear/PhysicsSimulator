@@ -11,6 +11,7 @@
 #include <glm/ext/vector_float4.hpp>
 #include <glm/trigonometric.hpp>
 #include <string>
+#include <vector>
 
 // TODO: add more physics properties
 // each pxiel represen 1 cm.
@@ -26,14 +27,14 @@ class RigidBody : public ObjectWorld {
     void SetVelocity(glm::vec2 v) { velocity_ = v; }
     void AddVelocity(glm::vec2 v) { velocity_ += v; }
 
-    virtual void Rotate(float angleDegrees);
-    virtual void RotateTo(float angleDegrees);
-    virtual void RRotate(float angle);
-    virtual void RRotateTo(float angle);
-    void SetAngularVelocity(float vDegrees) { angularVelocity_ = glm::radians(vDegrees); }
-    void SetRAngularVelocity(float v) { angularVelocity_ = v; }
-    void AddAngularVelocity(float vDegrees) { angularVelocity_ += glm::radians(vDegrees); }
-    void AddRAngularVelocity(float v) { angularVelocity_ += v; }
+    virtual void RotateDegrees(float angleDegrees);
+    virtual void RotateToDegrees(float angleDegrees);
+    virtual void Rotate(float angle);
+    virtual void RotateTo(float angle);
+    void SetAngularVelocityDegrees(float vDegrees) { angularVelocity_ = glm::radians(vDegrees); }
+    void SetAngularVelocity(float v) { angularVelocity_ = v; }
+    void AddAngularVelocityDegrees(float vDegrees) { angularVelocity_ += glm::radians(vDegrees); }
+    void AddAngularVelocity(float v) { angularVelocity_ += v; }
 
 
     void AddForce(glm::vec2 force) { this->force_ = force; }
@@ -43,10 +44,10 @@ class RigidBody : public ObjectWorld {
     const float GetMass() const { return mass_; }
     const float GetMassR() const { return massR_; }
     const float GetArea() const { return area_; }
-    const float GetRotation() const { return glm::degrees(rotation_); }
-    const float GetRRotation() const { return rotation_; }
-    const float GetAngularVelocity() const { return glm::degrees(angularVelocity_); }
-    const float GetRAngularVelocity() const { return angularVelocity_; }
+    const float GetRotationDegrees() const { return glm::degrees(rotation_); }
+    const float GetRotation() const { return rotation_; }
+    const float GetAngularVelocityDegrees() const { return glm::degrees(angularVelocity_); }
+    const float GetAngularVelocity() const { return angularVelocity_; }
     const float GetRotateIntertia() const { return rotateIntertia_; }
     const float GetRotateIntertiaR() const { return rotateIntertiaR_; }
     Material GetMaterial() const { return material_; }
@@ -74,9 +75,8 @@ class RigidBody : public ObjectWorld {
     virtual glm::vec2 GetWidthHeight() const;
     virtual void SetWidthHeight(glm::vec2 wh);
 
-    virtual const std::vector<glm::vec2> &GetVertex() const;
-
-    virtual const AABB GetAABB() const { return aabb_; }
+    virtual const std::vector<glm::vec2> &GetVertices();
+    virtual const AABB& GetAABB() = 0;
 
 
   protected:
@@ -86,10 +86,7 @@ class RigidBody : public ObjectWorld {
     const std::string ShapeTypeToStr(PhysicsShapeType type) const;
     bool SafeCheck() const;
 
-    virtual void GetVertexTransfrom() { needToTransfrom = false; }
-
-    virtual void GetAABBUpdated() { needToUpdateAABB = false; }
-
+    void NormalizeRotation();
     virtual void CalRotateIntertia();
 
     const PhysicsShapeType type_;

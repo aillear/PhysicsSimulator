@@ -48,9 +48,11 @@ class PhysicsSystem {
         AfterUpdateFunctionWrapper.emplace_back(std::move(callBack));
     }
 
-    glm::vec2 gravity = {0, 9.81f};
+    glm::vec2 gravity = {0, -9.81f};
 
     FPSCounter fpsc;
+    // test
+    int selectIndex =0;
 
   private:
     PhysicsSystem() : running(false) { ; }
@@ -71,6 +73,7 @@ class PhysicsSystem {
     bool hasRemoveCalled = false;
     int iteration_;
 
+
     EventHandlerID eventHandler_1;
     EventHandlerID eventHandler_2;
     EventHandlerID eventHandler_3;
@@ -83,6 +86,7 @@ class PhysicsSystem {
     std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
 
     std::vector<std::pair<int, int>> collisionPairs; // for broad phase
+    std::vector<glm::vec2> collisionPoints; // for debug
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()

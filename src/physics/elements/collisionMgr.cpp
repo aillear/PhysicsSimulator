@@ -29,21 +29,21 @@ bool CollisionMgr::CollisionCheck(RigidBody *a, RigidBody *b, glm::vec2 &norm,
 
     if (typeA == Shape::CIRCLE) {
         if (typeB == Shape::CIRCLE) {
-            return GET_CollisionMgr.IntersectCircle(
+            return IntersectCircle(
                 a->GetCircle(), b->GetCircle(), norm, depth);
         } else {
-            return GET_CollisionMgr.IntersectPolygonAndCircle(
-                a->GetCircle(), b->GetVertex(), b->GetPosition(), norm, depth);
+            return IntersectPolygonAndCircle(
+                a->GetCircle(), b->GetVertices(), b->GetPosition(), norm, depth);
         }
     } else {
         if (typeB == Shape::CIRCLE) {
-            bool result = GET_CollisionMgr.IntersectPolygonAndCircle(
-                b->GetCircle(), a->GetVertex(), a->GetPosition(), norm, depth);
+            bool result = IntersectPolygonAndCircle(
+                b->GetCircle(), a->GetVertices(), a->GetPosition(), norm, depth);
             norm = -norm;
             return result;
         } else {
-            return GET_CollisionMgr.IntersectPolygon(
-                a->GetVertex(), a->GetPosition(), b->GetVertex(),
+            return IntersectPolygon(
+                a->GetVertices(), a->GetPosition(), b->GetVertices(),
                 b->GetPosition(), norm, depth);
         }
     }
@@ -62,20 +62,20 @@ void CollisionMgr::FindContactPoints(RigidBody *a, RigidBody *b,
 
     if (typeA == Shape::CIRCLE) {
         if (typeB == Shape::CIRCLE) {
-            FindContactPoints(a->GetCircle(), b->GetCircle(), contactP1);
+            FindCirclesContactPoints(a->GetCircle(), b->GetCircle(), contactP1);
             count = 1;
         } else {
-            FindContactPoints(a->GetCircle(), b->GetVertex(), b->GetPosition(),
+            FindCirclePolygonContactPoints(a->GetCircle(), b->GetVertices(), b->GetPosition(),
                               contactP1);
             count = 1;
         }
     } else {
         if (typeB == Shape::CIRCLE) {
-            FindContactPoints(b->GetCircle(), a->GetVertex(), a->GetPosition(),
+            FindCirclePolygonContactPoints(b->GetCircle(), a->GetVertices(), a->GetPosition(),
                               contactP1);
             count = 1;
         } else {
-            FindContactPoints(a->GetVertex(), b->GetVertex(), contactP1,
+            FindPolygonsContactPoints(a->GetVertices(), b->GetVertices(), contactP1,
                               contactP2, count);
         }
     }
@@ -104,12 +104,12 @@ void CollisionMgr::PointSegmentDistance(const glm::vec2 &p, const glm::vec2 &a,
     distanceSquired = glm::dot(ab, ab);
 }
 
-void CollisionMgr::FindContactPoints(const GlmCircle &a, const GlmCircle &b,
+void CollisionMgr::FindCirclesContactPoints(const GlmCircle &a, const GlmCircle &b,
                                      glm::vec2 &contactPoint) {
     contactPoint = a.center + a.radius * glm::normalize((b.center - a.center));
 }
 
-void CollisionMgr::FindContactPoints(const GlmCircle &a,
+void CollisionMgr::FindCirclePolygonContactPoints(const GlmCircle &a,
                                      const std::vector<glm::vec2> &b,
                                      const glm::vec2 &centerB, glm::vec2 &cp) {
     cp = {0, 0};
@@ -138,7 +138,7 @@ void CollisionMgr::FindContactPoints(const GlmCircle &a,
     }
 }
 
-void CollisionMgr::FindContactPoints(const std::vector<glm::vec2> &a,
+void CollisionMgr::FindPolygonsContactPoints(const std::vector<glm::vec2> &a,
                                      const std::vector<glm::vec2> &b,
                                      glm::vec2 &contactPoint1,
                                      glm::vec2 &contactPoint2, int &count) {
@@ -183,8 +183,8 @@ void CollisionMgr::FindContactPoints(const std::vector<glm::vec2> &a,
                 }
             } else if (distSq < minD) {
                 minD = distSq;
-                contactPoint1 = cp;
                 count = 1;
+                contactPoint1 = cp;
             }
         }
     }
@@ -313,7 +313,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
             depth = axisDepth;
             norm = axis;
         }
-    }
+    }   
 
     for (int i = 0; i < b.size(); i++) {
         auto va = b[i];
@@ -330,7 +330,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
             norm = axis;
         }
     }
-    auto direction = centerB - centerA;
+    glm::vec2 direction = centerB - centerA;
     if (glm::dot(direction, norm) < 0.0f)
         norm = -norm;
     return true;
@@ -449,8 +449,7 @@ glm::vec2 CollisionMgr::GetProject(const std::vector<glm::vec2> &vertices,
                      std::numeric_limits<float>::min()};
 
     for (auto &vertex : vertices) {
-        glm::vec2 v = vertex;
-        float proj = glm::dot(v, axis);
+        float proj = glm::dot(vertex, axis);
 
         res.x = std::min(res.x, proj);
         res.y = std::max(res.y, proj);

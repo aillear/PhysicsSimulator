@@ -54,11 +54,11 @@ class CollisionMgr {
                               glm::vec2 &cp);
 
   private:
-    void FindContactPoints(const GlmCircle &a, const GlmCircle &b,
+    void FindCirclesContactPoints(const GlmCircle &a, const GlmCircle &b,
                            glm::vec2 &contactPoint);
-    void FindContactPoints(const GlmCircle &a, const std::vector<glm::vec2> &b,
+    void FindCirclePolygonContactPoints(const GlmCircle &a, const std::vector<glm::vec2> &b,
                            const glm::vec2 &centerB, glm::vec2 &contactPoint);
-    void FindContactPoints(const std::vector<glm::vec2> &a,
+    void FindPolygonsContactPoints(const std::vector<glm::vec2> &a,
                            const std::vector<glm::vec2> &b,
                            glm::vec2 &contactPoint1, glm::vec2 &contactPoint2,
                            int &count);

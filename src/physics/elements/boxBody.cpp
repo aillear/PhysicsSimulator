@@ -64,20 +64,23 @@ void BoxBody::SetFColorBoundry(SDL_FColor color) {
     }
 }
 
-void BoxBody::GetVertexTransfrom() {
-    if (!needToTransfrom) return;
+const std::vector<glm::vec2>& BoxBody::GetVertices() {
+    if (!needToTransfrom) return TransformedVertex;
+
+    needToTransfrom = false;
+    transformer.Reset(rotation_, position_);
     for (int i = 0; i < 4; i++) {
         TransformedVertex[i] = transformer.TransfromR(OriginVertex[i]);
-        auto temp = ToFPoint(TransformedVertex[i]);
-        TransformedVertexB[i].position = temp;
-        TransformedVertexF[i].position = temp;
     } 
-    needToTransfrom = false;
+    return TransformedVertex;
 }
 
-void BoxBody::GetAABBUpdated() {
-    if (!needToUpdateAABB) return;
-    
+const AABB& BoxBody::GetAABB() {
+    if (!needToUpdateAABB) return aabb_;
+
+    needToUpdateAABB = false;
+    // ensure the transform is up to date
+    GetVertices();
     aabb_.maxP = TransformedVertex[0];
     aabb_.minP = aabb_.maxP;
     for (int i = 1; i < TransformedVertex.size(); i++) {
@@ -86,10 +89,16 @@ void BoxBody::GetAABBUpdated() {
         aabb_.minP.x = std::min(aabb_.minP.x, TransformedVertex[i].x);
         aabb_.minP.y = std::min(aabb_.minP.y, TransformedVertex[i].y);
     }
-    needToUpdateAABB = false;
+    return aabb_;
 }
 
 void BoxBody::Render() {
+    for (int i = 0; i < 4; i++) {
+        auto temp = ToFPoint(TransformedVertex[i]);
+        TransformedVertexF[i].position = temp;
+        TransformedVertexB[i].position = temp;
+    }
+
     // draw it self
     DrawCommand cmd(ShapeType::POLYGON, false);
     cmd.GetComplex().data = TransformedVertexF;
@@ -110,6 +119,5 @@ void BoxBody::CalRotateIntertia() {
 
 
 void BoxBody::PhysicsUpdate(float dt) {
-    // SetRotation(rotation_ + 90*dt);
     RigidBody::PhysicsUpdate(dt);
 }

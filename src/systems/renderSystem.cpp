@@ -202,14 +202,16 @@ std::shared_ptr<TTF_Text> RenderSystem::CreateText(const std::string &text,
 }
 
 SDL_FPoint RenderSystem::PosWorld2Screen(glm::vec2 worldPos) {
-    glm::vec2 temp =
-        (worldPos - camera.GetPosition()) * camera.getZoom() * WorldToScreenPosFactor + halfWindowSize;
+    glm::vec2 temp = camera.getZoom() * (worldPos - camera.GetPosition()) *
+                         WorldToScreenPosFactor +
+                     halfWindowSize;
 
     return {temp.x, temp.y};
 }
 
 glm::vec2 RenderSystem::PosScreen2World(glm::vec2 screenPos) {
-    return (screenPos - halfWindowSize) * camera.getZoomR() * ScreenToWorldPosFactor +
+    return camera.getZoomR() * (screenPos - halfWindowSize) *
+               ScreenToWorldPosFactor +
            camera.GetPosition();
 }
 
@@ -465,7 +467,8 @@ void RenderSystem::CircleCommand(DrawCommand &cmd) {
     float radius;
     if (cmd.UIMode_ == false) {
         center = PosWorld2Screen(cmd.GetBase().circle.center);
-        radius = cmd.GetBase().circle.radius * camera.getZoom() * WorldToScreenPosFactor;
+        radius = cmd.GetBase().circle.radius * camera.getZoom() *
+                 WorldToScreenPosFactor.x;
     } else {
         center = ToFPoint(cmd.GetBase().circle.center);
         radius = cmd.GetBase().circle.radius;
@@ -522,7 +525,8 @@ void RenderSystem::CircleHollowCommand(DrawCommand &cmd) {
     float radius;
     if (cmd.UIMode_ == false) {
         center = PosWorld2Screen(cmd.GetBase().circle.center);
-        radius = cmd.GetBase().circle.radius * camera.getZoom() * WorldToScreenPosFactor;
+        radius = cmd.GetBase().circle.radius * camera.getZoom() *
+                 WorldToScreenPosFactor.x;
     } else {
         center = ToFPoint(cmd.GetBase().circle.center);
         radius = cmd.GetBase().circle.radius;

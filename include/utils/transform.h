@@ -19,6 +19,7 @@ struct Transform2D {
 
     void Tranaform(glm::vec2 &target);
     glm::vec2 TransfromR(const glm::vec2 &target);
+    void Reset(float angle, glm::vec2 offset);
     void SetAngle(float angle);
     void SetRAngle(float angle);
     void SetOffset(glm::vec2 offset) { offset_ = offset; }
