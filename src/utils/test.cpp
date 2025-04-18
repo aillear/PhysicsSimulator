@@ -129,7 +129,7 @@ void SomeCustomLogicHere() {
 }
 
 void SomeCustomLogicPHere() {
-    Material m{1, 0.8, 0.5, 0.5};
+    Material m{1, 1, 0.5, 0.5};
 
     auto ground = std::make_shared<BoxBody>(m, glm::vec2(20, 0.2));
     ground->MoveTo({0, -8});
@@ -159,7 +159,7 @@ void SomeCustomLogicPHere() {
 void SomeCustomLogicPAHere() {
     auto children = GET_PhysicsSystem.GetRootNode()->GetChildren();
 
-    Material m{1, 0.8, 0.4, 0.5};
+    Material m{1, 1, 0.4, 0.5};
     static int counter = 0;
     if (PKeyDown(SDL_SCANCODE_Q)) {
         auto obj = std::make_shared<BoxBody>(m, RandomPos({0.5, 0.5}, {1, 1}));

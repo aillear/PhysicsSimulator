@@ -416,7 +416,7 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
 
         float j = -(1.0f + resilience) * reVdotNorm;
         j /= denom;
-        j /= contactCount;
+        // j /= contactCount;
         jList[i] = j;
         impulses[i] = j * norm;
     }
@@ -467,7 +467,7 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
 
         float jt = -glm::dot(relativeV, tagent);
         jt /= denom;
-        jt /= contactCount;
+        // jt /= contactCount;
 
         glm::vec2 frictionImpulse;
         float j = jList[i];
