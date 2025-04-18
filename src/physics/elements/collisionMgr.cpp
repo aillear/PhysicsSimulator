@@ -96,12 +96,12 @@ void CollisionMgr::PointSegmentDistance(const glm::vec2 &p, const glm::vec2 &a,
     else if (d >= 1.0f)
         cp = b;
     else
-        cp = a + d * ab;
+        cp = a + ab * d;
 
     // ab is used to calculate the distance from point to segment.
     // not it's origin useage.
-    ab = p - cp;
-    distanceSquired = glm::dot(ab, ab);
+    glm::vec2 diff = p - cp;
+    distanceSquired = glm::dot(diff, diff);
 }
 
 void CollisionMgr::FindCirclesContactPoints(const GlmCircle &a, const GlmCircle &b,
@@ -389,8 +389,8 @@ bool CollisionMgr::IntersectPolygonAndCircle(const GlmCircle &a,
                                              glm::vec2 &norm, float &depth) {
     norm = {0, 0};
     depth = std::numeric_limits<float>::max();
-    glm::vec2 axis;
-    float axisDepth;
+    glm::vec2 axis = {0, 0};
+    float axisDepth = 0;
     glm::vec2 pa, pb;
 
     for (int i = 0; i < b.size(); i++) {
@@ -476,7 +476,7 @@ int CollisionMgr::GetClosestPointIndexToCircle(
     for (int i = 1; i < vertices.size(); i++) {
         float dist = glm::distance(circle.center, vertices[i]);
         if (dist < minD) {
-            dist = minD;
+            minD = dist;
             result = i;
         }
     }

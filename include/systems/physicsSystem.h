@@ -59,6 +59,8 @@ class PhysicsSystem {
     ~PhysicsSystem() = default;
     PhysicsSystem(const PhysicsSystem &) = delete;
     PhysicsSystem &operator=(const PhysicsSystem &) = delete;
+
+    void Update();
     void HandleSDLEvents(SDL_Event &event);
     void ConllisionBroadPhase();
     void ConllisionNarrowPhase();

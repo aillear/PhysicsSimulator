@@ -1,7 +1,9 @@
 #include "physicsSystem.h"
+#include "SDL3/SDL_scancode.h"
 #include "collisionMgr.h"
 #include "configs.h"
 #include "conversion.h"
+#include "inputSystem.h"
 #include "logger.h"
 #include "object.h"
 #include "objectWorld.h"
@@ -78,40 +80,47 @@ void PhysicsSystem::UpdateWrapper() {
     for (auto &callBack : initFunctionWrapper)
         callBack();
     while (running) {
-        fpsc.StartFrame();
-
-        ObjManage();
-
-        float dt = fpsc.GetLastFrameSecond() / iteration_;
-        // execute iteration here.
-        for (int i = 0; i < iteration_; i++) {
-            collisionPairs.clear();
-            rootNode->PhysicsUpdateWrapper(dt);
-            ConllisionBroadPhase();
-            ConllisionNarrowPhase();
-        }
-        OutOffBoundCheck();
-
-        for (auto &callBack : AfterUpdateFunctionWrapper)
-            callBack();
-
-        // render here
-        rootNode->RenderWrapper();
-
-        for (auto &point : collisionPoints) {
-            DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
-            cmd.GetBase().rect.p1 = point - glm::vec2(0.05f, 0.05f);
-            cmd.GetBase().rect.p2 = point + glm::vec2(0.05f, 0.05f);
-            cmd.GetBase().color = {1, 0, 1, 1};
-            cmd.halfLineWidth = 0.5f;
-            GET_Buffer.AddCommand(std::move(cmd));
-        }
-        collisionPoints.clear();
-        GET_Buffer.Submit();
-
-        fpsc.EndFrame();
+        Update();
     }
     LOG_INFO("physics cycle is end.");
+}
+
+void PhysicsSystem::Update() {
+    fpsc.StartFrame();
+
+    ObjManage();
+
+    float dt = fpsc.GetLastFrameSecond() / iteration_;
+    if (PKeyDown(SDL_SCANCODE_SPACE)) {
+        int a;
+    }
+    // execute iteration here.
+    for (int i = 0; i < iteration_; i++) {
+        collisionPairs.clear();
+        rootNode->PhysicsUpdateWrapper(dt);
+        ConllisionBroadPhase();
+        ConllisionNarrowPhase();
+    }
+    OutOffBoundCheck();
+
+    for (auto &callBack : AfterUpdateFunctionWrapper)
+        callBack();
+
+    // render here
+    rootNode->RenderWrapper();
+
+    for (auto &point : collisionPoints) {
+        DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
+        cmd.GetBase().rect.p1 = point - glm::vec2(0.05f, 0.05f);
+        cmd.GetBase().rect.p2 = point + glm::vec2(0.05f, 0.05f);
+        cmd.GetBase().color = {1, 0, 1, 1};
+        cmd.halfLineWidth = 0.5f;
+        GET_Buffer.AddCommand(std::move(cmd));
+    }
+    collisionPoints.clear();
+    GET_Buffer.Submit();
+
+    fpsc.EndFrame();
 }
 
 void PhysicsSystem::ObjManage() {
@@ -426,8 +435,10 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
             jt /= denom;
             jt /= contactCount;
 
-            if (abs(jt) <= j * sf) frictionImpulses[i] = jt * tangent;
-            else frictionImpulses[i] = -j * df * tangent;
+            if (abs(jt) <= j * sf)
+                frictionImpulses[i] = jt * tangent;
+            else
+                frictionImpulses[i] = -j * df * tangent;
         }
     }
 

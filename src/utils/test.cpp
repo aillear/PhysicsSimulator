@@ -139,7 +139,7 @@ void SomeCustomLogicPHere() {
     ground->SetName("ground");
     GET_PhysicsSystem.AddObject(ground);
 
-    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
+    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(2, 10));
     wallL->MoveTo({-4, -4});
     wallL->SetFColorBoundry({0, 0, 0, 1});
     wallL->SetColor({77, 120, 204, 255});
@@ -147,7 +147,7 @@ void SomeCustomLogicPHere() {
     wallL->SetName("wall1");
     GET_PhysicsSystem.AddObject(wallL);
 
-    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
+    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(2, 10));
     wallR->MoveTo({4, -4});
     wallR->SetFColorBoundry({0, 0, 0, 1});
     wallR->SetColor({77, 120, 204, 255});
@@ -178,6 +178,7 @@ void SomeCustomLogicPAHere() {
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));
+        obj->SetAngularVelocityDegrees(-50.0f);
         obj->SetIsStatic(false);
         GET_PhysicsSystem.AddObject(obj);
     }
