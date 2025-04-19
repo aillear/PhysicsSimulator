@@ -113,7 +113,7 @@ void PhysicsSystem::Update() {
     // render here
     rootNode->RenderWrapper();
 
-    collisionPoints.clear();
+    
     for (auto& constraint : constraints) {
         constraint->Render();
     }
@@ -127,6 +127,7 @@ void PhysicsSystem::Update() {
         cmd.halfLineWidth = 0.5f;
         GET_Buffer.AddCommand(std::move(cmd));
     }
+    collisionPoints.clear();
 # endif
 
     GET_Buffer.Submit();
@@ -273,8 +274,8 @@ void PhysicsSystem::ConllisionNarrowPhase() {
         if (c.count == 2) {
             collisionPoints.push_back(c.point2);
         }
-    }
 # endif
+    }
 }
 
 

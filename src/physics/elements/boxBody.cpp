@@ -8,10 +8,7 @@
 #include "rigidbody.h"
 #include "shape.h"
 #include "transform.h"
-#include <glm/ext/quaternion_geometric.hpp>
-#include <glm/ext/vector_float2.hpp>
 #include <utility>
-#include <vector>
 
 BoxBody::BoxBody(Material mate, glm::vec2 widthHeight)
     : RigidBody(mate, PhysicsShapeType::BOX),

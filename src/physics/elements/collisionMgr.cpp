@@ -1,11 +1,6 @@
 #include "collisionMgr.h"
 #include <algorithm>
-#include <glm/ext/quaternion_geometric.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/ext/vector_float2.hpp>
-#include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
-#include <glm/vector_relational.hpp>
 #include <limits>
 #include <utility>
 
@@ -98,8 +93,6 @@ void CollisionMgr::PointSegmentDistance(const glm::vec2 &p, const glm::vec2 &a,
     else
         cp = a + ab * d;
 
-    // ab is used to calculate the distance from point to segment.
-    // not it's origin useage.
     glm::vec2 diff = p - cp;
     distanceSquired = glm::dot(diff, diff);
 }
@@ -324,6 +317,7 @@ bool CollisionMgr::IntersectPolygon(const std::vector<glm::vec2> &a,
         glm::vec2 pb = GetProject(b, axis);
         if (pa.x >= pb.y || pb.x >= pa.y)
             return false;
+        
         float axisDepth = std::min(pa.y - pb.x, pb.y - pa.x);
         if (axisDepth < depth) {
             depth = axisDepth;

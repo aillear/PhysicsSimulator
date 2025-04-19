@@ -6,18 +6,12 @@
 #include "app.h"
 #include "boxBody.h"
 #include "circleBody.h"
-#include "configs.h"
 #include "conversion.h"
 #include "inputSystem.h"
 #include "physicsSystem.h"
+#include "polygonBody.h"
 #include "renderSystem.h"
-#include "link.h"
-#include "rope.h"
-#include "cord.h"
-#include "spring.h"
-
-
-
+#include <algorithm>
 
 void InitApp() {
 
@@ -168,27 +162,29 @@ void InitPhy() {
     // GET_PhysicsSystem.AddConstraint(constraint);
 
     // here is test for link
-    auto ObjA = std::make_shared<CircleBody>(m, 0.5);
-    ObjA->MoveTo({-2, 2});
-    ObjA->SetName("ObjA");
-    ObjA->SetFColor(RandomFColor());
-    ObjA->SetIsStatic(false);
-    GET_PhysicsSystem.AddObject(ObjA);
+    // auto ObjA = std::make_shared<CircleBody>(m, 0.5);
+    // ObjA->MoveTo({-2, 2});
+    // ObjA->SetName("ObjA");
+    // ObjA->SetFColor(RandomFColor());
+    // ObjA->SetIsStatic(false);
+    // GET_PhysicsSystem.AddObject(ObjA);
 
-    auto ObjB = std::make_shared<CircleBody>(m, 0.5);
-    ObjB->MoveTo({0, 8});
-    ObjB->SetName("ObjB");
-    ObjB->SetFColor(RandomFColor());
-    ObjB->SetIsStatic(false);
-    GET_PhysicsSystem.AddObject(ObjB);
+    // auto ObjB = std::make_shared<CircleBody>(m, 0.5);
+    // ObjB->MoveTo({0, 8});
+    // ObjB->SetName("ObjB");
+    // ObjB->SetFColor(RandomFColor());
+    // ObjB->SetIsStatic(false);
+    // GET_PhysicsSystem.AddObject(ObjB);
 
-    auto constraint = std::make_shared<LinkConstraint>(ObjA.get(), ObjB.get(),
-                                                       glm::vec2{0.3,0}, glm::vec2{0.3,0}, 1.5);
-    GET_PhysicsSystem.AddConstraint(constraint);
+    // auto constraint = std::make_shared<LinkConstraint>(ObjA.get(),
+    // ObjB.get(),
+    //                                                    glm::vec2{0.3,0},
+    //                                                    glm::vec2{0.3,0}, 1.5);
+    // GET_PhysicsSystem.AddConstraint(constraint);
 
-    auto constraint1 = std::make_shared<LinkConstraint>(ObjA.get(), ObjB.get(),
-    glm::vec2{-0.3,0}, glm::vec2{-0.3,0}, 1.5);
-GET_PhysicsSystem.AddConstraint(constraint1);
+    //     auto constraint1 = std::make_shared<LinkConstraint>(ObjA.get(),
+    //     ObjB.get(), glm::vec2{-0.3,0}, glm::vec2{-0.3,0}, 1.5);
+    // GET_PhysicsSystem.AddConstraint(constraint1);
     // here is test for spring
     // auto ObjA = std::make_shared<CircleBody>(m, 0.5);
     // ObjA->MoveTo({0, -6});
@@ -244,7 +240,22 @@ void UpdatePhy() {
     }
 
     if (PKeyDown(SDL_SCANCODE_E)) {
-        auto obj = std::make_shared<CircleBody>(m, RandomFloat(0.25, 0.5));
+        auto obj = std::make_shared<CircleBody>(m, 0.5);
+        obj->SetFColor(RandomFColor());
+        obj->MoveTo(SCREEN2WORLD(MousePos));
+        obj->SetName(std::format("the {}'th object", counter++));
+        obj->SetIsStatic(false);
+        GET_PhysicsSystem.AddObject(obj);
+    }
+
+    if (PKeyDown(SDL_SCANCODE_T)) {
+        std::vector<glm::vec2> vertices;
+        vertices.push_back({0.25, -0.25});
+        vertices.push_back({0.75, -0.25});
+        vertices.push_back({1, 0.25});
+        // vertices.push_back({0.5, 0.5});
+        // vertices.push_back({0, 0});
+        auto obj = std::make_shared<PolygonBody>(m, vertices);
         obj->SetFColor(RandomFColor());
         obj->MoveTo(SCREEN2WORLD(MousePos));
         obj->SetName(std::format("the {}'th object", counter++));

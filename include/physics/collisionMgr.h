@@ -2,9 +2,6 @@
 
 #include "renderSystem.h"
 #include "rigidbody.h"
-#include "shape.h"
-#include <glm/ext/vector_float2.hpp>
-#include <vector>
 
 struct Collision {
     RigidBody *objA;
