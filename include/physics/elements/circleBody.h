@@ -17,8 +17,7 @@ class CircleBody : public RigidBody {
 
   protected:
     void Render() override;
-    void PhysicsUpdate(float dt) override;
-    void CalRotateIntertia() override;
+    void CalRotateInertia() override;
 
 
     float radius_;

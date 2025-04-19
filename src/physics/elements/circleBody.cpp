@@ -11,7 +11,7 @@ CircleBody::CircleBody(Material mate, float radius)
     area_ = std::numbers::pi * radius * radius;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0 / mass_;
-    CalRotateIntertia();
+    CalRotateInertia();
 
     SetFColor({1, 1, 0, 1});
     SetFColorBoundry({1, 1, 1, 1});
@@ -30,7 +30,7 @@ void CircleBody::Render() {
     cmd = DrawCommand(ShapeType::LINE, false);
     cmd.GetBase().color = boundaryColor_;
     cmd.GetBase().rect = GetDrawline();
-    cmd.halfLineWidth = 0.75f;
+    cmd.halfLineWidth = 1.0f;
     GET_Buffer.AddCommand(std::move(cmd));
 
     // draw outline
@@ -62,9 +62,7 @@ GlmRect CircleBody::GetDrawline() {
     return drawLine_;
 }
 
-void CircleBody::CalRotateIntertia() {
-    rotateIntertia_ = 0.5f * mass_ * radius_ * radius_;
-    rotateIntertiaR_ = 1.0f / rotateIntertia_;
+void CircleBody::CalRotateInertia() {
+    rotateInertia_ = 0.5f * mass_ * radius_ * radius_;
+    rotateInertiaR_ = 1.0f / rotateInertia_;
 }
-
-void CircleBody::PhysicsUpdate(float dt) { RigidBody::PhysicsUpdate(dt); }

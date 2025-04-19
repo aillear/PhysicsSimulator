@@ -6,9 +6,10 @@
 
 int main(int argc, char *argv[]) {
     App::Instance().Init(argc, argv);
-    App::Instance().AddFuntionBeforeRun(SomeCustomLogicHere);
-    PhysicsSystem::Instance().AddCustomInitFunction(SomeCustomLogicPHere);
-    PhysicsSystem::Instance().AddCustomAfterUpdateFunction(SomeCustomLogicPAHere);
+    App::Instance().AddCustomInit(InitApp);
+    App::Instance().AddCustomUpdate(UpdateApp);
+    PhysicsSystem::Instance().AddCustomInitFunction(InitPhy);
+    PhysicsSystem::Instance().AddCustomAfterUpdateFunction(UpdatePhy);
     App::Instance().Run();
     App::Instance().Destroy();
     return 0;

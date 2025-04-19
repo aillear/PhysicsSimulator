@@ -3,6 +3,7 @@
 #include "FPSCounter.h"
 #include "SDL3/SDL_events.h"
 #include "collisionMgr.h"
+#include "constraint.h"
 #include "eventSystem.h"
 #include "rigidbody.h"
 #include <SDL3_framerate.h>
@@ -34,6 +35,9 @@ class PhysicsSystem {
     void RemoveObject(ObjectID objId);
     void RemoveObject(std::string objName);
 
+    void AddConstraint(std::shared_ptr<Constraint> constraint);
+    void RemoveConstraint(std::shared_ptr<Constraint> constraint) ;
+
     std::shared_ptr<ObjectWorld> FindObjectById(ObjectID id);
     std::shared_ptr<ObjectWorld> FindObjectByName(std::string name);
 
@@ -52,7 +56,7 @@ class PhysicsSystem {
 
     FPSCounter fpsc;
     // test
-    int selectIndex =0;
+    int selectIndex = 0;
 
   private:
     PhysicsSystem() : running(false) { ; }
@@ -64,11 +68,14 @@ class PhysicsSystem {
     void HandleSDLEvents(SDL_Event &event);
     void ConllisionBroadPhase();
     void ConllisionNarrowPhase();
-    void SeperateBodies(RigidBody* a, RigidBody* b, glm::vec2 mtv);
+    void SeperateBodies(RigidBody *a, RigidBody *b, glm::vec2 mtv);
 
     void CollisionResolver(const Collision &collision);
-    void FCollisionResolver(const Collision &collision); 
-    void FFCollisionResolver(const Collision &collision); // it's the last version for real
+    void FCollisionResolver(const Collision &collision);
+    void FFCollisionResolver(
+        const Collision &collision); // it's the last version for real
+
+    void ConstraintSolver(float dt);
 
     void OutOffBoundCheck();
 
@@ -76,20 +83,21 @@ class PhysicsSystem {
     bool hasRemoveCalled = false;
     int iteration_;
 
-
     EventHandlerID eventHandler_1;
     EventHandlerID eventHandler_2;
     EventHandlerID eventHandler_3;
     EventHandlerID eventHandler_4;
 
     std::shared_ptr<ObjectWorld> rootNode;
+    std::vector<std::shared_ptr<Constraint>>
+        constraints; // manage constraints here.
     std::vector<std::shared_ptr<ObjectWorld>> physicsObjectsToAdd;
 
     std::vector<BasicFunctionWrapper> initFunctionWrapper;
     std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
 
     std::vector<std::pair<int, int>> collisionPairs; // for broad phase
-    std::vector<glm::vec2> collisionPoints; // for debug
+    std::vector<glm::vec2> collisionPoints;          // for debug
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()

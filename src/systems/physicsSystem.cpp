@@ -99,8 +99,11 @@ void PhysicsSystem::Update() {
     for (int i = 0; i < iteration_; i++) {
         collisionPairs.clear();
         rootNode->PhysicsUpdateWrapper(dt);
+
         ConllisionBroadPhase();
         ConllisionNarrowPhase();
+
+        ConstraintSolver(dt);
     }
     OutOffBoundCheck();
 
@@ -119,6 +122,10 @@ void PhysicsSystem::Update() {
         GET_Buffer.AddCommand(std::move(cmd));
     }
     collisionPoints.clear();
+    for (auto& constraint : constraints) {
+        constraint->Render();
+    }
+
     GET_Buffer.Submit();
 
     fpsc.EndFrame();
@@ -176,6 +183,23 @@ void PhysicsSystem::RemoveObject(std::string name) {
     auto removeObj = FindObjectByName(name);
     removeObj->SetToRemove();
     hasRemoveCalled = false;
+}
+
+void PhysicsSystem::AddConstraint(std::shared_ptr<Constraint> constraint) {
+    constraints.push_back(constraint);
+}
+
+void PhysicsSystem::RemoveConstraint(std::shared_ptr<Constraint> constraint) {
+    auto it = std::remove(constraints.begin(), constraints.end(), constraint);
+    if (it != constraints.end()) {
+        constraints.erase(it, constraints.end());
+    }
+}
+
+void PhysicsSystem::ConstraintSolver(float dt) {
+    for (auto &constraint : constraints) {
+        constraint->Solve(dt);
+    }
 }
 
 void PhysicsSystem::HandleSDLEvents(SDL_Event &event) {
@@ -333,8 +357,8 @@ void PhysicsSystem::FCollisionResolver(const Collision &collision) {
 
         float denom =
             objA->GetMassR() + objB->GetMassR() +
-            (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateIntertiaR() +
-            (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateIntertiaR();
+            (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateInertiaR() +
+            (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateInertiaR();
 
         float j = -(1.0f + resilience) * reVdotNorm;
         j /= denom;
@@ -350,11 +374,11 @@ void PhysicsSystem::FCollisionResolver(const Collision &collision) {
 
         objA->AddVelocity(-impulse * objA->GetMassR());
         objA->AddAngularVelocity(-Cross(ra, impulse) *
-                                 objA->GetRotateIntertiaR());
+                                 objA->GetRotateInertiaR());
 
         objB->AddVelocity(impulse * objB->GetMassR());
         objB->AddAngularVelocity(Cross(rb, impulse) *
-                                 objB->GetRotateIntertiaR());
+                                 objB->GetRotateInertiaR());
     }
 }
 
@@ -411,12 +435,12 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
 
         float denom =
             objA->GetMassR() + objB->GetMassR() +
-            (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateIntertiaR() +
-            (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateIntertiaR();
+            (raPerpDotNorm * raPerpDotNorm) * objA->GetRotateInertiaR() +
+            (rbPerpDotNorm * rbPerpDotNorm) * objB->GetRotateInertiaR();
 
         float j = -(1.0f + resilience) * reVdotNorm;
         j /= denom;
-        // j /= contactCount;
+        j /= contactCount;
         jList[i] = j;
         impulses[i] = j * norm;
     }
@@ -426,15 +450,18 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
         glm::vec2 ra = raList[i];
         glm::vec2 rb = rbList[i];
 
-        objA->AddVelocity(-impulse * objA->GetMassR());
-        objA->AddAngularVelocity(-Cross(ra, impulse) *
-                                 objA->GetRotateIntertiaR());
+        objA->ApplyImpulse(-impulse, ra);
+        objB->ApplyImpulse(impulse, rb);
 
-        objB->AddVelocity(impulse * objB->GetMassR());
-        objB->AddAngularVelocity(Cross(rb, impulse) *
-                                 objB->GetRotateIntertiaR());
+        // objA->AddVelocity(-impulse * objA->GetMassR());
+        // objA->AddAngularVelocity(-Cross(ra, impulse) *
+        //                          objA->GetRotateInertiaR());
+
+        // objB->AddVelocity(impulse * objB->GetMassR());
+        // objB->AddAngularVelocity(Cross(rb, impulse) *
+        //                          objB->GetRotateInertiaR());
     }
-    
+
     for (int i = 0; i < contactCount; i++) {
         glm::vec2 ra = contactPoints[i] - objA->GetPosition();
         glm::vec2 rb = contactPoints[i] - objB->GetPosition();
@@ -459,19 +486,19 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
         float raPerpDotTangent = glm::dot(raPerp, tagent);
         float rbPerpDotTangent = glm::dot(rbPerp, tagent);
 
-        float denom = objA->GetMassR() + objB->GetMassR() +
-                      (raPerpDotTangent * raPerpDotTangent) *
-                          objA->GetRotateIntertiaR() +
-                      (rbPerpDotTangent * rbPerpDotTangent) *
-                          objB->GetRotateIntertiaR();
+        float denom =
+            objA->GetMassR() + objB->GetMassR() +
+            (raPerpDotTangent * raPerpDotTangent) * objA->GetRotateInertiaR() +
+            (rbPerpDotTangent * rbPerpDotTangent) * objB->GetRotateInertiaR();
 
         float jt = -glm::dot(relativeV, tagent);
         jt /= denom;
-        // jt /= contactCount;
+        jt /= contactCount;
 
         glm::vec2 frictionImpulse;
         float j = jList[i];
-        if (abs(jt) < j * sf) frictionImpulse = jt * tagent;
+        if (abs(jt) < j * sf)
+            frictionImpulse = jt * tagent;
         else
             frictionImpulse = -j * df * tagent;
         frictionImpulses[i] = frictionImpulse;
@@ -482,13 +509,16 @@ void PhysicsSystem::FFCollisionResolver(const Collision &collision) {
         glm::vec2 ra = raList[i];
         glm::vec2 rb = rbList[i];
 
-        objA->AddVelocity(-impulse * objA->GetMassR());
-        objA->AddAngularVelocity(-Cross(ra, impulse) *
-                                 objA->GetRotateIntertiaR());
+        objA->ApplyImpulse(-impulse, ra);
+        objB->ApplyImpulse(impulse, rb);
 
-        objB->AddVelocity(impulse * objB->GetMassR());
-        objB->AddAngularVelocity(Cross(rb, impulse) *
-                                 objB->GetRotateIntertiaR());
+        // objA->AddVelocity(-impulse * objA->GetMassR());
+        // objA->AddAngularVelocity(-Cross(ra, impulse) *
+        //                          objA->GetRotateInertiaR());
+
+        // objB->AddVelocity(impulse * objB->GetMassR());
+        // objB->AddAngularVelocity(Cross(rb, impulse) *
+        //                          objB->GetRotateInertiaR());
     }
 }
 

@@ -1,10 +1,11 @@
 #include "app.h"
 #include "UIMgr.h"
+#include "collisionMgr.h"
 #include "configs.h"
 #include "eventSystem.h"
 #include "inputSystem.h"
-#include "collisionMgr.h"
 #include "logger.h"
+#include "object.h"
 #include "pathMgr.h"
 #include "physicsSystem.h"
 #include "renderBufferMgr.h"
@@ -56,12 +57,11 @@ void App::Init(int argc, char *argv[]) {
     GET_EventSystem.AddEventListener(
         SDL_EVENT_QUIT, [this](SDL_Event &event) { this->running = false; });
 
-    for (auto &callBack : initFunctionWrapper_)
-        callBack();
-
     SetRunning();
     LOG_INFO("App initialized.");
     LOG_INFO("Running...");
+    for (BasicFunctionWrapper &callBack : customInit_)
+        callBack();
     LOG_INFO("==========================");
 #ifdef _DEBUG_MODE
     LOG_DEBUG("current is debug mode");
@@ -70,7 +70,7 @@ void App::Init(int argc, char *argv[]) {
 
 void App::Run() {
 
-    for (auto &callBack : beforeRunFunctionWrapper_)
+    for (auto &callBack : customInit_)
         callBack();
 
     physicsThreadMutex.lock();
@@ -86,24 +86,30 @@ void App::Run() {
     SDL_PushEvent(&slowUpdateEvent);
 
     while (running) {
-        fpsc.StartFrame();
-        SDL_framerateDelay(&fpsm);
-
-        timer_ += fpsc.GetLastFrameTime();
-        if (timer_ >= 500) {
-            timer_ -= 500;
-            SDL_Event slowUpdateEvent;
-            slowUpdateEvent.type = USER_EVENT_SLOW_UPDATE;
-            SDL_PushEvent(&slowUpdateEvent);
-        }
-
-        GET_EventSystem.HandleEvent();
-        GET_InputSystem.Update();
-        GET_UIMgr.Update(fpsc.GetLastFrameTime());
-        GET_RenderSystem.Render();
-        fpsc.EndFrame();
+        Update();
+        for (auto &callBack : updateWrapper_)
+            callBack();
     }
     physicsThread.join();
+}
+
+void App::Update() {
+    fpsc.StartFrame();
+    SDL_framerateDelay(&fpsm);
+
+    timer_ += fpsc.GetLastFrameTime();
+    if (timer_ >= 500) {
+        timer_ -= 500;
+        SDL_Event slowUpdateEvent;
+        slowUpdateEvent.type = USER_EVENT_SLOW_UPDATE;
+        SDL_PushEvent(&slowUpdateEvent);
+    }
+
+    GET_EventSystem.HandleEvent();
+    GET_InputSystem.Update();
+    GET_UIMgr.Update(fpsc.GetLastFrameTime());
+    GET_RenderSystem.Render();
+    fpsc.EndFrame();
 }
 
 void App::Destroy() {

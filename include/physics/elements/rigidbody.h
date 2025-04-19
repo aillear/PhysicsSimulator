@@ -31,25 +31,33 @@ class RigidBody : public ObjectWorld {
     virtual void RotateToDegrees(float angleDegrees);
     virtual void Rotate(float angle);
     virtual void RotateTo(float angle);
-    void SetAngularVelocityDegrees(float vDegrees) { angularVelocity_ = glm::radians(vDegrees); }
+    void SetAngularVelocityDegrees(float vDegrees) {
+        angularVelocity_ = glm::radians(vDegrees);
+    }
     void SetAngularVelocity(float v) { angularVelocity_ = v; }
-    void AddAngularVelocityDegrees(float vDegrees) { angularVelocity_ += glm::radians(vDegrees); }
+    void AddAngularVelocityDegrees(float vDegrees) {
+        angularVelocity_ += glm::radians(vDegrees);
+    }
     void AddAngularVelocity(float v) { angularVelocity_ += v; }
 
-
-    void AddForce(glm::vec2 force) { this->force_ = force; }
+    void AddForce(glm::vec2 force) { this->force_ += force; }
+    void SetForce(glm::vec2 force) { this->force_ = force; }
+    void ApplyImpulsePoint(glm::vec2 impulse, glm::vec2 point);
+    void ApplyImpulse(glm::vec2 impulse, glm::vec2 r);
     const glm::vec2 GetForce() { return force_; }
-    
+
     PhysicsShapeType GetType() { return type_; }
     const float GetMass() const { return mass_; }
     const float GetMassR() const { return massR_; }
     const float GetArea() const { return area_; }
     const float GetRotationDegrees() const { return glm::degrees(rotation_); }
     const float GetRotation() const { return rotation_; }
-    const float GetAngularVelocityDegrees() const { return glm::degrees(angularVelocity_); }
+    const float GetAngularVelocityDegrees() const {
+        return glm::degrees(angularVelocity_);
+    }
     const float GetAngularVelocity() const { return angularVelocity_; }
-    const float GetRotateIntertia() const { return rotateIntertia_; }
-    const float GetRotateIntertiaR() const { return rotateIntertiaR_; }
+    const float GetRotateInertia() const { return rotateInertia_; }
+    const float GetRotateInertiaR() const { return rotateInertiaR_; }
     Material GetMaterial() const { return material_; }
     glm::vec2 GetVelocity() const { return velocity_; }
 
@@ -76,8 +84,11 @@ class RigidBody : public ObjectWorld {
     virtual void SetWidthHeight(glm::vec2 wh);
 
     virtual const std::vector<glm::vec2> &GetVertices();
-    virtual const AABB& GetAABB() = 0;
+    virtual const AABB &GetAABB() = 0;
 
+    glm::vec2 LocalToWorld(glm::vec2 local);
+    // glm::vec2 WorldToLocal(glm::vec2 world);
+    
 
   protected:
     void Init() override;
@@ -87,7 +98,7 @@ class RigidBody : public ObjectWorld {
     bool SafeCheck() const;
 
     void NormalizeRotation();
-    virtual void CalRotateIntertia();
+    virtual void CalRotateInertia();
 
     const PhysicsShapeType type_;
     bool needToTransfrom = true;
@@ -98,8 +109,8 @@ class RigidBody : public ObjectWorld {
     float area_;
     float rotation_;
     float angularVelocity_;
-    float rotateIntertia_; // moment of inertia
-    float rotateIntertiaR_; // moment of inertia inverse
+    float rotateInertia_;  // moment of inertia
+    float rotateInertiaR_; // moment of inertia inverse
     glm::vec2 velocity_;
     glm::vec2 force_;
     AABB aabb_;
@@ -108,8 +119,8 @@ class RigidBody : public ObjectWorld {
     SDL_FColor boundaryColor_;
     Transform2D transformer;
 
-    private:
+  private:
     // hide these functions
-    void SetPosition(const glm::vec2 &pos) override{;}
-    void SetPosition(float x, float y) override{;}
+    void SetPosition(const glm::vec2 &pos) override { ; }
+    void SetPosition(float x, float y) override { ; }
 };

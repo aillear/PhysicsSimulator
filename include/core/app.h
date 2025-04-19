@@ -14,29 +14,30 @@ class App {
     void SetRunning() { running = true; };
     void Run();
     void Destroy();
-    void AddFuntionWhenInit(BasicFunctionWrapper callBack) {
-        initFunctionWrapper_.emplace_back(std::move(callBack));
+    void AddCustomInit(BasicFunctionWrapper callBack) {
+        customInit_.emplace_back(std::move(callBack));
     }
-    void AddFuntionBeforeRun(BasicFunctionWrapper callBack) {
-        beforeRunFunctionWrapper_.emplace_back(std::move(callBack));
-    }
-    void AddFuntionSlowUpdate(BasicFunctionWrapper callBack) {
+    void AddCustomUpdateSlow(BasicFunctionWrapper callBack) {
         slowUpdateWrapper_.emplace_back(std::move(callBack));
+    }
+    void AddCustomUpdate(BasicFunctionWrapper callBack) {
+        updateWrapper_.emplace_back(std::move(callBack));
     }
 
     FPSCounter fpsc;
 
   private:
     App();
+    void Update();
 
     float timer_;
     bool running;
     FPSmanager fpsm;
     std::thread physicsThread;
 
-    std::vector<BasicFunctionWrapper> initFunctionWrapper_;
-    std::vector<BasicFunctionWrapper> beforeRunFunctionWrapper_;
+    std::vector<BasicFunctionWrapper> customInit_  ;
     std::vector<BasicFunctionWrapper> slowUpdateWrapper_;
+    std::vector<BasicFunctionWrapper> updateWrapper_;
 };
 
 #define GET_App App::Instance()

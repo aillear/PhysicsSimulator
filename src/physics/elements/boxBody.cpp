@@ -19,7 +19,7 @@ BoxBody::BoxBody(Material mate, glm::vec2 widthHeight)
     area_ = widthHeight.x * widthHeight.y;
     mass_ = area_ * material_.density * TUMassFactor;
     massR_ = 1.0f / mass_;
-    CalRotateIntertia();
+    CalRotateInertia();
 
     float Right = widthHeight.x * 0.5f;
     float Buttom = widthHeight.y * 0.5f;
@@ -110,14 +110,9 @@ void BoxBody::Render() {
     GET_Buffer.AddCommand(std::move(cmd));
 }
 
-void BoxBody::CalRotateIntertia() {
+void BoxBody::CalRotateInertia() {
     // 0.0833333f == 1/12
     // formula is : J = 1/12 * m * (w^2 + h^2)
-    rotateIntertia_ = 0.083333333333f * mass_ * glm::dot(widthHeight_, widthHeight_);
-    rotateIntertiaR_ = 1.0f / rotateIntertia_;
-}
-
-
-void BoxBody::PhysicsUpdate(float dt) {
-    RigidBody::PhysicsUpdate(dt);
+    rotateInertia_ = 0.083333333333f * mass_ * glm::dot(widthHeight_, widthHeight_);
+    rotateInertiaR_ = 1.0f / rotateInertia_;
 }

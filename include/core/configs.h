@@ -14,7 +14,7 @@
  *  force unit is Kg * cm / s ^ 2, I'll call it gN (game N)
  *
  *         g
- *      ------   *   10'000 cm^2  ->   10'000 g -> 10 kg
+ *      ------   *   10'000 cm^2  ->   10'000 g -> 10 kg xxxxx
  *       cm^2
  */
 
@@ -49,6 +49,13 @@ constexpr float MinRadian = 0.0f;                       // 0 degree
 
 constexpr glm::vec2 WorldToScreenPosFactor = {100.0f, -100.0f}; // 1 m = 100 pxiel, y is reversed
 constexpr glm::vec2 ScreenToWorldPosFactor = {0.01f, -0.01f}; // 1 pxiel = 0.01 m, y is reversed    
+
+constexpr glm::vec2 ZeroVec2 = {0.0f, 0.0f};
+constexpr glm::vec2 OneVec2 = {1.0f, 1.0f};
+constexpr glm::vec2 UpVec2 = {0.0f, 1.0f};
+constexpr glm::vec2 DownVec2 = {0.0f, -1.0f};
+constexpr glm::vec2 LeftVec2 = {-1.0f, 0.0f};
+constexpr glm::vec2 RightVec2 = {1.0f, 0.0f};
 
 /**
  * @brief event here

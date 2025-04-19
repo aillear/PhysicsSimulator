@@ -25,10 +25,7 @@ class BoxBody : public RigidBody {
 
   protected:
     void Render() override;
-    void PhysicsUpdate(float dt) override;
-
-
-    void CalRotateIntertia() override;
+    void CalRotateInertia() override;
 
     glm::vec2 widthHeight_;
     std::array<glm::vec2, 4> OriginVertex;

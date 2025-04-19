@@ -1,8 +1,10 @@
 # pragma once
 
 
-void SomeCustomLogicHere();
+void InitApp();
 
-void SomeCustomLogicPHere();
+void InitPhy();
 
-void SomeCustomLogicPAHere();
+void UpdateApp();
+
+void UpdatePhy();

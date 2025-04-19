@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "physicsSystem.h"
 #include "shape.h"
+#include <glm/ext/vector_float2.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/trigonometric.hpp>
 #include <vector>
@@ -47,7 +48,7 @@ void RigidBody::SetWidthHeight(glm::vec2) {
                   ShapeTypeToStr(type_));
 }
 
-void RigidBody::CalRotateIntertia() {
+void RigidBody::CalRotateInertia() {
     // not really to use it now;
     throw std::runtime_error("CalRotateIntertia is not implemented for type " +
                              ShapeTypeToStr(type_) + ".");
@@ -159,13 +160,33 @@ void RigidBody::MoveTo(glm::vec2 destination) {
     needToUpdateAABB = true;
 }
 
+void RigidBody::ApplyImpulsePoint(glm::vec2 impulse, glm::vec2 point) {
+    if (isStatic_) return;
+
+    velocity_ += impulse * massR_;
+    angularVelocity_ += Cross(point - position_, impulse) * rotateInertiaR_;
+}
+
+void RigidBody::ApplyImpulse(glm::vec2 impulse, glm::vec2 r) {
+    if (isStatic_) return;
+
+    velocity_ += impulse * massR_;
+    angularVelocity_ += Cross(r, impulse) * rotateInertiaR_;
+}
+
+
+glm::vec2 RigidBody::LocalToWorld(glm::vec2 local) {
+    transformer.Reset(rotation_, position_);
+    return transformer.TransfromR(local);
+}
+
 void RigidBody::SetIsStatic(bool value) {
     if (value == true) {
         massR_ = 0;
-        rotateIntertiaR_ = 0;
+        rotateInertiaR_ = 0;
     } else {
         massR_ = 1.0 / mass_;
-        rotateIntertiaR_ = 1.0 / rotateIntertia_;
+        rotateInertiaR_ = 1.0 / rotateInertia_;
     }
     isStatic_ = value;
 }
