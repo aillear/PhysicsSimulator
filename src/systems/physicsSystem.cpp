@@ -113,6 +113,12 @@ void PhysicsSystem::Update() {
     // render here
     rootNode->RenderWrapper();
 
+    collisionPoints.clear();
+    for (auto& constraint : constraints) {
+        constraint->Render();
+    }
+
+# ifdef _DEBUG_MODE
     for (auto &point : collisionPoints) {
         DrawCommand cmd(ShapeType::HOLLOW_RECT, false);
         cmd.GetBase().rect.p1 = point - glm::vec2(0.05f, 0.05f);
@@ -121,10 +127,7 @@ void PhysicsSystem::Update() {
         cmd.halfLineWidth = 0.5f;
         GET_Buffer.AddCommand(std::move(cmd));
     }
-    collisionPoints.clear();
-    for (auto& constraint : constraints) {
-        constraint->Render();
-    }
+# endif
 
     GET_Buffer.Submit();
 
@@ -264,13 +267,16 @@ void PhysicsSystem::ConllisionNarrowPhase() {
                                            c.count);
         FFCollisionResolver(c);
 
-        // debug
+# ifdef _DEBUG_MODE
+        // debug, show the contact point of collision.
         collisionPoints.push_back(c.point1);
         if (c.count == 2) {
             collisionPoints.push_back(c.point2);
         }
     }
+# endif
 }
+
 
 void PhysicsSystem::SeperateBodies(RigidBody *objA, RigidBody *objB,
                                    glm::vec2 mtv) {
@@ -528,8 +534,8 @@ void PhysicsSystem::OutOffBoundCheck() {
         RigidBody *obj = static_cast<RigidBody *>(child.get());
         auto aabb = obj->GetAABB();
 
-        if (aabb.minP.x > 4000 || aabb.maxP.x < -4000 || aabb.minP.y > 2320 ||
-            aabb.maxP.y < -2320) {
+        if (aabb.minP.x > 40.00f || aabb.maxP.x < -40.00f || aabb.minP.y > 23.20f ||
+            aabb.maxP.y < -23.20f) {
             F_LOG_INFO("object id: {} out of bound, remove it.", obj->GetID());
             obj->SetToRemove();
             hasRemoveCalled = true;

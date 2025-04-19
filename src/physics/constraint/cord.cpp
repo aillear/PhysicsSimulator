@@ -52,7 +52,7 @@ void CordConstraint::Render() {
     DrawCommand cmd(ShapeType::LINE, false);
     cmd.GetBase().rect.p1 = worldA;
     cmd.GetBase().rect.p2 = worldB;
-    cmd.GetBase().color = isTight ? tightColor : color;
+    cmd.GetBase().color = isTight ? Cord_Tight : Cord_Relaxed;
     cmd.halfLineWidth = 1.0f;
     GET_Buffer.AddCommand(std::move(cmd));
 }

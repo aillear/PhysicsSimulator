@@ -330,23 +330,26 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
     auto &command = cmd.GetBase();
     SDL_FColor color = command.color;
     SDL_FPoint p[4] = {};
-    glm::vec2 dir = command.rect.p2 - command.rect.p1;
-    dir = {dir.y, -dir.x};
+
+    if (cmd.UIMode_ == false) {
+        p[0] = PosWorld2Screen(command.rect.p1);
+        p[1] = PosWorld2Screen(command.rect.p2);
+    } else {
+        p[0] = ToFPoint(command.rect.p1);
+        p[1] = ToFPoint(command.rect.p2);
+    }
+
+    glm::vec2 dir = ToGlmVec2(p[1] - p[0]);
+    dir = {-dir.y, dir.x};
     dir = glm::normalize(dir) * cmd.halfLineWidth;
     if (cmd.scaleWithZoom)
         dir *= camera.getZoom();
-    p[2] = ToFPoint(dir);
+    SDL_FPoint norm = ToFPoint(dir);
 
-    // if not UI mode, convert the position to screen space
-    if (cmd.UIMode_ == false) {
-        p[0] = PosWorld2Screen(command.rect.p1) + p[2];
-        p[1] = PosWorld2Screen(command.rect.p2) + p[2];
-    } else {
-        p[0] = ToFPoint(command.rect.p1) + p[2];
-        p[1] = ToFPoint(command.rect.p2) + p[2];
-    }
-    p[3] = p[1] - p[2];
-    p[2] = p[0] - p[2];
+    p[0] = p[0] + norm;
+    p[1] = p[1] + norm;
+    p[2] = p[0] - norm;
+    p[3] = p[1] - norm;
 
     for (int i = 0; i < 4; i++) {
         buffer[vertexBufferSize].position = p[i];
@@ -357,10 +360,11 @@ void RenderSystem::LineCommand(DrawCommand &cmd) {
 
     indices[indicesSize++] = vertexBegin + 0;
     indices[indicesSize++] = vertexBegin + 1;
-    indices[indicesSize++] = vertexBegin + 2;
-    indices[indicesSize++] = vertexBegin + 1;
-    indices[indicesSize++] = vertexBegin + 2;
     indices[indicesSize++] = vertexBegin + 3;
+    indices[indicesSize++] = vertexBegin + 0;
+    indices[indicesSize++] = vertexBegin + 3;
+    indices[indicesSize++] = vertexBegin + 2;
+    
 }
 
 void RenderSystem::LineCommand(SDL_Vertex &p1, SDL_Vertex &p2,
@@ -368,8 +372,8 @@ void RenderSystem::LineCommand(SDL_Vertex &p1, SDL_Vertex &p2,
     int vertexBegin = vertexBufferSize;
     SDL_Vertex *buffer = vertexBuffer.get();
 
-    glm::vec2 dir = ToGlmVec2(p1.position - p2.position);
-    dir = {dir.y, -dir.x};
+    glm::vec2 dir = ToGlmVec2(p2.position - p1.position);
+    dir = {-dir.y, dir.x};
     dir = glm::normalize(dir) * halfLineWidth;
     if (zoomWithCamera) {
         dir *= camera.getZoom();

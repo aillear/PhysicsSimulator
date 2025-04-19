@@ -16,6 +16,7 @@ class Constraint {
     virtual void Render() = 0;
 
   protected:
+    bool firstApply = true;
     bool isTight = false;
     glm::vec2 worldA;
     glm::vec2 worldB;

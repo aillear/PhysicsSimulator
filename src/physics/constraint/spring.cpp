@@ -18,14 +18,6 @@ void SpringConstraint::Solve(float dt) {
     glm::vec2 raPerp = {-ra.y, ra.x};
     glm::vec2 rbPerp = {-rb.y, rb.x};
 
-    glm::vec2 angularLinearVA = bodyA->GetAngularVelocity() * raPerp;
-    glm::vec2 angularLinearVB = bodyB->GetAngularVelocity() * rbPerp;
-
-    // va vb speed 
-    glm::vec2 vA = bodyA->GetVelocity() + angularLinearVA;
-    glm::vec2 vB = bodyB->GetVelocity() + angularLinearVB;
-    glm::vec2 relativeV = vB - vA;
-
     glm::vec2 distance = worldB - worldA;
     float currentLength = glm::length(distance);
     
@@ -52,7 +44,7 @@ void SpringConstraint::Render() {
     DrawCommand cmd(ShapeType::LINE, false);
     cmd.GetBase().rect.p1 = worldA;
     cmd.GetBase().rect.p2 = worldB;
-    cmd.GetBase().color = isTight ? tightColor : color;
+    cmd.GetBase().color = isTight ? Spring_Tight : Spring_Relaxed;
     cmd.halfLineWidth = 1.0f;
     GET_Buffer.AddCommand(std::move(cmd));
 }

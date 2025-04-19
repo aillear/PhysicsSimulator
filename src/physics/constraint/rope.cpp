@@ -1,4 +1,5 @@
 #include "rope.h"
+#include "configs.h"
 #include "renderBufferMgr.h"
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
@@ -46,6 +47,14 @@ void RopeConstraint::Solve(float dt) {
     bodyA->ApplyImpulse(impulse, ra);
     bodyB->ApplyImpulse(-impulse, rb);
 
+    if (firstApply) {
+        firstApply = false;
+        
+        if (bodyA->GetIsStatic()) {bodyA->MoveTo((currentLength-maxLength)*norm);}
+        else if (bodyB->GetIsStatic()) {bodyB->MoveTo((maxLength-currentLength)*norm);}
+        return;
+    }
+
     float sum = bodyA->GetMassR() + bodyB->GetMassR();
     float lengthDiff = currentLength - maxLength;
     bodyA->Move(norm * lengthDiff * (bodyA->GetMassR() / sum));
@@ -56,7 +65,7 @@ void RopeConstraint::Render() {
     DrawCommand cmd(ShapeType::LINE, false);
     cmd.GetBase().rect.p1 = worldA;
     cmd.GetBase().rect.p2 = worldB;
-    cmd.GetBase().color = isTight ? tightColor : color;
+    cmd.GetBase().color = isTight ? Rope_Tight : Rope_Relaxed;
     cmd.halfLineWidth = 1.0f;
     GET_Buffer.AddCommand(std::move(cmd));
 }

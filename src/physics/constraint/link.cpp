@@ -1,4 +1,5 @@
 #include "link.h"
+#include "configs.h"
 #include "renderBufferMgr.h"
 
 void LinkConstraint::Solve(float dt) {
@@ -45,6 +46,14 @@ void LinkConstraint::Solve(float dt) {
     bodyA->ApplyImpulse(impulse, ra);
     bodyB->ApplyImpulse(-impulse, rb);
 
+    if (firstApply) {
+        firstApply = false;
+        
+        if (bodyA->GetIsStatic()) {bodyA->MoveTo((currentLength-maxLength)*norm);}
+        else if (bodyB->GetIsStatic()) {bodyB->MoveTo((maxLength-currentLength)*norm);}
+        return;
+    }
+
     float sum = bodyA->GetMassR() + bodyB->GetMassR();
     float lengthDiff = currentLength - maxLength;
     bodyA->Move(norm * lengthDiff * (bodyA->GetMassR() / sum));
@@ -55,7 +64,7 @@ void LinkConstraint::Render() {
     DrawCommand cmd(ShapeType::LINE, false);
     cmd.GetBase().rect.p1 = worldA;
     cmd.GetBase().rect.p2 = worldB;
-    cmd.GetBase().color = isTight ? tightColor : color;
-    cmd.halfLineWidth = 3.0f;
+    cmd.GetBase().color = Link_Default;
+    cmd.halfLineWidth = 2.0f;
     GET_Buffer.AddCommand(std::move(cmd));
 }

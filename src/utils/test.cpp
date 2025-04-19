@@ -132,7 +132,7 @@ void InitPhy() {
     ground->SetName("ground");
     GET_PhysicsSystem.AddObject(ground);
 
-    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(2, 10));
+    auto wallL = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
     wallL->MoveTo({-4, -4});
     wallL->SetFColorBoundry({0, 0, 0, 1});
     wallL->SetColor({77, 120, 204, 255});
@@ -140,7 +140,7 @@ void InitPhy() {
     wallL->SetName("wall1");
     GET_PhysicsSystem.AddObject(wallL);
 
-    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(2, 10));
+    auto wallR = std::make_shared<BoxBody>(m, glm::vec2(0.2, 10));
     wallR->MoveTo({4, -4});
     wallR->SetFColorBoundry({0, 0, 0, 1});
     wallR->SetColor({77, 120, 204, 255});
@@ -176,16 +176,19 @@ void InitPhy() {
     GET_PhysicsSystem.AddObject(ObjA);
 
     auto ObjB = std::make_shared<CircleBody>(m, 0.5);
-    ObjB->MoveTo({0, 2.5});
+    ObjB->MoveTo({0, 8});
     ObjB->SetName("ObjB");
     ObjB->SetFColor(RandomFColor());
     ObjB->SetIsStatic(false);
     GET_PhysicsSystem.AddObject(ObjB);
 
     auto constraint = std::make_shared<LinkConstraint>(ObjA.get(), ObjB.get(),
-                                                       glm::vec2{0.1,0}, glm::vec2{0.1,0}, 1.5);
+                                                       glm::vec2{0.3,0}, glm::vec2{0.3,0}, 1.5);
     GET_PhysicsSystem.AddConstraint(constraint);
 
+    auto constraint1 = std::make_shared<LinkConstraint>(ObjA.get(), ObjB.get(),
+    glm::vec2{-0.3,0}, glm::vec2{-0.3,0}, 1.5);
+GET_PhysicsSystem.AddConstraint(constraint1);
     // here is test for spring
     // auto ObjA = std::make_shared<CircleBody>(m, 0.5);
     // ObjA->MoveTo({0, -6});

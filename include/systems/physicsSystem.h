@@ -97,7 +97,11 @@ class PhysicsSystem {
     std::vector<BasicFunctionWrapper> AfterUpdateFunctionWrapper;
 
     std::vector<std::pair<int, int>> collisionPairs; // for broad phase
+
+# ifdef _DEBUG_MODE
     std::vector<glm::vec2> collisionPoints;          // for debug
+# endif
+
 };
 
 #define GET_PhysicsSystem PhysicsSystem::Instance()

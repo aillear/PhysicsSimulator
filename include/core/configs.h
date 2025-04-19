@@ -20,6 +20,7 @@
 
 
 
+#include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_stdinc.h"
 #include <glm/ext/vector_float2.hpp>
 #include <numbers>
@@ -56,6 +57,23 @@ constexpr glm::vec2 UpVec2 = {0.0f, 1.0f};
 constexpr glm::vec2 DownVec2 = {0.0f, -1.0f};
 constexpr glm::vec2 LeftVec2 = {-1.0f, 0.0f};
 constexpr glm::vec2 RightVec2 = {1.0f, 0.0f};
+
+
+// Rope color
+constexpr SDL_FColor Rope_Relaxed {1.0f, 1.0f, 1.0f, 1.0f}; 
+constexpr SDL_FColor Rope_Tight   {1.0f, 0.0f, 0.0f, 1.0f};  
+
+// Link color
+constexpr SDL_FColor Link_Default {0.0f, 0.0f, 0.5f, 1.0f}; 
+
+// Cord color 
+constexpr SDL_FColor Cord_Relaxed{0.0f, 1.0f, 1.0f, 1.0f};  
+constexpr SDL_FColor Cord_Tight  {1.0f, 0.0f, 1.0f, 1.0f}; 
+
+// Spring color
+constexpr SDL_FColor Spring_Relaxed{0.0f, 1.0f, 0.0f, 1.0f};
+constexpr SDL_FColor Spring_Tight{1.0f, 1.0f, 0.0f, 1.0f}; 
+
 
 /**
  * @brief event here
